@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graphing Lab</title>
+<style>
+  :root { --brand:#005596; --deep:#002d5f; --accent:#e66414; --ink:#1f2a37; --muted:#5b6b7c; --line:#dde5ee; --bg:#f5f7fb;
+          --green:#0f9d58; --red:#d93025; --blue:#2563eb; --purple:#7c3aed; --soft:#f3f7fb; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:16.5px; color:var(--ink); background:var(--bg); line-height:1.5; }
+  button, input, select { font:inherit; color:inherit; }
+  header { background:var(--deep); color:#fff; padding:10px 18px; display:flex; align-items:center; gap:12px; border-bottom:4px solid var(--accent); }
+  header .logo { width:34px; height:34px; border-radius:10px; background:var(--accent); display:grid; place-items:center; font-weight:800; flex:none; }
+  header h1 { font-size:18px; margin:0; } header .sub { font-size:12.5px; opacity:.75; } header .grow { flex:1; }
+  .pill { background:rgba(255,255,255,.12); border-radius:999px; padding:5px 12px; font-weight:800; white-space:nowrap; }
+  nav { background:#fff; border-bottom:1px solid var(--line); display:flex; gap:4px; padding:6px 12px; overflow-x:auto; position:sticky; top:0; z-index:5; }
+  .tab { border:none; background:none; padding:9px 14px; border-radius:12px; cursor:pointer; font-weight:800; color:var(--muted); white-space:nowrap; }
+  .tab:hover { background:#f1f5fa; color:var(--brand); } .tab.on { background:var(--brand); color:#fff; }
+  main { max-width:1240px; margin:0 auto; padding:18px 16px 60px; }
+  .view { display:none; } .view.on { display:block; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 18px; min-width:0; }
+  .card h3 { margin:0 0 10px; font-size:14px; letter-spacing:.06em; color:var(--brand); display:flex; align-items:center; gap:8px; text-transform:uppercase; }
+  .card h3::before { content:""; width:5px; height:15px; border-radius:3px; background:var(--accent); }
+  .grid2 { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:16px; align-items:start; }
+  .stack { display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .btn { border:2px solid var(--line); background:#fff; border-radius:12px; padding:7px 14px; cursor:pointer; font-weight:800; }
+  .btn:hover { border-color:var(--brand); color:var(--brand); }
+  .btn.primary { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .btn.primary:hover { background:#00467d; color:#fff; }
+  .btn.small { padding:4px 10px; font-size:14px; border-radius:10px; }
+  .muted { color:var(--muted); font-size:14.5px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { border:2px solid var(--line); background:#fff; border-radius:999px; padding:4px 12px; cursor:pointer; font-weight:800; font-size:14px; }
+  .chip:hover { border-color:var(--brand); }
+  .chip.on { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .row { display:flex; gap:8px 12px; align-items:center; flex-wrap:wrap; }
+  .field { display:block; margin:10px 0; }
+  .field > span { display:block; font-weight:800; font-size:14px; margin-bottom:4px; }
+  input[type=text] { width:100%; border:2px solid var(--line); border-radius:12px; padding:8px 12px; font-size:17px; background:#fff; }
+  input[type=text]:focus { outline:none; border-color:var(--brand); }
+  input[type=number] { width:80px; border:2px solid var(--line); border-radius:10px; padding:6px 8px; }
+  .err { color:var(--red); font-weight:700; font-size:14.5px; min-height:20px; }
+  .eq { font-family:"Cambria Math","STIX Two Math","Times New Roman",serif; font-size:1.18em; white-space:nowrap; }
+  .eqbig { font-family:"Cambria Math","STIX Two Math","Times New Roman",serif; font-size:26px; text-align:center; padding:8px; background:var(--soft); border-radius:12px; margin:10px 0; }
+  .plotwrap { position:relative; }
+  canvas.plot { width:100%; display:block; border-radius:12px; border:1px solid var(--line); touch-action:none; background:#fff; }
+  canvas.nl { width:100%; height:90px; display:block; }
+  .plot-tools { position:absolute; right:8px; top:8px; display:flex; gap:4px; }
+  .mini { width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.92); cursor:pointer; font-weight:900; font-size:17px; }
+  .mini:hover { border-color:var(--brand); color:var(--brand); }
+  .coord { font-size:13.5px; color:var(--muted); margin-top:6px; min-height:20px; }
+  .legend { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:14px; margin-top:8px; }
+  .legend i { display:inline-block; width:22px; height:4px; border-radius:2px; vertical-align:middle; margin-right:5px; }
+  .slider { display:grid; grid-template-columns:36px 1fr 56px; gap:10px; align-items:center; margin:6px 0; }
+  .slider b { font-family:"Cambria Math","Times New Roman",serif; font-size:19px; font-style:italic; }
+  .slider output { text-align:right; font-weight:800; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--brand); }
+  table.feat { width:100%; border-collapse:collapse; font-size:15.5px; }
+  table.feat td { padding:7px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  table.feat td:first-child { font-weight:800; white-space:nowrap; width:1%; padding-right:12px; }
+  table.feat .v { font-weight:700; }
+  table.feat .why { font-size:13px; color:var(--muted); }
+  .quiz td.ans .v, .quiz td.ans .why { filter:blur(7px); cursor:pointer; user-select:none; }
+  .quiz td.ans.shown .v, .quiz td.ans.shown .why { filter:none; }
+  table.simple { width:100%; border-collapse:collapse; font-size:15px; }
+  table.simple td, table.simple th { padding:7px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  .seg { display:inline-flex; background:#eef3f9; padding:4px; border-radius:12px; gap:4px; flex-wrap:wrap; }
+  .seg button { border:none; background:none; padding:7px 14px; border-radius:9px; cursor:pointer; font-weight:800; color:var(--muted); }
+  .seg button.on { background:#fff; color:var(--deep); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .ineqrow { display:grid; grid-template-columns:16px 1fr; gap:10px; align-items:center; margin:8px 0; }
+  .sw { width:16px; height:16px; border-radius:4px; }
+  .steps { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px 10px 32px; margin:10px 0 0; }
+  .steps li { margin:3px 0; }
+  .result { background:#eef6ff; border-radius:12px; padding:10px 14px; margin-top:10px; font-size:17px; }
+  .ok { color:var(--green); } .bad { color:var(--red); }
+  .q { font-size:19px; font-weight:700; margin:4px 0 10px; }
+  .ansrow { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .ansrow input { flex:1; min-width:200px; font-size:19px; font-weight:700; }
+  .keys { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+  .keys button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 10px; cursor:pointer; font-weight:800; min-width:38px; }
+  .keys button:hover { border-color:var(--brand); }
+  .choice { min-width:120px; }
+  .choice.right { background:var(--green); border-color:var(--green); color:#fff; }
+  .choice.wrong { background:var(--red); border-color:var(--red); color:#fff; }
+  .fb { min-height:28px; font-size:17px; font-weight:800; margin-top:10px; }
+  .fb.okc { color:var(--green); } .fb.badc { color:var(--red); } .fb.info { color:var(--brand); }
+  .bar { height:10px; border-radius:5px; background:#edf1f6; overflow:hidden; } .bar div { height:100%; }
+  .plan { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px; margin-bottom:16px; display:none; }
+  .tag { display:inline-block; padding:1px 8px; border-radius:999px; font-size:12.5px; font-weight:800; background:#eef2f6; color:var(--muted); }
+  @media (max-width:900px) { .grid2 { grid-template-columns:1fr; } header .sub { display:none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="logo">GL</div>
+  <div><h1 id="appTitle">Graphing Lab</h1><div class="sub">Afro-Merica Tutor · Grade 8 Algebra 1 · functions, lines and inequalities</div></div>
+  <div class="grow"></div>
+  <span class="pill" id="hdrStreak">🎯 0 in a row</span>
+</header>
+<nav>
+  <button class="tab on" data-v="explore">📈 Graph &amp; key features</button>
+  <button class="tab" data-v="lines">∥ ⟂ Parallel &amp; perpendicular</button>
+  <button class="tab" data-v="ineq">⚖️ Inequalities</button>
+  <button class="tab" data-v="practice">🎯 Practice</button>
+  <button class="tab" data-v="progress">📊 My progress</button>
+</nav>
+<main>
+  <div class="plan" id="plan"></div>
+
+  <!-- ============ EXPLORE ============ -->
+  <section class="view on" id="explore">
+    <div class="grid2">
+      <div class="card">
+        <div class="plotwrap"><canvas class="plot" id="exCanvas"></canvas>
+          <div class="plot-tools"><button class="mini" data-p="ex" data-z="in" aria-label="Zoom in">+</button><button class="mini" data-p="ex" data-z="out" aria-label="Zoom out">−</button><button class="mini" data-p="ex" data-z="reset" aria-label="Reset view">⟲</button></div></div>
+        <div class="legend" id="exLegend"></div>
+        <div class="coord" id="exCoord">Drag the graph to move it. Point at it to read coordinates.</div>
+      </div>
+      <div class="stack">
+        <div class="card"><h3>Choose a function</h3>
+          <div class="chips" id="famChips"></div>
+          <div id="famParams" style="margin-top:10px"></div>
+          <div id="customBox" hidden>
+            <label class="field"><span>Type a function of x</span><input type="text" id="customIn" placeholder="e.g.  x^3 − 3x   or   |x − 2| + 1" autocomplete="off" spellcheck="false"></label>
+            <div class="row"><button class="btn primary" id="customGo">Graph it</button><span class="muted">^ power · sqrt( ) or √ · |x| absolute value</span></div>
+            <div class="err" id="customErr"></div>
+          </div>
+          <div class="eqbig" id="exEq"></div>
+          <div class="muted" style="margin-bottom:6px">Sample functions:</div>
+          <div class="chips" id="samples"></div>
+          <label class="field"><span>Compare with another function (optional)</span><input type="text" id="cmpIn" placeholder="e.g. 2x + 1" autocomplete="off" spellcheck="false"></label>
+          <div class="err" id="cmpErr"></div>
+          <label class="row" style="font-size:14.5px"><input type="checkbox" id="exColor" checked> Color increasing <b class="ok">green</b> and decreasing <b class="bad">red</b></label>
+        </div>
+        <div class="card"><h3>Key features</h3>
+          <label class="row" style="font-size:14.5px;margin-bottom:6px"><input type="checkbox" id="quizMe"> Hide the answers, so I can test myself (tap to show)</label>
+          <table class="feat" id="featTable"></table>
+          <div class="muted" id="featNote" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LINES ============ -->
+  <section class="view" id="lines">
+    <div class="grid2">
+      <div class="card">
+        <div class="plotwrap"><canvas class="plot" id="lnCanvas"></canvas>
+          <div class="plot-tools"><button class="mini" data-p="ln" data-z="in" aria-label="Zoom in">+</button><button class="mini" data-p="ln" data-z="out" aria-label="Zoom out">−</button><button class="mini" data-p="ln" data-z="reset" aria-label="Reset view">⟲</button></div></div>
+        <div class="legend" id="lnLegend"></div>
+        <div class="coord" id="lnCoord"></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <div class="seg" id="lnMode"><button data-m="point" class="on">Lines through a point</button><button data-m="compare">Compare two lines</button></div>
+          <div id="lnPointBox">
+            <label class="field"><span>Given line</span><input type="text" id="lnIn" value="y = 2x + 1" autocomplete="off" spellcheck="false"></label>
+            <div class="chips" id="lnSamples"></div>
+            <div class="row" style="margin-top:12px"><b>Point P</b> ( <input type="number" id="pX" value="-2" step="0.5"> , <input type="number" id="pY" value="3" step="0.5"> ) <span class="muted">or tap the graph</span></div>
+            <div class="row" style="margin-top:8px;font-size:14.5px">
+              <label><input type="checkbox" id="showPar" checked> parallel line</label>
+              <label><input type="checkbox" id="showPerp" checked> perpendicular line</label></div>
+          </div>
+          <div id="lnCmpBox" hidden>
+            <label class="field"><span>Line A</span><input type="text" id="lnA" value="y = 3x − 2" autocomplete="off" spellcheck="false"></label>
+            <label class="field"><span>Line B</span><input type="text" id="lnB" value="x + 3y = 9" autocomplete="off" spellcheck="false"></label>
+            <div class="chips" id="cmpSamples"></div>
+          </div>
+          <div class="err" id="lnErr"></div>
+        </div>
+        <div class="card"><h3>What the slopes tell you</h3><div id="lnInfo"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INEQUALITIES ============ -->
+  <section class="view" id="ineq">
+    <div class="seg" id="iqMode" style="margin-bottom:14px"><button data-m="one" class="on">One variable · number line</button><button data-m="two">Two variables · coordinate plane</button></div>
+    <div id="iqOne">
+      <div class="grid2">
+        <div class="card"><h3>Solve and graph</h3>
+          <label class="field"><span>Inequality (use and / or for compound inequalities)</span><input type="text" id="i1In" value="−2x + 5 > 11" autocomplete="off" spellcheck="false"></label>
+          <div class="keys" data-target="i1In"><button>≤</button><button>≥</button><button>&lt;</button><button>&gt;</button><button data-ins=" and ">and</button><button data-ins=" or ">or</button></div>
+          <div class="chips" id="i1Samples" style="margin-top:10px"></div>
+          <div class="err" id="i1Err"></div>
+          <div id="i1Out"></div>
+        </div>
+        <div class="stack">
+          <div class="card"><h3>Number line</h3><canvas class="nl" id="i1NL"></canvas><div class="muted">● closed dot = included (≤, ≥) · ○ open dot = not included (&lt;, &gt;)</div></div>
+          <div class="card"><h3>Test a number</h3>
+            <div class="row"><span>x =</span><input type="number" id="i1Test" value="0" step="0.5" style="width:100px"><button class="btn small" id="i1TestGo">Test</button></div>
+            <div id="i1TestOut" style="margin-top:8px"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="iqTwo" hidden>
+      <div class="grid2">
+        <div class="card">
+          <div class="plotwrap"><canvas class="plot" id="iqCanvas"></canvas>
+            <div class="plot-tools"><button class="mini" data-p="iq" data-z="in" aria-label="Zoom in">+</button><button class="mini" data-p="iq" data-z="out" aria-label="Zoom out">−</button><button class="mini" data-p="iq" data-z="reset" aria-label="Reset view">⟲</button></div></div>
+          <div class="legend" id="iqLegend"></div>
+          <div class="coord" id="iqCoord">Tap the graph to test a point.</div>
+        </div>
+        <div class="stack">
+          <div class="card"><h3>Inequalities (up to 3)</h3>
+            <div id="iqRows"></div>
+            <div class="chips" id="iqSamples" style="margin-top:8px"></div>
+            <div class="row" style="margin-top:10px;font-size:14.5px">
+              <label><input type="checkbox" id="iqEach" checked> shade each one</label>
+              <label><input type="checkbox" id="iqBoth" checked> show the combined solution</label></div>
+          </div>
+          <div class="card"><h3>Reading the graph</h3><div id="iqInfo"></div><div id="iqTest" style="margin-top:10px"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRACTICE ============ -->
+  <section class="view" id="practice">
+    <div class="card" style="margin-bottom:16px">
+      <div class="row"><b>Skills:</b><div class="chips" id="skillChips"></div></div>
+      <div class="row" style="margin-top:10px"><b>Level:</b><div class="chips" id="levelChips"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="muted" id="pqSkill"></div>
+        <div class="q" id="pqText"></div>
+        <div id="pqAns"></div>
+        <div class="fb" id="pqFb" aria-live="polite"></div>
+        <div id="pqWork"></div>
+        <div class="row" style="margin-top:12px"><button class="btn" id="pqHint">💡 Hint</button><button class="btn" id="pqSteps">👣 Show steps</button><span style="flex:1"></span><button class="btn primary" id="pqNext">Next problem ›</button></div>
+      </div>
+      <div class="stack">
+        <div class="card" id="pqPlotCard"><div class="plotwrap"><canvas class="plot" id="pqCanvas"></canvas></div></div>
+        <div class="card" id="pqNLCard" hidden><h3>Number line</h3><canvas class="nl" id="pqNL"></canvas></div>
+        <div class="card"><h3>This session</h3><div id="sess" class="muted">Answer a question to start.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRESS ============ -->
+  <section class="view" id="progress">
+    <div class="grid2">
+      <div class="card"><h3>Skills</h3><table class="simple" id="progTable"></table>
+        <p class="muted">A skill is <b>mastered</b> when 8 of your last 10 answers are right on the first try.</p></div>
+      <div class="card"><h3>Totals</h3><div id="progTotals"></div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+/* =====================================================================
+   Platform (AMtutorTools) — works on its own too
+   ===================================================================== */
+const AM = window.AMT || null;
+const store = AM && AM.storage ? AM.storage : (() => { try { return window.localStorage; } catch (e) { return null; } })();
+const load = (k, d) => { try { const v = JSON.parse(store.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const save = (k, v) => { try { store.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const $ = id => document.getElementById(id);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const nz = (a, b) => { let v; do { v = rnd(a, b); } while (v === 0); return v; };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const MINUS = "−";
+const COL = { fn: "#2563eb", inc: "#0f9d58", dec: "#d93025", flat: "#2563eb", cmp: "#8a94a6", orange: "#e66414", purple: "#7c3aed", ink: "#1f2a37",
+  ineq: ["#2563eb", "#e66414", "#0f9d58"], both: "#7c3aed" };
+
+/* =====================================================================
+   Numbers
+   ===================================================================== */
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a || 1; }
+function toFrac(v, maxDen = 12) {
+  if (!Number.isFinite(v)) return null;
+  for (let d = 1; d <= maxDen; d++) { const n = Math.round(v * d); if (Math.abs(n / d - v) < 1e-7) { const g = gcd(n, d); return [n / g, d / g]; } }
+  return null;
+}
+function fmt(v) {
+  if (v === Infinity) return "∞";
+  if (v === -Infinity) return MINUS + "∞";
+  if (Math.abs(v) < 1e-9) v = 0;
+  const f = toFrac(v);
+  if (f) { const [n, d] = f; return (n < 0 ? MINUS : "") + (d === 1 ? Math.abs(n) : Math.abs(n) + "/" + d); }
+  return (v < 0 ? MINUS : "") + (+Math.abs(v).toFixed(2));
+}
+const pt = (x, y) => `(${fmt(x)}, ${fmt(y)})`;
+function coefBody(a, v) { // a > 0
+  if (!v) return fmt(a);
+  if (Math.abs(a - 1) < 1e-12) return v;
+  const f = toFrac(a);
+  if (f && f[1] !== 1) return `(${f[0]}/${f[1]})${v}`;
+  return fmt(a) + v;
+}
+function poly(terms) {
+  let s = "";
+  for (const [c, v] of terms) {
+    if (Math.abs(c) < 1e-12) continue;
+    const body = coefBody(Math.abs(c), v);
+    s += s ? (c < 0 ? " − " : " + ") + body : (c < 0 ? MINUS : "") + body;
+  }
+  return s || "0";
+}
+const coefPrefix = a => (Math.abs(a - 1) < 1e-12 ? "" : Math.abs(a + 1) < 1e-12 ? MINUS : (toFrac(a) && toFrac(a)[1] !== 1 ? `(${fmt(a).replace(MINUS, "-").replace("-", MINUS)})` : fmt(a)));
+const shiftStr = h => (Math.abs(h) < 1e-12 ? "x" : `(x ${h > 0 ? "−" : "+"} ${fmt(Math.abs(h))})`);
+const plusK = k => (Math.abs(k) < 1e-12 ? "" : k > 0 ? ` + ${fmt(k)}` : ` − ${fmt(-k)}`);
+const lineEq = (m, b) => "y = " + poly([[m, "x"], [b, ""]]);
+function parseNum(s) {
+  if (s == null) return NaN;
+  let t = String(s).trim().toLowerCase().replace(/[−–—]/g, "-").replace(/\s+/g, "").replace(/^\+/, "");
+  if (/^-?(∞|inf|infinity)$/.test(t)) return t.startsWith("-") ? -Infinity : Infinity;
+  if (/^\+?(∞|inf|infinity)$/.test(t)) return Infinity;
+  t = t.replace(/^\((.*)\)$/, "$1");
+  let m = t.match(/^(-?)(\d+(?:\.\d+)?|\.\d+)\/(-?)(\d+(?:\.\d+)?)$/);
+  if (m) { const d = +m[4]; if (!d) return NaN; return ((m[1] ? -1 : 1) * (m[3] ? -1 : 1) * +m[2]) / d; }
+  m = t.match(/^-\((\d+)\/(\d+)\)$/);
+  if (m) return -(+m[1]) / +m[2];
+  if (/^-?(\d+(\.\d*)?|\.\d+)$/.test(t)) return +t;
+  return NaN;
+}
+const sameNum = (a, b) => (a === b) || (Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= 0.011);
+
+/* =====================================================================
+   Expression parser (no eval). Supports + − × ÷ ^, implicit ×, |x|, sqrt, abs, …
+   ===================================================================== */
+const FUNCS = { sqrt: Math.sqrt, cbrt: Math.cbrt, abs: Math.abs, sin: Math.sin, cos: Math.cos, tan: Math.tan, exp: Math.exp, ln: Math.log, log: Math.log10 };
+const FNAMES = ["sqrt", "cbrt", "abs", "sin", "cos", "tan", "exp", "log", "ln", "pi"];
+function normExpr(s) {
+  return String(s).replace(/[−–—]/g, "-").replace(/[×·∙]/g, "*").replace(/÷/g, "/").replace(/²/g, "^2").replace(/³/g, "^3")
+    .replace(/ˣ/g, "^x").replace(/√/g, "sqrt").replace(/π/g, "pi").replace(/\*\*/g, "^");
+}
+function tokenize(src) {
+  const s = normExpr(src).toLowerCase(); const out = []; let i = 0, depth = 0;
+  const prevIsValue = () => { const t = out[out.length - 1]; return t && ["num", "var", "const", ")", "absclose"].includes(t.t); };
+  while (i < s.length) {
+    const c = s[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (/[0-9.]/.test(c)) {
+      let j = i; while (j < s.length && /[0-9.]/.test(s[j])) j++;
+      const str = s.slice(i, j);
+      if (!/^(\d+\.?\d*|\.\d+)$/.test(str)) throw new Error(`“${str}” isn't a number.`);
+      out.push({ t: "num", v: +str }); i = j; continue;
+    }
+    if (/[a-z]/.test(c)) {
+      let j = i; while (j < s.length && /[a-z]/.test(s[j])) j++;
+      let w = s.slice(i, j); i = j;
+      while (w) {
+        const name = FNAMES.find(n => w.startsWith(n));
+        if (name) { out.push(name === "pi" ? { t: "const", v: Math.PI } : { t: "fn", v: name }); w = w.slice(name.length); continue; }
+        const ch = w[0]; w = w.slice(1);
+        if (ch === "x" || ch === "y") out.push({ t: "var", v: ch });
+        else if (ch === "e") out.push({ t: "const", v: Math.E });
+        else throw new Error(`I don't know “${ch}”. Use x${src.includes("y") ? " and y" : ""} as the variable.`);
+      }
+      continue;
+    }
+    if (c === "|") { if (depth > 0 && prevIsValue()) { out.push({ t: "absclose" }); depth--; } else { out.push({ t: "absopen" }); depth++; } i++; continue; }
+    if ("+-*/^()".includes(c)) { out.push({ t: c }); i++; continue; }
+    if (c === "[" ) { out.push({ t: "(" }); i++; continue; }
+    if (c === "]") { out.push({ t: ")" }); i++; continue; }
+    throw new Error(`I don't understand “${c}”.`);
+  }
+  if (depth) throw new Error("An absolute value bar | is missing.");
+  return out;
+}
+function compile(src) {
+  if (!String(src).trim()) throw new Error("Type an expression first.");
+  const tokens = tokenize(src); let i = 0; const used = new Set();
+  const peek = () => tokens[i], next = () => tokens[i++];
+  const expect = t => { const k = next(); if (!k || k.t !== t) throw new Error(t === ")" ? "A closing bracket ) is missing." : t === "absclose" ? "An absolute value bar | is missing." : "Something is missing."); };
+  const startsPrimary = t => t && ["num", "var", "const", "fn", "(", "absopen"].includes(t.t);
+  function expr() { let n = term(); while (peek() && (peek().t === "+" || peek().t === "-")) { const op = next().t, r = term(), l = n; n = op === "+" ? v => l(v) + r(v) : v => l(v) - r(v); } return n; }
+  function term() {
+    let n = unary();
+    for (;;) {
+      const t = peek();
+      if (t && (t.t === "*" || t.t === "/")) { next(); const r = unary(), l = n; n = t.t === "*" ? v => l(v) * r(v) : v => l(v) / r(v); }
+      else if (startsPrimary(t)) { const r = power(), l = n; n = v => l(v) * r(v); }
+      else break;
+    }
+    return n;
+  }
+  function unary() { const t = peek(); if (t && t.t === "-") { next(); const u = unary(); return v => -u(v); } if (t && t.t === "+") { next(); return unary(); } return power(); }
+  function power() { const b = primary(); if (peek() && peek().t === "^") { next(); const e = unary(); return v => Math.pow(b(v), e(v)); } return b; }
+  function primary() {
+    const t = next();
+    if (!t) throw new Error("The expression ends too early.");
+    if (t.t === "num" || t.t === "const") { const c = t.v; return () => c; }
+    if (t.t === "var") { const k = t.v; used.add(k); return v => v[k]; }
+    if (t.t === "(") { const e = expr(); expect(")"); return e; }
+    if (t.t === "absopen") { const e = expr(); expect("absclose"); return v => Math.abs(e(v)); }
+    if (t.t === "fn") {
+      const f = FUNCS[t.v];
+      let a; if (peek() && peek().t === "(") { next(); a = expr(); expect(")"); } else a = power();
+      return v => f(a(v));
+    }
+    throw new Error(`Something is missing before “${t.t === "absclose" ? "|" : t.t}”.`);
+  }
+  const fn = expr();
+  if (i < tokens.length) throw new Error(tokens[i].t === ")" ? "There is an extra closing bracket )." : "I couldn't read the whole expression.");
+  return { f: (x, y) => fn({ x, y: y || 0 }), usesY: used.has("y"), usesX: used.has("x") };
+}
+function compileFx(src) {
+  const s = String(src).replace(/^\s*(y|f\s*\(\s*x\s*\)|g\s*\(\s*x\s*\))\s*=/i, "");
+  const c = compile(s);
+  if (c.usesY) throw new Error("Write it with x only, like y = 2x + 1.");
+  return x => c.f(x, 0);
+}
+// Linear coefficients of g(x) = p·x + q, or null if not linear
+function linCoef(g) {
+  const q = g(0), p = g(1) - q;
+  if (![q, p].every(Number.isFinite)) return null;
+  for (const x of [2.5, -3.7, 7.1, -11]) if (!(Math.abs(g(x) - (p * x + q)) < 1e-7 * (1 + Math.abs(p * x + q)))) return null;
+  return { p, q };
+}
+
+/* =====================================================================
+   Sets of real numbers (unions of intervals)
+   ===================================================================== */
+const iv = (a, ac, b, bc) => ({ a, ac: Number.isFinite(a) && ac, b, bc: Number.isFinite(b) && bc });
+const ALL = () => [iv(-Infinity, false, Infinity, false)];
+function normSet(S) {
+  const s = S.filter(I => I.a < I.b - 1e-12 || (Math.abs(I.a - I.b) < 1e-12 && I.ac && I.bc)).map(I => ({ ...I }))
+    .sort((p, q) => p.a - q.a || (q.ac - p.ac));
+  const out = [];
+  for (const I of s) {
+    const L = out[out.length - 1];
+    if (L && (I.a < L.b - 1e-12 || (Math.abs(I.a - L.b) < 1e-12 && (L.bc || I.ac)))) {
+      if (I.b > L.b + 1e-12) { L.b = I.b; L.bc = I.bc; } else if (Math.abs(I.b - L.b) < 1e-12) L.bc = L.bc || I.bc;
+    } else out.push(I);
+  }
+  return out;
+}
+function interSet(A, B) {
+  const out = [];
+  for (const I of A) for (const J of B) {
+    let a, ac, b, bc;
+    if (I.a > J.a + 1e-12) { a = I.a; ac = I.ac; } else if (J.a > I.a + 1e-12) { a = J.a; ac = J.ac; } else { a = I.a; ac = I.ac && J.ac; }
+    if (I.b < J.b - 1e-12) { b = I.b; bc = I.bc; } else if (J.b < I.b - 1e-12) { b = J.b; bc = J.bc; } else { b = I.b; bc = I.bc && J.bc; }
+    out.push({ a, ac, b, bc });
+  }
+  return normSet(out);
+}
+const unionSet = (A, B) => normSet([...A, ...B]);
+const isAll = S => S.length === 1 && S[0].a === -Infinity && S[0].b === Infinity;
+function setEq(A, B, lenient = false) {
+  A = normSet(A); B = normSet(B);
+  if (A.length !== B.length) return false;
+  return A.every((I, i) => {
+    const J = B[i];
+    if (!sameNum(I.a, J.a) || !sameNum(I.b, J.b)) return false;
+    if (lenient) return true;
+    return (!Number.isFinite(I.a) || I.ac === J.ac) && (!Number.isFinite(I.b) || I.bc === J.bc);
+  });
+}
+function setToInterval(S) {
+  S = normSet(S);
+  if (!S.length) return "∅";
+  return S.map(I => (Math.abs(I.a - I.b) < 1e-12 ? `{${fmt(I.a)}}` : `${I.ac ? "[" : "("}${fmt(I.a)}, ${fmt(I.b)}${I.bc ? "]" : ")"}`)).join(" ∪ ");
+}
+function setToIneq(S, v = "x") {
+  S = normSet(S);
+  if (!S.length) return "no solution";
+  if (isAll(S)) return "all real numbers";
+  return S.map(I => {
+    if (Math.abs(I.a - I.b) < 1e-12) return `${v} = ${fmt(I.a)}`;
+    if (I.a === -Infinity) return `${v} ${I.bc ? "≤" : "<"} ${fmt(I.b)}`;
+    if (I.b === Infinity) return `${v} ${I.ac ? "≥" : ">"} ${fmt(I.a)}`;
+    return `${fmt(I.a)} ${I.ac ? "≤" : "<"} ${v} ${I.bc ? "≤" : "<"} ${fmt(I.b)}`;
+  }).join(" or ");
+}
+const setBoth = (S, v = "x") => `${setToIneq(S, v)} &nbsp;·&nbsp; ${setToInterval(S)}`;
+const normOps = s => String(s).replace(/<=|=</g, "≤").replace(/>=|=>/g, "≥").replace(/[−–—]/g, "-");
+const FLIP = { "<": ">", ">": "<", "≤": "≥", "≥": "≤", "=": "=" };
+function rayFor(op, r) {
+  if (!Number.isFinite(r)) return op.includes("<") || op === "≤" ? (r === Infinity ? ALL() : []) : (r === -Infinity ? ALL() : []);
+  if (op === "<") return [iv(-Infinity, false, r, false)];
+  if (op === "≤") return [iv(-Infinity, false, r, true)];
+  if (op === ">") return [iv(r, false, Infinity, false)];
+  if (op === "≥") return [iv(r, true, Infinity, false)];
+  return [iv(r, true, r, true)];
+}
+
+// Reads a student's answer: interval notation, inequality notation, "all real numbers", "none"
+function parseSet(input) {
+  let s = normOps(input).toLowerCase().trim().replace(/infinity|inf/g, "∞").replace(/\s+/g, " ");
+  if (!s) return { error: "Type an answer first." };
+  if (/^(all real( numbers)?|all reals|real numbers|ℝ|r|everything|all numbers|any real number|all x|all y)$/.test(s) || /^\(\s*-\s*∞\s*,\s*\+?\s*∞\s*\)$/.test(s)) return { set: ALL() };
+  if (/^(none|no solutions?|∅|\{\s*\}|empty( set)?|no real (numbers|solutions?)|nothing|never|no interval)$/.test(s)) return { set: [] };
+  if ((/[\[(]/.test(s) && s.includes(",")) || /^\{.*\}$/.test(s)) {
+    const parts = s.split(/∪|\bu\b|\bor\b/).map(p => p.trim()).filter(Boolean); const out = [];
+    for (const p of parts) {
+      let m = p.match(/^\{\s*([^{}]+)\s*\}$/);
+      if (m) { const vals = m[1].split(",").map(parseNum); if (vals.some(Number.isNaN)) return { error: `I couldn't read “${p}”.` }; vals.forEach(v => out.push(iv(v, true, v, true))); continue; }
+      m = p.match(/^([\[(])\s*([^,]+?)\s*,\s*([^,]+?)\s*([\])])$/);
+      if (!m) return { error: `I couldn't read “${p}”. Write intervals like (−2, 5] or [3, ∞).` };
+      const a = parseNum(m[2]), b = parseNum(m[3]);
+      if (Number.isNaN(a) || Number.isNaN(b)) return { error: `I couldn't read the numbers in “${p}”.` };
+      if (a > b) return { error: "In an interval, the smaller number comes first." };
+      if ((!Number.isFinite(a) && m[1] === "[") || (!Number.isFinite(b) && m[4] === "]")) return { wrong: true, msg: "∞ always gets a round bracket ( ), never [ ], because you can never reach it." };
+      out.push({ a, ac: m[1] === "[", b, bc: m[4] === "]" });
+    }
+    return { set: normSet(out) };
+  }
+  let res = [];
+  for (const orPart of s.split(/\bor\b|∪/).map(x => x.trim()).filter(Boolean)) {
+    let cur = ALL();
+    for (const piece of orPart.split(/\band\b|&|,/).map(x => x.trim()).filter(Boolean)) {
+      const r = parseChain(piece); if (r.error) return r; cur = interSet(cur, r.set);
+    }
+    res = unionSet(res, cur);
+  }
+  return { set: res };
+}
+function parseChain(p) {
+  const toks = p.split(/(≤|≥|<|>|=)/).map(t => t.trim());
+  if (toks.length < 3 || toks.length > 5) return { error: "Use an inequality like x > 3, interval notation like (3, ∞), or “all real numbers”." };
+  let set = ALL();
+  for (let i = 0; i + 2 < toks.length; i += 2) {
+    const L = toks[i], op = toks[i + 1], R = toks[i + 2];
+    const lv = /^[a-z]$/.test(L), rv = /^[a-z]$/.test(R);
+    if (lv === rv) return { error: `I couldn't read “${p}”. Put the variable on one side, like x ≥ −2.` };
+    const num = parseNum(lv ? R : L);
+    if (Number.isNaN(num)) return { error: `I couldn't read the number in “${p}”.` };
+    set = interSet(set, rayFor(lv ? op : FLIP[op], num));
+  }
+  return { set };
+}
+function parsePoints(input) {
+  const s = String(input).toLowerCase().replace(/[−–—]/g, "-").trim();
+  if (!s) return { error: "Type an answer first." };
+  if (/^(none|no x-?intercepts?|no y-?intercepts?|no intercepts?|no solution|∅|no real|there are none|does not exist|dne)/.test(s)) return { pts: [], none: true };
+  const pts = []; const re = /\(\s*([^,()]+?)\s*,\s*([^,()]+?)\s*\)/g; let m;
+  while ((m = re.exec(s))) {
+    const x = parseNum(m[1]), y = parseNum(m[2]);
+    if (Number.isNaN(x) || Number.isNaN(y)) return { error: `I couldn't read ${m[0]}.` };
+    pts.push([x, y]);
+  }
+  if (pts.length) return { pts };
+  const nums = s.replace(/[xy]\s*=\s*/g, "").split(/[,;]|\band\b|\bor\b/).map(t => t.trim()).filter(Boolean).map(parseNum);
+  if (!nums.length || nums.some(Number.isNaN)) return { error: "Write points like (2, 0). Separate two points with a comma." };
+  return { nums };
+}
+// Line in any form → A·x + B·y + C = 0
+function parseLine(input) {
+  const s = normOps(input).replace(/\s+/g, "");
+  const parts = s.split("=");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return { error: "Write an equation with one = sign, like y = 2x + 1." };
+  let L, R;
+  try { L = compile(parts[0]); R = compile(parts[1]); } catch (e) { return { error: e.message }; }
+  const G = (x, y) => L.f(x, y) - R.f(x, y);
+  const C = G(0, 0), A = G(1, 0) - C, B = G(0, 1) - C;
+  if (![A, B, C].every(Number.isFinite)) return { error: "That isn't a straight-line equation." };
+  for (const [x, y] of [[2, 3], [-1.5, 4], [3.7, -2.2], [-4, -5]]) if (!(Math.abs(G(x, y) - (A * x + B * y + C)) < 1e-6 * (1 + Math.abs(G(x, y))))) return { error: "That isn't a straight-line equation." };
+  if (Math.abs(A) < 1e-12 && Math.abs(B) < 1e-12) return { error: "That equation needs an x or a y." };
+  return { A, B, C };
+}
+function sameLine(p, q) {
+  const n = v => { const k = Math.hypot(v.A, v.B); return [v.A / k, v.B / k, v.C / k]; };
+  const a = n(p), b = n(q), s = Math.sign(a[0] * b[0] + a[1] * b[1]) || 1;
+  return a.every((x, i) => Math.abs(x - s * b[i]) < 1e-6);
+}
+function lineInfo(L) { // slope-intercept description
+  if (Math.abs(L.B) < 1e-12) return { vertical: true, x0: -L.C / L.A, m: "undefined", eq: `x = ${fmt(-L.C / L.A)}` };
+  const m = -L.A / L.B, b = -L.C / L.B;
+  return { vertical: false, m, b, eq: lineEq(m, b) };
+}
+const fromSlope = (m, b) => ({ A: -m, B: 1, C: -b });
+
+/* =====================================================================
+   Function families with exact key features
+   ===================================================================== */
+function anLinear(m, b) {
+  if (Math.abs(m) < 1e-12) return { xints: Math.abs(b) < 1e-12 ? "all" : [], yint: b, slope: 0, domain: ALL(), range: [iv(b, true, b, true)], max: null, min: null, inc: [], dec: [], constant: ALL() };
+  return { xints: [-b / m], yint: b, slope: m, domain: ALL(), range: ALL(), max: null, min: null, inc: m > 0 ? ALL() : [], dec: m < 0 ? ALL() : [] };
+}
+function anVertex(a, h, k, kind) {
+  const t = -k / a; let xs = [];
+  if (Math.abs(t) < 1e-12) xs = [h];
+  else if (t > 0) { const d = kind === "quad" ? Math.sqrt(t) : t; xs = [h - d, h + d]; }
+  const up = a > 0;
+  return { xints: xs, yint: kind === "quad" ? a * h * h + k : a * Math.abs(h) + k, slope: "varies", domain: ALL(),
+    range: up ? [iv(k, true, Infinity, false)] : [iv(-Infinity, false, k, true)], max: up ? null : { x: h, y: k }, min: up ? { x: h, y: k } : null, vertex: { x: h, y: k },
+    inc: up ? [iv(h, false, Infinity, false)] : [iv(-Infinity, false, h, false)], dec: up ? [iv(-Infinity, false, h, false)] : [iv(h, false, Infinity, false)] };
+}
+function anSqrt(a, h, k) {
+  const t = -k / a;
+  return { xints: t >= 0 ? [h + t * t] : [], yint: h <= 0 ? a * Math.sqrt(-h) + k : null, slope: "varies", domain: [iv(h, true, Infinity, false)],
+    range: a > 0 ? [iv(k, true, Infinity, false)] : [iv(-Infinity, false, k, true)], min: a > 0 ? { x: h, y: k } : null, max: a < 0 ? { x: h, y: k } : null,
+    inc: a > 0 ? [iv(h, false, Infinity, false)] : [], dec: a < 0 ? [iv(h, false, Infinity, false)] : [], start: { x: h, y: k } };
+}
+function anExp(a, b, k) {
+  const t = -k / a, up = (a > 0) === (b > 1);
+  return { xints: t > 0 ? [Math.log(t) / Math.log(b)] : [], yint: a + k, slope: "varies", domain: ALL(),
+    range: a > 0 ? [iv(k, false, Infinity, false)] : [iv(-Infinity, false, k, false)], max: null, min: null, inc: up ? ALL() : [], dec: up ? [] : ALL(), asym: k };
+}
+const Rng = (a, b, s) => { const o = []; for (let v = a; v <= b + 1e-9; v += s) o.push(Math.round(v * 100) / 100); return o; };
+const NZ = arr => arr.filter(v => v !== 0);
+const FAM = {
+  linear: { name: "Linear", form: "y = mx + b", params: [["m", Rng(-5, 5, 0.5), 2], ["b", Rng(-8, 8, 1), -3]],
+    make: p => ({ f: x => p.m * x + p.b, eq: lineEq(p.m, p.b), an: anLinear(p.m, p.b) }) },
+  quadV: { name: "Quadratic (vertex form)", form: "y = a(x − h)² + k", params: [["a", NZ(Rng(-3, 3, 0.5)), 1], ["h", Rng(-6, 6, 1), 1], ["k", Rng(-8, 8, 1), -4]],
+    make: p => ({ f: x => p.a * (x - p.h) ** 2 + p.k, eq: `y = ${coefPrefix(p.a)}${Math.abs(p.h) < 1e-12 ? "x²" : shiftStr(p.h) + "²"}${plusK(p.k)}`, an: anVertex(p.a, p.h, p.k, "quad") }) },
+  quadS: { name: "Quadratic (standard form)", form: "y = ax² + bx + c", params: [["a", NZ(Rng(-3, 3, 0.5)), 1], ["b", Rng(-8, 8, 1), -2], ["c", Rng(-8, 8, 1), -3]],
+    make: p => { const h = -p.b / (2 * p.a), k = p.c - p.b * p.b / (4 * p.a); return { f: x => p.a * x * x + p.b * x + p.c, eq: "y = " + poly([[p.a, "x²"], [p.b, "x"], [p.c, ""]]), an: { ...anVertex(p.a, h, k, "quad"), yint: p.c } }; } },
+  abs: { name: "Absolute value", form: "y = a|x − h| + k", params: [["a", NZ(Rng(-3, 3, 0.5)), 1], ["h", Rng(-6, 6, 1), -2], ["k", Rng(-8, 8, 1), -3]],
+    make: p => ({ f: x => p.a * Math.abs(x - p.h) + p.k, eq: `y = ${coefPrefix(p.a)}|${Math.abs(p.h) < 1e-12 ? "x" : shiftStr(p.h).slice(1, -1)}|${plusK(p.k)}`, an: anVertex(p.a, p.h, p.k, "abs") }) },
+  sqrt: { name: "Square root", form: "y = a√(x − h) + k", params: [["a", NZ(Rng(-3, 3, 0.5)), 1], ["h", Rng(-6, 6, 1), -4], ["k", Rng(-8, 8, 1), -2]],
+    make: p => ({ f: x => p.a * Math.sqrt(x - p.h) + p.k, from: p.h, eq: `y = ${coefPrefix(p.a)}√${Math.abs(p.h) < 1e-12 ? "x" : shiftStr(p.h)}${plusK(p.k)}`, an: anSqrt(p.a, p.h, p.k) }) },
+  exp: { name: "Exponential", form: "y = a·bˣ + k", params: [["a", NZ(Rng(-4, 4, 0.5)), 1], ["b", [0.25, 0.5, 1.5, 2, 2.5, 3, 4], 2], ["k", Rng(-6, 6, 1), -1]],
+    make: p => { const bs = toFrac(p.b) && toFrac(p.b)[1] !== 1 ? `(${fmt(p.b)})` : fmt(p.b);
+      const lead = Math.abs(p.a - 1) < 1e-12 ? "" : Math.abs(p.a + 1) < 1e-12 ? MINUS : fmt(p.a) + "·";
+      return { f: x => p.a * Math.pow(p.b, x) + p.k, eq: `y = ${lead}${bs}ˣ${plusK(p.k)}`, an: anExp(p.a, p.b, p.k) }; } },
+};
+const mk = (kind, p) => ({ kind, p, ...FAM[kind].make(p) });
+
+/* ---------- numeric analysis for custom functions (estimated) ---------- */
+function analyzeNumeric(f) {
+  const L = -50, R = 50, N = 10000, dx = (R - L) / N;
+  const X = i => L + i * dx;
+  const val = x => { let y; try { y = f(x); } catch (e) { y = NaN; } return Number.isFinite(y) && Math.abs(y) < 1e100 ? y : NaN; };
+  const ys = []; for (let i = 0; i <= N; i++) ys.push(val(X(i)));
+  const good = i => !Number.isNaN(ys[i]);
+  const snap = v => { const f2 = toFrac(Math.round(v * 1e5) / 1e5, 12); return f2 && Math.abs(f2[0] / f2[1] - v) < 1e-4 ? f2[0] / f2[1] : Math.round(v * 1000) / 1000; };
+  // pieces of the domain (split where undefined, and at vertical asymptotes)
+  const pieces = []; let start = -1;
+  for (let i = 0; i <= N + 1; i++) {
+    const g = i <= N && good(i);
+    const asym = g && start >= 0 && good(i - 1) && Math.sign(ys[i]) !== Math.sign(ys[i - 1]) && Math.min(Math.abs(ys[i]), Math.abs(ys[i - 1])) > 50;
+    if ((!g || asym) && start >= 0) { pieces.push({ i0: start, i1: i - 1, rightAsym: asym }); start = -1; }
+    if (g && start < 0) start = i;
+  }
+  const bisect = (gx, bx) => { for (let k = 0; k < 60; k++) { const m = (gx + bx) / 2; if (!Number.isNaN(val(m))) gx = m; else bx = m; } return gx; };
+  let domain = [], range = [], xints = [], turns = [], inc = [], dec = [];
+  pieces.forEach((P, idx) => {
+    const prev = pieces[idx - 1];
+    let a, ac, b, bc;
+    if (P.i0 === 0) { a = -Infinity; ac = false; }
+    else if (prev && prev.rightAsym && prev.i1 === P.i0 - 1) { a = snap((X(P.i0) + X(P.i0 - 1)) / 2); ac = false; }
+    else { const bd = bisect(X(P.i0), X(P.i0 - 1)); a = snap(bd); ac = !Number.isNaN(val(a)); if (!ac) a = snap(bd); }
+    if (P.i1 === N) { b = Infinity; bc = false; }
+    else if (P.rightAsym) { b = snap((X(P.i1) + X(P.i1 + 1)) / 2); bc = false; }
+    else { const bd = bisect(X(P.i1), X(P.i1 + 1)); b = snap(bd); bc = !Number.isNaN(val(b)); }
+    domain.push({ a, ac, b, bc });
+    // range on this piece
+    let lo = Infinity, hi = -Infinity, ilo = -1, ihi = -1;
+    for (let i = P.i0; i <= P.i1; i++) { if (ys[i] < lo) { lo = ys[i]; ilo = i; } if (ys[i] > hi) { hi = ys[i]; ihi = i; } }
+    const leftAsym = !!(prev && prev.rightAsym && prev.i1 === P.i0 - 1);
+    let rhi = snap(hi), rhc = true, rlo = snap(lo), rlc = true;
+    const raw = x => { let y; try { y = f(x); } catch (e) { y = NaN; } return y; };
+    const ends = [];
+    if (a === -Infinity) ends.push([raw(-1e3), raw(-1e6)]); else if (leftAsym || !ac) ends.push([raw(a + 1e-6), raw(a + 1e-9)]);
+    if (b === Infinity) ends.push([raw(1e3), raw(1e6)]); else if (P.rightAsym || !bc) ends.push([raw(b - 1e-6), raw(b - 1e-9)]);
+    for (const [y1, y2] of ends) {
+      const y = Number.isNaN(y2) ? y1 : y2;
+      if (Number.isNaN(y)) continue;
+      // still growing as we move outward → unbounded; otherwise it settles toward a limit
+      const growing = !Number.isFinite(y) || (Number.isFinite(y1) && Math.abs(y) > 2 * Math.abs(y1) && Math.abs(y) > 5);
+      if (growing) { if (y > 0) rhi = Infinity; else rlo = -Infinity; continue; }
+      const lim = snap(y);
+      if (lim > hi + 1e-9 || Math.abs(lim - hi) < 1e-6) { if (rhi !== Infinity) { rhi = lim; rhc = false; } }
+      if (lim < lo - 1e-9 || Math.abs(lim - lo) < 1e-6) { if (rlo !== -Infinity) { rlo = lim; rlc = false; } }
+    }
+    range.push(iv(rlo, rlc, rhi, rhc));
+    // x-intercepts
+    for (let i = P.i0; i <= P.i1; i++) {
+      if (ys[i] === 0) xints.push(X(i));
+      else if (i > P.i0 && ys[i - 1] !== 0 && Math.sign(ys[i]) !== Math.sign(ys[i - 1])) {
+        let lo2 = X(i - 1), hi2 = X(i); const s0 = Math.sign(ys[i - 1]);
+        for (let k = 0; k < 60; k++) { const m = (lo2 + hi2) / 2; if (Math.sign(val(m)) === s0) lo2 = m; else hi2 = m; }
+        xints.push((lo2 + hi2) / 2);
+      } else if (i > P.i0 && i < P.i1 && Math.abs(ys[i]) < 1e-3 && Math.abs(ys[i]) <= Math.abs(ys[i - 1]) && Math.abs(ys[i]) <= Math.abs(ys[i + 1])) {
+        let a2 = X(i - 1), b2 = X(i + 1);
+        for (let k = 0; k < 80; k++) { const m1 = a2 + (b2 - a2) / 3, m2 = b2 - (b2 - a2) / 3; if (Math.abs(val(m1)) < Math.abs(val(m2))) b2 = m2; else a2 = m1; }
+        const xm = (a2 + b2) / 2; if (Math.abs(val(xm)) < 1e-9) xints.push(xm);
+      }
+    }
+    // turning points and increasing / decreasing
+    const sgn = i => { const d = ys[i + 1] - ys[i]; return Math.abs(d) < 1e-12 ? 0 : Math.sign(d); };
+    let runStart = P.i0, runSign = null; const runs = [];
+    for (let i = P.i0; i < P.i1; i++) {
+      const s = sgn(i);
+      if (runSign === null) runSign = s;
+      else if (s !== runSign) { runs.push({ s: runSign, i0: runStart, i1: i }); runStart = i; runSign = s; }
+    }
+    if (runSign !== null) runs.push({ s: runSign, i0: runStart, i1: P.i1 });
+    const merged = [];
+    for (const r of runs) { const m = merged[merged.length - 1]; if (m && (m.s === r.s || r.i1 - r.i0 < 2)) m.i1 = r.i1; else merged.push({ ...r }); }
+    merged.forEach((r, k) => {
+      const left = k === 0 ? a : snap(X(r.i0)), right = k === merged.length - 1 ? b : snap(X(r.i1));
+      if (r.s > 0) inc.push(iv(left, false, right, false)); else if (r.s < 0) dec.push(iv(left, false, right, false));
+      if (k > 0) { const prevR = merged[k - 1]; if (prevR.s !== r.s && prevR.s !== 0 && r.s !== 0) turns.push({ x: snap(X(r.i0)), y: snap(val(X(r.i0))), kind: prevR.s > 0 ? "max" : "min" }); }
+    });
+  });
+  domain = normSet(domain); range = normSet(range);
+  xints = [...new Set(xints.map(snap))].sort((p, q) => p - q);
+  const y0 = val(0);
+  const lc = linCoef(x => { const v = val(x); return v; });
+  let max = null, min = null;
+  if (range.length) {
+    const top = range[range.length - 1], bot = range[0];
+    if (Number.isFinite(top.b) && top.bc) { let bi = 0; for (let i = 1; i <= N; i++) if (ys[i] > ys[bi] || Number.isNaN(ys[bi])) bi = i; max = { x: snap(X(bi)), y: top.b }; }
+    if (Number.isFinite(bot.a) && bot.ac) { let bi = 0; for (let i = 1; i <= N; i++) if (ys[i] < ys[bi] || Number.isNaN(ys[bi])) bi = i; min = { x: snap(X(bi)), y: bot.a }; }
+  }
+  return { approx: true, xints, yint: Number.isNaN(y0) ? null : snap(y0), slope: lc ? lc.p : "varies", domain, range, max, min, turns,
+    inc: normSet(inc), dec: normSet(dec) };
+}
+
+/* =====================================================================
+   Plot (canvas) — square units, pan & zoom
+   ===================================================================== */
+class Plot {
+  constructor(canvas, { span = 20, cx = 0, cy = 0, interactive = false, maxH = 560, onClick = null, onHover = null } = {}) {
+    this.c = canvas; this.ctx = canvas.getContext("2d"); this.home = { span, cx, cy }; Object.assign(this, { span, cx, cy, maxH, onClick, onHover });
+    this.layers = () => {};
+    this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(canvas);
+    if (interactive) this.bind();
+    else if (onClick) canvas.addEventListener("click", e => { const r = canvas.getBoundingClientRect(); onClick(this.ix(e.clientX - r.left), this.iy(e.clientY - r.top)); });
+  }
+  resize() {
+    const W = this.c.clientWidth; if (!W) return;
+    const H = Math.min(W, this.maxH);
+    this.dpr = window.devicePixelRatio || 1; this.W = W; this.H = H;
+    this.c.style.height = H + "px"; this.c.width = Math.round(W * this.dpr); this.c.height = Math.round(H * this.dpr);
+    this.render();
+  }
+  get ppu() { return this.H / this.span; }
+  get xmin() { return this.ix(0); } get xmax() { return this.ix(this.W); } get ymin() { return this.iy(this.H); } get ymax() { return this.iy(0); }
+  X(x) { return this.W / 2 + (x - this.cx) * this.ppu; } Y(y) { return this.H / 2 - (y - this.cy) * this.ppu; }
+  ix(px) { return this.cx + (px - this.W / 2) / this.ppu; } iy(py) { return this.cy - (py - this.H / 2) / this.ppu; }
+  zoom(f) { this.span = Math.min(400, Math.max(2, this.span * f)); this.render(); }
+  reset() { Object.assign(this, this.home); this.render(); }
+  bind() {
+    const c = this.c; let down = null, moved = 0;
+    c.addEventListener("pointerdown", e => { down = { x: e.clientX, y: e.clientY }; moved = 0; c.setPointerCapture(e.pointerId); });
+    c.addEventListener("pointermove", e => {
+      const r = c.getBoundingClientRect();
+      if (down) {
+        const dx = e.clientX - down.x, dy = e.clientY - down.y; moved += Math.abs(dx) + Math.abs(dy);
+        if (moved > 4) { this.cx -= dx / this.ppu; this.cy += dy / this.ppu; down = { x: e.clientX, y: e.clientY }; this.render(); }
+      }
+      if (this.onHover) this.onHover(this.ix(e.clientX - r.left), this.iy(e.clientY - r.top));
+    });
+    c.addEventListener("pointerup", e => { const r = c.getBoundingClientRect(); if (down && moved <= 4 && this.onClick) this.onClick(this.ix(e.clientX - r.left), this.iy(e.clientY - r.top)); down = null; });
+    c.addEventListener("pointerleave", () => { if (this.onHover) this.onHover(null, null); });
+  }
+  render() {
+    if (!this.W) return;
+    const ctx = this.ctx; ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.clearRect(0, 0, this.W, this.H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, this.W, this.H);
+    this.grid(); this.layers(this);
+  }
+  grid() {
+    const ctx = this.ctx, p = this.ppu, cands = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100];
+    const step = cands.find(s => s * p >= 16) || 100;
+    const lab = cands.find(s => s >= step && s * p >= 32 && Math.abs(s / step - Math.round(s / step)) < 1e-9) || step * 2;
+    ctx.lineWidth = 1;
+    for (let x = Math.ceil(this.xmin / step) * step; x <= this.xmax; x += step) { const X = Math.round(this.X(x)) + 0.5; ctx.strokeStyle = Math.abs(x / lab - Math.round(x / lab)) < 1e-6 ? "#dbe3ee" : "#eef2f7"; ctx.beginPath(); ctx.moveTo(X, 0); ctx.lineTo(X, this.H); ctx.stroke(); }
+    for (let y = Math.ceil(this.ymin / step) * step; y <= this.ymax; y += step) { const Y = Math.round(this.Y(y)) + 0.5; ctx.strokeStyle = Math.abs(y / lab - Math.round(y / lab)) < 1e-6 ? "#dbe3ee" : "#eef2f7"; ctx.beginPath(); ctx.moveTo(0, Y); ctx.lineTo(this.W, Y); ctx.stroke(); }
+    const ox = Math.min(Math.max(this.X(0), 0), this.W), oy = Math.min(Math.max(this.Y(0), 0), this.H);
+    ctx.strokeStyle = "#1f2a37"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(this.W, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, this.H); ctx.stroke();
+    ctx.fillStyle = "#5b6b7c"; ctx.font = "12px system-ui, sans-serif";
+    const nf = v => (Math.abs(v) < 1e-9 ? "0" : (+v.toFixed(2)).toString().replace("-", MINUS));
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (let x = Math.ceil(this.xmin / lab) * lab; x <= this.xmax; x += lab) { if (Math.abs(x) < 1e-9) continue; const X = this.X(x); const ty = oy + 4 > this.H - 16 ? oy - 18 : oy + 4; ctx.fillText(nf(x), X, ty); }
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let y = Math.ceil(this.ymin / lab) * lab; y <= this.ymax; y += lab) { if (Math.abs(y) < 1e-9) continue; const Y = this.Y(y); const tx = ox - 5 < 20 ? ox + 26 : ox - 5; ctx.fillText(nf(y), tx, Y); }
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.font = "italic 14px Georgia, serif"; ctx.fillStyle = "#1f2a37";
+    ctx.fillText("x", this.W - 14, oy - 6); ctx.fillText("y", ox + 6, 14);
+  }
+  curve(f, { color = COL.fn, width = 3, colorFn = null, from = -Infinity, to = Infinity, dash = null } = {}) {
+    const ctx = this.ctx; ctx.lineWidth = width; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.setLineDash(dash || []);
+    const x0 = Math.max(this.xmin, from), x1 = Math.min(this.xmax, to);
+    if (x0 >= x1) { ctx.setLineDash([]); return; }
+    const n = Math.ceil((x1 - x0) * this.ppu * 2) + 1; let prev = null, prevCol = null;
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const x = x0 + (x1 - x0) * i / n; let y; try { y = f(x); } catch (e) { y = NaN; }
+      if (!Number.isFinite(y)) { prev = null; continue; }
+      const P = [this.X(x), this.Y(y)];
+      const col = colorFn ? colorFn(x) : color;
+      if (prev && (Math.abs(P[1] - prev[1]) > this.H * 1.5 && (P[1] - this.H / 2) * (prev[1] - this.H / 2) < 0)) prev = null;
+      if (prev && Math.max(Math.abs(P[1]), Math.abs(prev[1])) > 1e5) prev = null;
+      if (prev) {
+        if (col !== prevCol) { ctx.strokeStyle = prevCol; ctx.stroke(); ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); }
+        ctx.lineTo(P[0], P[1]);
+      } else { ctx.strokeStyle = prevCol || col; ctx.stroke(); ctx.beginPath(); ctx.moveTo(P[0], P[1]); }
+      prev = P; prevCol = col;
+    }
+    ctx.strokeStyle = prevCol || color; ctx.stroke(); ctx.setLineDash([]);
+  }
+  seg(x1, y1, x2, y2, { color = COL.fn, width = 3, dash = null } = {}) {
+    const ctx = this.ctx; ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = "round"; ctx.setLineDash(dash || []);
+    ctx.beginPath(); ctx.moveTo(this.X(x1), this.Y(y1)); ctx.lineTo(this.X(x2), this.Y(y2)); ctx.stroke(); ctx.setLineDash([]);
+  }
+  line(L, opts = {}) { // A x + B y + C = 0
+    if (Math.abs(L.B) > 1e-12) { const y = x => (-L.C - L.A * x) / L.B, a = this.xmin - 1, b = this.xmax + 1; this.seg(a, y(a), b, y(b), opts); }
+    else { const x = -L.C / L.A; this.seg(x, this.ymin - 1, x, this.ymax + 1, opts); }
+  }
+  dot(x, y, { color = COL.ink, open = false, r = 5.5, label = null, dx = 8, dy = -8, align = "left" } = {}) {
+    const ctx = this.ctx, X = this.X(x), Y = this.Y(y);
+    ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2);
+    if (open) { ctx.fillStyle = "#fff"; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = color; ctx.stroke(); }
+    else { ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+    if (label) this.label(X + dx, Y + dy, label, color, align);
+  }
+  label(X, Y, s, color = COL.ink, align = "left") {
+    const ctx = this.ctx; ctx.font = "bold 13px system-ui, sans-serif"; ctx.textAlign = align; ctx.textBaseline = "alphabetic";
+    ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.strokeText(s, X, Y); ctx.fillStyle = color; ctx.fillText(s, X, Y); ctx.textAlign = "left";
+  }
+  shade(test, color, alpha = 0.18, cell = 3) {
+    const ctx = this.ctx; ctx.fillStyle = color; ctx.globalAlpha = alpha;
+    for (let py = 0; py < this.H; py += cell) {
+      const y = this.iy(py + cell / 2); let runStart = -1;
+      for (let px = 0; px < this.W; px += cell) {
+        const inside = test(this.ix(px + cell / 2), y);
+        if (inside && runStart < 0) runStart = px;
+        if (!inside && runStart >= 0) { ctx.fillRect(runStart, py, px - runStart, cell); runStart = -1; }
+      }
+      if (runStart >= 0) ctx.fillRect(runStart, py, this.W - runStart, cell);
+    }
+    ctx.globalAlpha = 1;
+  }
+  band(S, axis, color) { // thick band on an axis showing a set
+    const ctx = this.ctx; ctx.strokeStyle = color; ctx.lineWidth = 8; ctx.globalAlpha = .55; ctx.lineCap = "butt";
+    for (const I of normSet(S)) {
+      if (axis === "x") { const a = Math.max(I.a, this.xmin - 1), b = Math.min(I.b, this.xmax + 1); ctx.beginPath(); ctx.moveTo(this.X(a), this.Y(0)); ctx.lineTo(this.X(b), this.Y(0)); ctx.stroke(); }
+      else { const a = Math.max(I.a, this.ymin - 1), b = Math.min(I.b, this.ymax + 1); ctx.beginPath(); ctx.moveTo(this.X(0), this.Y(a)); ctx.lineTo(this.X(0), this.Y(b)); ctx.stroke(); }
+    }
+    ctx.globalAlpha = 1;
+    for (const I of normSet(S)) for (const [v, c] of [[I.a, I.ac], [I.b, I.bc]]) if (Number.isFinite(v)) { axis === "x" ? this.dot(v, 0, { color, open: !c, r: 5 }) : this.dot(0, v, { color, open: !c, r: 5 }); }
+  }
+}
+const incDecColor = (f, on) => (on ? x => { const h = 1e-4, d = f(x + h) - f(x - h); return !Number.isFinite(d) || Math.abs(d) < 1e-9 ? COL.flat : d > 0 ? COL.inc : COL.dec; } : null);
+
+/* ---------- number line ---------- */
+function drawNumberLine(canvas, S, { color = COL.fn } = {}) {
+  const W = canvas.clientWidth || 500, H = 90, dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr; canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  S = normSet(S || []);
+  const ends = S.flatMap(I => [I.a, I.b]).filter(Number.isFinite);
+  let lo = ends.length ? Math.floor(Math.min(...ends)) - 3 : -6, hi = ends.length ? Math.ceil(Math.max(...ends)) + 3 : 6;
+  if (hi - lo < 10) { const mid = Math.round((hi + lo) / 2); lo = mid - 5; hi = mid + 5; }
+  const step = hi - lo > 26 ? 5 : hi - lo > 14 ? 2 : 1;
+  const L = 24, R = W - 24, Y = 40, X = v => L + (v - lo) / (hi - lo) * (R - L);
+  ctx.strokeStyle = "#1f2a37"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(L - 12, Y); ctx.lineTo(R + 12, Y); ctx.stroke();
+  [[L - 12, -1], [R + 12, 1]].forEach(([x, d]) => { ctx.beginPath(); ctx.moveTo(x, Y); ctx.lineTo(x - d * 8, Y - 5); ctx.lineTo(x - d * 8, Y + 5); ctx.closePath(); ctx.fillStyle = "#1f2a37"; ctx.fill(); });
+  ctx.font = "12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.fillStyle = "#5b6b7c";
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) { ctx.beginPath(); ctx.moveTo(X(v), Y - 5); ctx.lineTo(X(v), Y + 5); ctx.stroke(); ctx.fillText(String(v).replace("-", MINUS), X(v), Y + 20); }
+  if (!S.length) { ctx.fillStyle = COL.dec; ctx.font = "bold 14px system-ui, sans-serif"; ctx.fillText("No solution: nothing is shaded", W / 2, 14); return; }
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 6; ctx.lineCap = "butt";
+  for (const I of S) {
+    const a = Number.isFinite(I.a) ? X(I.a) : L - 12, b = Number.isFinite(I.b) ? X(I.b) : R + 12;
+    ctx.beginPath(); ctx.moveTo(a, Y); ctx.lineTo(b, Y); ctx.stroke();
+    if (!Number.isFinite(I.a)) { ctx.beginPath(); ctx.moveTo(a - 4, Y); ctx.lineTo(a + 10, Y - 8); ctx.lineTo(a + 10, Y + 8); ctx.closePath(); ctx.fill(); }
+    if (!Number.isFinite(I.b)) { ctx.beginPath(); ctx.moveTo(b + 4, Y); ctx.lineTo(b - 10, Y - 8); ctx.lineTo(b - 10, Y + 8); ctx.closePath(); ctx.fill(); }
+    for (const [v, c] of [[I.a, I.ac], [I.b, I.bc]]) if (Number.isFinite(v)) {
+      ctx.beginPath(); ctx.arc(X(v), Y, 7, 0, Math.PI * 2); ctx.fillStyle = c ? color : "#fff"; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = color; ctx.stroke(); ctx.lineWidth = 6; ctx.fillStyle = color;
+      ctx.font = "bold 13px system-ui, sans-serif"; ctx.fillText(fmt(v), X(v), Y - 14);
+    }
+  }
+}
+
+/* =====================================================================
+   Inequality solving (one variable, with and / or)
+   ===================================================================== */
+function solveChain(p) {
+  const t = normOps(p).split(/(≤|≥|<|>)/).map(s => s.trim());
+  if (t.length < 3) return { error: "Use an inequality sign: <, >, ≤ or ≥." };
+  if (t.length > 5) return { error: "Too many inequality signs in one part." };
+  const fx = s => { if (!s) throw new Error("Something is missing next to an inequality sign."); const c = compile(s); if (c.usesY) throw new Error("Use only x in a one-variable inequality."); return x => c.f(x, 0); };
+  try {
+    const shown = t.map((s, i) => (i % 2 ? s : s.replace(/-/g, MINUS))).join(" ");
+    if (t.length === 3) {
+      const L = fx(t[0]), R = fx(t[2]), op = t[1];
+      const lc = linCoef(x => L(x) - R(x));
+      if (!lc) return { error: "This tool solves linear inequalities (no x², no x in a denominator)." };
+      const { p: a, q } = lc, steps = [`Start: <span class="eq">${esc(shown)}</span>`];
+      if (Math.abs(a) < 1e-12) {
+        const truth = { "<": q < 0, "≤": q <= 0, ">": q > 0, "≥": q >= 0 }[op];
+        steps.push(`The x-terms cancel, leaving <span class="eq">${fmt(q)} ${op} 0</span>, which is <b>${truth ? "always true" : "never true"}</b>.`);
+        return { set: truth ? ALL() : [], steps };
+      }
+      steps.push(`Collect x-terms on the left and numbers on the right: <span class="eq">${poly([[a, "x"]])} ${op} ${fmt(-q)}</span>`);
+      const r = -q / a, op2 = a < 0 ? FLIP[op] : op;
+      if (Math.abs(a - 1) > 1e-12) steps.push(`Divide both sides by ${fmt(a)}${a < 0 ? ` — <b class="bad">dividing by a negative flips the sign: ${op} becomes ${op2}</b>` : ""}: <span class="eq">x ${op2} ${fmt(r)}</span>`);
+      return { set: rayFor(op2, r), steps };
+    }
+    const A = fx(t[0]), E = fx(t[2]), B = fx(t[4]), op1 = t[1], op2 = t[3];
+    const la = linCoef(A), le = linCoef(E), lb = linCoef(B);
+    if (!la || !le || !lb) return { error: "This tool solves linear inequalities." };
+    if (Math.abs(la.p) > 1e-12 || Math.abs(lb.p) > 1e-12) {
+      const s1 = solveChain(`${t[0]} ${op1} ${t[2]}`), s2 = solveChain(`${t[2]} ${op2} ${t[4]}`);
+      if (s1.error) return s1; if (s2.error) return s2;
+      return { set: interSet(s1.set, s2.set), steps: [...s1.steps, ...s2.steps, `Both must be true (“and”): <span class="eq">${setToIneq(interSet(s1.set, s2.set))}</span>`] };
+    }
+    const a = la.q, b = lb.q, { p, q } = le;
+    if (Math.abs(p) < 1e-12) return { error: "The middle part needs an x." };
+    const steps = [`Start: <span class="eq">${esc(shown)}</span>`, `This means <b>both</b> parts must be true. Work on all three parts at once.`];
+    if (Math.abs(q) > 1e-12) steps.push(`${q > 0 ? "Subtract" : "Add"} ${fmt(Math.abs(q))} ${q > 0 ? "from" : "to"} all three parts: <span class="eq">${fmt(a - q)} ${op1} ${poly([[p, "x"]])} ${op2} ${fmt(b - q)}</span>`);
+    let lo = (a - q) / p, hi = (b - q) / p, o1 = op1, o2 = op2;
+    if (p < 0) { [lo, hi] = [hi, lo]; [o1, o2] = [op2, op1]; } // −3 < −2x ≤ 4  →  −2 ≤ x < 1.5
+    if (Math.abs(p - 1) > 1e-12) steps.push(`Divide all three parts by ${fmt(p)}${p < 0 ? ` — <b class="bad">negative, so both signs flip</b> and we rewrite it from small to large` : ""}: <span class="eq">${fmt(lo)} ${o1} x ${o2} ${fmt(hi)}</span>`);
+    const set = interSet(rayFor(FLIP[o1], lo), rayFor(o2, hi));
+    if (!set.length) steps.push("No number is in both parts, so there is <b>no solution</b>.");
+    return { set, steps };
+  } catch (e) { return { error: e.message }; }
+}
+function solve1(str) {
+  const s = normOps(str).trim();
+  if (!s) return { error: "Type an inequality first." };
+  const orParts = s.split(/\bor\b/i); let total = []; const steps = [];
+  for (const orPart of orParts) {
+    const andParts = orPart.split(/\band\b/i); let cur = ALL();
+    for (const piece of andParts) {
+      const r = solveChain(piece.trim()); if (r.error) return r;
+      if (andParts.length > 1 || orParts.length > 1) steps.push(`<b>Part: ${esc(piece.trim().replace(/-/g, MINUS))}</b>`);
+      steps.push(...r.steps); cur = interSet(cur, r.set);
+    }
+    if (andParts.length > 1) steps.push(`<b>“and”</b> keeps only the numbers that make <b>both</b> parts true: <span class="eq">${setToIneq(cur)}</span>`);
+    total = unionSet(total, cur);
+  }
+  if (orParts.length > 1) steps.push(`<b>“or”</b> keeps the numbers that make <b>either</b> part true: <span class="eq">${setToIneq(total)}</span>`);
+  return { set: total, steps };
+}
+function inSet(S, x) { return S.some(I => (x > I.a || (I.ac && Math.abs(x - I.a) < 1e-12)) && (x < I.b || (I.bc && Math.abs(x - I.b) < 1e-12))); }
+
+/* ---------- two-variable inequalities ---------- */
+function parseIneq2(str) {
+  const s = normOps(str);
+  const m = s.split(/(≤|≥|<|>)/);
+  if (m.length !== 3) return { error: "Use exactly one inequality sign, like y > 2x − 1." };
+  const [Ls, op, Rs] = m.map(t => t.trim());
+  let L, R; try { L = compile(Ls); R = compile(Rs); } catch (e) { return { error: e.message }; }
+  const G = (x, y) => L.f(x, y) - R.f(x, y);
+  const test = { "<": (x, y) => G(x, y) < -1e-9, "≤": (x, y) => G(x, y) <= 1e-9, ">": (x, y) => G(x, y) > 1e-9, "≥": (x, y) => G(x, y) >= -1e-9 }[op];
+  const strict = op === "<" || op === ">";
+  const C = G(0, 0), A = G(1, 0) - C, B = G(0, 1) - C;
+  const linear = [A, B, C].every(Number.isFinite) && [[2, 3], [-1.5, 4], [3.7, -2.2]].every(([x, y]) => Math.abs(G(x, y) - (A * x + B * y + C)) < 1e-7 * (1 + Math.abs(G(x, y))));
+  let boundary, side, slopeForm;
+  if (linear) {
+    if (Math.abs(A) < 1e-12 && Math.abs(B) < 1e-12) return { error: "The inequality needs x or y in it." };
+    boundary = { type: "line", A, B, C };
+    if (Math.abs(B) > 1e-12) { const o = B > 0 ? FLIP[FLIP[op]] : FLIP[op]; const mm = -A / B, bb = -C / B; slopeForm = `y ${o} ${poly([[mm, "x"], [bb, ""]])}`; side = o === ">" || o === "≥" ? "above" : "below"; }
+    else { const o = A > 0 ? op : FLIP[op]; slopeForm = `x ${o} ${fmt(-C / A)}`; side = o === ">" || o === "≥" ? "right" : "left"; }
+  } else {
+    if (Ls === "y" && !R.usesY) { boundary = { type: "fn", f: x => R.f(x, 0) }; side = op === ">" || op === "≥" ? "above" : "below"; slopeForm = `y ${op} ${Rs.replace(/-/g, MINUS)}`; }
+    else if (Rs === "y" && !L.usesY) { boundary = { type: "fn", f: x => L.f(x, 0) }; const o = FLIP[op]; side = o === ">" || o === "≥" ? "above" : "below"; slopeForm = `y ${o} ${Ls.replace(/-/g, MINUS)}`; }
+    else return { error: "For a curve, write it as y < … or y > …" };
+  }
+  return { test, strict, op, boundary, side, slopeForm, L, R, Ls, Rs, text: str.trim() };
+}
+function drawIneq2(p, I, color, { shade = true, alpha = 0.16 } = {}) {
+  if (shade) p.shade(I.test, color, alpha);
+  const opts = { color, width: 2.6, dash: I.strict ? [9, 7] : null };
+  if (I.boundary.type === "line") p.line(I.boundary, opts); else p.curve(I.boundary.f, opts);
+}
+
+/* =====================================================================
+   EXPLORE tab
+   ===================================================================== */
+const EX = { fam: "linear", params: {}, custom: "x^3 - 3x", cmp: "" };
+for (const k in FAM) EX.params[k] = Object.fromEntries(FAM[k].params.map(([n, , d]) => [n, d]));
+const SAMPLES = [
+  ["y = 2x − 3", "linear", { m: 2, b: -3 }], ["y = −½x + 4", "linear", { m: -0.5, b: 4 }], ["y = 3", "linear", { m: 0, b: 3 }],
+  ["y = x² − 4", "quadV", { a: 1, h: 0, k: -4 }], ["y = −(x − 1)² + 9", "quadV", { a: -1, h: 1, k: 9 }], ["y = x² − 6x + 5", "quadS", { a: 1, b: -6, c: 5 }],
+  ["y = |x + 2| − 3", "abs", { a: 1, h: -2, k: -3 }], ["y = √(x + 4) − 2", "sqrt", { a: 1, h: -4, k: -2 }], ["y = 2ˣ − 1", "exp", { a: 1, b: 2, k: -1 }],
+  ["y = 3(½)ˣ", "exp", { a: 3, b: 0.5, k: 0 }], ["y = x³ − 3x", "custom", "x^3 - 3x"], ["y = 1/(x − 2) + 1", "custom", "1/(x - 2) + 1"],
+];
+let exPlot, EXF = null, CMPF = null;
+function exCurrent() {
+  if (EX.fam !== "custom") return mk(EX.fam, EX.params[EX.fam]);
+  const f = compileFx(EX.custom);
+  return { kind: "custom", f, eq: "y = " + EX.custom.replace(/^\s*(y|f\s*\(\s*x\s*\))\s*=/i, "").trim().replace(/-/g, MINUS).replace(/\*/g, "·"), an: analyzeNumeric(f) };
+}
+function renderFamUI() {
+  $("famChips").innerHTML = Object.entries(FAM).map(([k, F]) => `<button class="chip${EX.fam === k ? " on" : ""}" data-f="${k}">${F.name}</button>`).join("") +
+    `<button class="chip${EX.fam === "custom" ? " on" : ""}" data-f="custom">✏️ My own function</button>`;
+  document.querySelectorAll("#famChips .chip").forEach(c => c.onclick = () => { EX.fam = c.dataset.f; renderFamUI(); renderExplore(); });
+  $("customBox").hidden = EX.fam !== "custom";
+  if (EX.fam === "custom") { $("famParams").innerHTML = ""; $("customIn").value = EX.custom; return; }
+  const F = FAM[EX.fam], P = EX.params[EX.fam];
+  $("famParams").innerHTML = `<div class="muted">Form: <span class="eq">${F.form}</span>. Move the sliders.</div>` + F.params.map(([n, vals]) => {
+    const idx = Math.max(0, vals.findIndex(v => Math.abs(v - P[n]) < 1e-9));
+    return `<div class="slider"><b>${n}</b><input type="range" min="0" max="${vals.length - 1}" value="${idx}" data-n="${n}" aria-label="${n}"><output>${fmt(P[n])}</output></div>`;
+  }).join("");
+  document.querySelectorAll("#famParams input[type=range]").forEach(r => r.oninput = () => {
+    const vals = F.params.find(p => p[0] === r.dataset.n)[1]; P[r.dataset.n] = vals[+r.value]; r.nextElementSibling.textContent = fmt(P[r.dataset.n]); renderExplore();
+  });
+}
+function featRows(F) {
+  const an = F.an, k = F.kind, rows = [];
+  const pts = xs => (xs === "all" ? "every point (it is the x-axis)" : xs.length ? xs.map(x => pt(x, 0)).join(", ") : "none");
+  rows.push(["x-intercept(s)", pts(an.xints), an.xints === "all" || !an.xints.length ? (k === "quadV" || k === "quadS" || k === "abs") && an.xints.length === 0 ? "The vertex is on the other side of the x-axis from where the graph opens, so it never crosses." : "Set y = 0 and solve for x." : "Where the graph crosses the x-axis (y = 0)."]);
+  rows.push(["y-intercept", an.yint == null ? "none" : pt(0, an.yint), an.yint == null ? "x = 0 is not in the domain." : "Where the graph crosses the y-axis: put x = 0."]);
+  rows.push(["Slope", an.slope === "varies" ? "not constant" : fmt(an.slope), an.slope === "varies" ? "Only straight lines have one slope. This graph gets steeper or flatter." : k === "linear" ? "m in y = mx + b: rise ÷ run." : "It is a straight line."]);
+  rows.push(["Domain", setBoth(an.domain, "x"), k === "sqrt" ? `Inside √ can't be negative: x ${F.p.h >= 0 ? "−" : "+"} ${fmt(Math.abs(F.p.h))} ≥ 0.` : an.approx ? "All x-values you can put in." : "You can put in any x-value."]);
+  rows.push(["Range", setBoth(an.range, "y"), k === "exp" ? `Gets close to y = ${fmt(an.asym)} but never reaches it.` : an.vertex ? `The vertex ${pt(an.vertex.x, an.vertex.y)} is the ${F.p.a > 0 ? "lowest" : "highest"} point.` : k === "sqrt" ? `Starts at ${pt(F.p.h, F.p.k)} and goes ${F.p.a > 0 ? "up" : "down"}.` : "All y-values the graph reaches."]);
+  rows.push(["Maximum", an.max ? `${fmt(an.max.y)} at x = ${fmt(an.max.x)}` : "none", an.max ? "Highest point of the whole graph." : "The graph keeps going up forever (or never reaches a top value)."]);
+  rows.push(["Minimum", an.min ? `${fmt(an.min.y)} at x = ${fmt(an.min.x)}` : "none", an.min ? "Lowest point of the whole graph." : "The graph keeps going down forever (or never reaches a bottom value)."]);
+  rows.push(["Increasing", an.inc.length ? setToInterval(an.inc) : "never", "x-values where the graph goes up (reading left to right)."]);
+  rows.push(["Decreasing", an.dec.length ? setToInterval(an.dec) : "never", "x-values where the graph goes down."]);
+  if (an.constant) rows.push(["Constant", setToInterval(an.constant), "A horizontal line: neither up nor down."]);
+  if (an.asym != null) rows.push(["Asymptote", `y = ${fmt(an.asym)}`, "A line the graph gets closer and closer to."]);
+  if (an.turns && an.turns.length) rows.push(["Turning points", an.turns.slice(0, 6).map(t => `${t.kind === "max" ? "high" : "low"} point ${pt(t.x, t.y)}`).join(", "), "Relative maximum and minimum points."]);
+  return rows;
+}
+function renderExplore() {
+  $("customErr").textContent = ""; $("cmpErr").textContent = "";
+  try { EXF = exCurrent(); } catch (e) { $("customErr").textContent = e.message; return; }
+  CMPF = null;
+  if (EX.cmp.trim()) { try { CMPF = compileFx(EX.cmp); } catch (e) { $("cmpErr").textContent = e.message; } }
+  $("exEq").textContent = EXF.eq;
+  $("featTable").innerHTML = featRows(EXF).map(([a, b, c]) => `<tr><td>${a}</td><td class="ans"><div class="v">${b}</div><div class="why">${c}</div></td></tr>`).join("");
+  $("featTable").classList.toggle("quiz", $("quizMe").checked);
+  document.querySelectorAll("#featTable td.ans").forEach(td => td.onclick = () => td.classList.add("shown"));
+  $("featNote").textContent = EXF.an.approx ? "For your own functions, these are estimated from the graph between x = −50 and 50. Decimals are rounded." : "Decimals are rounded to 2 places.";
+  $("exLegend").innerHTML = `<span><i style="background:${COL.fn}"></i>${esc(EXF.eq)}</span>` + (CMPF ? `<span><i style="background:${COL.cmp}"></i>y = ${esc(EX.cmp.replace(/^\s*y\s*=/, "").trim())}</span>` : "") +
+    `<span><i style="background:${COL.orange};height:10px;width:10px;border-radius:50%"></i>x-intercepts</span><span><i style="background:${COL.purple};height:10px;width:10px;border-radius:50%"></i>y-intercept</span>`;
+  exPlot.render();
+}
+function drawExplore(p) {
+  if (!EXF) return;
+  const F = EXF, an = F.an, color = $("exColor").checked;
+  if (CMPF) p.curve(CMPF, { color: COL.cmp, width: 2.5 });
+  if (an.asym != null) p.seg(p.xmin - 1, an.asym, p.xmax + 1, an.asym, { color: "#8a94a6", width: 1.5, dash: [6, 6] });
+  p.curve(F.f, { from: F.from ?? -Infinity, colorFn: incDecColor(F.f, color) });
+  if (F.kind === "sqrt") p.dot(F.p.h, F.p.k, { color: COL.ink, label: pt(F.p.h, F.p.k) });
+  if (an.xints !== "all") an.xints.slice(0, 8).forEach(x => p.dot(x, 0, { color: COL.orange, label: pt(x, 0), dy: 18 }));
+  if (an.yint != null) p.dot(0, an.yint, { color: COL.purple, label: pt(0, an.yint) });
+  if (an.vertex) p.dot(an.vertex.x, an.vertex.y, { color: COL.ink, label: `vertex ${pt(an.vertex.x, an.vertex.y)}`, dy: an.max ? -10 : 20 });
+  if (an.turns) an.turns.slice(0, 6).forEach(t => p.dot(t.x, t.y, { color: COL.ink, label: pt(t.x, t.y), dy: t.kind === "max" ? -10 : 20 }));
+}
+
+/* =====================================================================
+   LINES tab
+   ===================================================================== */
+const LN = { mode: "point" };
+let lnPlot;
+const LN_SAMPLES = ["y = 2x + 1", "y = −½x + 3", "3x + 2y = 6", "y − 2 = 4(x + 1)", "y = 4", "x = −2"];
+const CMP_SAMPLES = [["y = 3x − 2", "x + 3y = 9"], ["y = 2x + 1", "4x − 2y = 6"], ["y = ⅔x", "y = −(3/2)x + 4"], ["y = x + 1", "y = 2x − 3"], ["y = 5", "x = −1"]];
+const fixFrac = s => s.replace(/½/g, "(1/2)").replace(/⅔/g, "(2/3)").replace(/⅓/g, "(1/3)").replace(/¼/g, "(1/4)").replace(/¾/g, "(3/4)");
+function pointSlopeStr(m, px, py) {
+  const ys = Math.abs(py) < 1e-12 ? "y" : `y ${py > 0 ? "−" : "+"} ${fmt(Math.abs(py))}`;
+  const xs = Math.abs(px) < 1e-12 ? "x" : `(x ${px > 0 ? "−" : "+"} ${fmt(Math.abs(px))})`;
+  return `${ys} = ${Math.abs(m) < 1e-12 ? "0" : coefPrefix(m)}${Math.abs(m) < 1e-12 ? "" : xs}`;
+}
+function slopeTxt(I) { return I.vertical ? "undefined (vertical)" : fmt(I.m); }
+function classify(L1, L2) {
+  if (sameLine(L1, L2)) return "same";
+  if (Math.abs(L1.A * L2.B - L2.A * L1.B) < 1e-9) return "parallel";
+  if (Math.abs(L1.A * L2.A + L1.B * L2.B) < 1e-9) return "perpendicular";
+  return "neither";
+}
+function intersect(L1, L2) { const d = L1.A * L2.B - L2.A * L1.B; if (Math.abs(d) < 1e-12) return null; return { x: (L1.B * L2.C - L2.B * L1.C) / d, y: (L2.A * L1.C - L1.A * L2.C) / d }; }
+function rightAngle(p, P, L1, L2, color) {
+  const u = v => { const k = Math.hypot(v[0], v[1]); return [v[0] / k, v[1] / k]; };
+  const d1 = u([L1.B, -L1.A]), d2 = u([L2.B, -L2.A]), s = 13 / p.ppu;
+  const a = [P.x + d1[0] * s, P.y + d1[1] * s], c = [P.x + d2[0] * s, P.y + d2[1] * s], b = [a[0] + d2[0] * s, a[1] + d2[1] * s];
+  const ctx = p.ctx; ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.X(a[0]), p.Y(a[1])); ctx.lineTo(p.X(b[0]), p.Y(b[1])); ctx.lineTo(p.X(c[0]), p.Y(c[1])); ctx.stroke();
+}
+let LNSTATE = null;
+function renderLines() {
+  $("lnErr").textContent = ""; LNSTATE = null;
+  if (LN.mode === "point") {
+    const L = parseLine(fixFrac($("lnIn").value));
+    if (L.error) { $("lnErr").textContent = L.error; $("lnInfo").innerHTML = ""; lnPlot.render(); return; }
+    const px = +$("pX").value || 0, py = +$("pY").value || 0;
+    const Par = { A: L.A, B: L.B, C: -(L.A * px + L.B * py) };
+    const Perp = { A: L.B, B: -L.A, C: -(L.B * px - L.A * py) };
+    const gi = lineInfo(L), pa = lineInfo(Par), pe = lineInfo(Perp);
+    LNSTATE = { L, Par, Perp, px, py };
+    const prodTxt = !gi.vertical && !pe.vertical && Math.abs(gi.m) > 1e-12 ? `<div class="result">Check: ${fmt(gi.m)} × ${fmt(pe.m)} = <b>−1</b> ✓ (perpendicular slopes multiply to −1)</div>` : `<div class="result">A horizontal line (slope 0) and a vertical line (undefined slope) are always perpendicular.</div>`;
+    $("lnInfo").innerHTML = `<table class="simple">
+      <tr><th></th><th>Slope</th><th>Equation</th></tr>
+      <tr><td><b style="color:${COL.fn}">Given line</b></td><td>${slopeTxt(gi)}</td><td><span class="eq">${gi.eq}</span></td></tr>
+      ${$("showPar").checked ? `<tr><td><b style="color:${COL.inc}">Parallel through P</b></td><td>${slopeTxt(pa)} <div class="muted">same slope</div></td><td><span class="eq">${pa.eq}</span>${pa.vertical ? "" : `<div class="muted">point-slope: <span class="eq">${pointSlopeStr(pa.m, px, py)}</span></div>`}</td></tr>` : ""}
+      ${$("showPerp").checked ? `<tr><td><b style="color:${COL.orange}">Perpendicular through P</b></td><td>${slopeTxt(pe)} <div class="muted">${gi.vertical ? "a vertical line's perpendicular is horizontal" : Math.abs(gi.m) < 1e-12 ? "a horizontal line's perpendicular is vertical" : "negative reciprocal: flip it and change the sign"}</div></td><td><span class="eq">${pe.eq}</span>${pe.vertical ? "" : `<div class="muted">point-slope: <span class="eq">${pointSlopeStr(pe.m, px, py)}</span></div>`}</td></tr>` : ""}
+    </table>${$("showPerp").checked ? prodTxt : ""}`;
+    $("lnLegend").innerHTML = `<span><i style="background:${COL.fn}"></i>given</span>${$("showPar").checked ? `<span><i style="background:${COL.inc}"></i>parallel</span>` : ""}${$("showPerp").checked ? `<span><i style="background:${COL.orange}"></i>perpendicular</span>` : ""}<span>● P ${pt(px, py)}</span>`;
+  } else {
+    const A = parseLine(fixFrac($("lnA").value)), B = parseLine(fixFrac($("lnB").value));
+    if (A.error || B.error) { $("lnErr").textContent = (A.error ? "Line A: " + A.error : "") + (B.error ? " Line B: " + B.error : ""); $("lnInfo").innerHTML = ""; lnPlot.render(); return; }
+    const ia = lineInfo(A), ib = lineInfo(B), c = classify(A, B), X = intersect(A, B);
+    LNSTATE = { A, B, c, X };
+    const msg = {
+      same: "They are the <b>same line</b> (same slope and same y-intercept), so they touch everywhere.",
+      parallel: `<b>Parallel</b>: the slopes are equal${ia.vertical ? " (both vertical)" : ` (${fmt(ia.m)} = ${fmt(ib.m)})`} and the lines never meet.`,
+      perpendicular: ia.vertical || ib.vertical || Math.abs(ia.m) < 1e-12 || Math.abs(ib.m) < 1e-12 ? "<b>Perpendicular</b>: one is horizontal and the other is vertical." : `<b>Perpendicular</b>: the slopes are negative reciprocals. ${fmt(ia.m)} × ${fmt(ib.m)} = −1.`,
+      neither: `<b>Neither</b>: the slopes are not equal, and ${ia.vertical || ib.vertical ? "they are not a horizontal/vertical pair" : `${fmt(ia.m)} × ${fmt(ib.m)} = ${fmt(ia.m * ib.m)}, not −1`}.`,
+    }[c];
+    $("lnInfo").innerHTML = `<table class="simple"><tr><th></th><th>Slope</th><th>Slope-intercept form</th></tr>
+      <tr><td><b style="color:${COL.fn}">A</b></td><td>${slopeTxt(ia)}</td><td><span class="eq">${ia.eq}</span></td></tr>
+      <tr><td><b style="color:${COL.orange}">B</b></td><td>${slopeTxt(ib)}</td><td><span class="eq">${ib.eq}</span></td></tr></table>
+      <div class="result">${msg}${X && c !== "same" ? `<div style="margin-top:6px">They cross at <b>${pt(X.x, X.y)}</b>.</div>` : ""}</div>
+      <p class="muted">To compare slopes, rewrite each line as y = mx + b. Parallel: same m. Perpendicular: m₁ × m₂ = −1.</p>`;
+    $("lnLegend").innerHTML = `<span><i style="background:${COL.fn}"></i>line A</span><span><i style="background:${COL.orange}"></i>line B</span>`;
+  }
+  lnPlot.render();
+}
+function drawLines(p) {
+  const S = LNSTATE; if (!S) return;
+  if (LN.mode === "point") {
+    p.line(S.L, { color: COL.fn });
+    if ($("showPar").checked) p.line(S.Par, { color: COL.inc, width: 2.6, dash: [10, 6] });
+    if ($("showPerp").checked) { p.line(S.Perp, { color: COL.orange, width: 2.6 }); const X = intersect(S.L, S.Perp); if (X) { rightAngle(p, X, S.L, S.Perp, COL.orange); } }
+    p.dot(S.px, S.py, { color: COL.ink, label: "P " + pt(S.px, S.py) });
+  } else {
+    p.line(S.A, { color: COL.fn }); p.line(S.B, { color: COL.orange, width: 2.6 });
+    if (S.X && S.c !== "same") { if (S.c === "perpendicular") rightAngle(p, S.X, S.A, S.B, COL.ink); p.dot(S.X.x, S.X.y, { color: COL.ink, label: pt(S.X.x, S.X.y) }); }
+  }
+}
+
+/* =====================================================================
+   INEQUALITIES tab
+   ===================================================================== */
+const I1_SAMPLES = ["−2x + 5 > 11", "3(x − 2) ≤ 2x + 1", "4 − x ≥ 2x + 10", "−3 < 2x + 1 ≤ 7", "5 ≤ −x + 2 < 9", "x − 2 < −4 or 3x ≥ 9", "2x + 1 > 5 and 3x − 4 < 11", "x + 3 > 1 or x − 1 < 2"];
+const I2_SAMPLES = [["y > 2x − 3"], ["y ≤ −½x + 2"], ["2x + 3y < 6"], ["x ≥ −2"], ["y ≥ x − 2", "y < −2x + 4"], ["y > −x + 1", "y ≤ 2x + 4", "x < 3"], ["y ≥ x² − 4"], ["y < |x| + 1", "y > −1"]];
+let iqPlot, I2 = [], IQPT = null;
+function renderI1() {
+  $("i1Err").textContent = "";
+  const r = solve1(fixFrac($("i1In").value));
+  if (r.error) { $("i1Err").textContent = r.error; $("i1Out").innerHTML = ""; drawNumberLine($("i1NL"), null); return; }
+  $("i1Out").innerHTML = `<ol class="steps">${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+    <div class="result">Solution: <b class="eq">${setToIneq(r.set)}</b><div>Interval notation: <b class="eq">${setToInterval(r.set)}</b></div></div>`;
+  drawNumberLine($("i1NL"), r.set);
+  I1SET = { set: r.set, src: fixFrac($("i1In").value) };
+  testI1();
+}
+let I1SET = null;
+function testI1() {
+  if (!I1SET) return; const x = +$("i1Test").value;
+  const ok = inSet(I1SET.set, x);
+  const sub = normOps(I1SET.src).split(/\b(and|or)\b/i).filter(s => !/^(and|or)$/i.test(s.trim())).map(part => {
+    const t = part.trim().split(/(≤|≥|<|>)/).map(s => s.trim()); const vals = [];
+    for (let i = 0; i < t.length; i += 2) { try { vals.push(fmt(compile(t[i]).f(x, 0))); } catch (e) { return ""; } }
+    return vals.map((v, i) => (i ? ` ${t[2 * i - 1]} ` : "") + v).join("");
+  }).filter(Boolean);
+  $("i1TestOut").innerHTML = `Put x = ${fmt(x)} in: <span class="eq">${sub.join(" ; ")}</span><br><b class="${ok ? "ok" : "bad"}">${ok ? "✓ True, so " + fmt(x) + " is a solution." : "✗ False, so " + fmt(x) + " is not a solution."}</b>`;
+}
+function iqRowsUI(vals) {
+  $("iqRows").innerHTML = [0, 1, 2].map(i => `<div class="ineqrow"><span class="sw" style="background:${COL.ineq[i]}"></span><input type="text" data-i="${i}" value="${esc(vals[i] || "")}" placeholder="${i ? "optional" : "e.g. y > 2x − 3"}" autocomplete="off" spellcheck="false"></div>`).join("") + '<div class="err" id="iqErr"></div>';
+  document.querySelectorAll("#iqRows input").forEach(inp => inp.oninput = renderI2);
+}
+function renderI2() {
+  const errs = []; I2 = [];
+  document.querySelectorAll("#iqRows input").forEach((inp, i) => {
+    if (!inp.value.trim()) return;
+    const r = parseIneq2(fixFrac(inp.value)); if (r.error) errs.push(`#${i + 1}: ${r.error}`); else I2.push({ ...r, color: COL.ineq[i], idx: i });
+  });
+  $("iqErr").textContent = errs.join(" ");
+  $("iqInfo").innerHTML = I2.length ? `<table class="simple">${I2.map(I => `<tr><td><span class="sw" style="display:inline-block;background:${I.color}"></span></td>
+      <td><span class="eq">${esc(I.text.replace(/-/g, MINUS))}</span>${I.slopeForm && I.slopeForm.replace(/\s/g, "") !== I.text.replace(/-/g, MINUS).replace(/\s/g, "") ? `<div class="muted">same as <span class="eq">${I.slopeForm}</span></div>` : ""}</td>
+      <td>${I.strict ? "dashed boundary (not included)" : "solid boundary (included)"}<div class="muted">shade ${I.side === "above" ? "above" : I.side === "below" ? "below" : "to the " + I.side} the boundary</div></td></tr>`).join("")}</table>
+    ${I2.length > 1 ? `<div class="result">The <b style="color:${COL.both}">darkest purple region</b> is the combined solution: points that make <b>every</b> inequality true.</div>` : ""}` : "";
+  $("iqLegend").innerHTML = I2.map(I => `<span><i style="background:${I.color}"></i>${esc(I.text.replace(/-/g, MINUS))}</span>`).join("") + (I2.length > 1 ? `<span><i style="background:${COL.both}"></i>combined solution</span>` : "");
+  testI2(); iqPlot.render();
+}
+function drawI2(p) {
+  if ($("iqEach").checked || I2.length === 1) I2.forEach(I => p.shade(I.test, I.color, I2.length > 1 ? 0.12 : 0.18));
+  if (I2.length > 1 && $("iqBoth").checked) p.shade((x, y) => I2.every(I => I.test(x, y)), COL.both, 0.32);
+  I2.forEach(I => drawIneq2(p, I, I.color, { shade: false }));
+  if (IQPT) p.dot(IQPT.x, IQPT.y, { color: COL.ink, label: pt(IQPT.x, IQPT.y) });
+}
+function testI2() {
+  if (!IQPT || !I2.length) { $("iqTest").innerHTML = I2.length ? '<span class="muted">Tap the graph to test a point.</span>' : ""; return; }
+  const { x, y } = IQPT; let all = true;
+  const lines = I2.map(I => { const l = I.L.f(x, y), r = I.R.f(x, y), ok = I.test(x, y); all = all && ok;
+    return `<div><span class="sw" style="display:inline-block;background:${I.color}"></span> <span class="eq">${fmt(l)} ${I.op} ${fmt(r)}</span> <b class="${ok ? "ok" : "bad"}">${ok ? "✓ true" : "✗ false"}</b></div>`; }).join("");
+  $("iqTest").innerHTML = `<b>Test ${pt(x, y)}:</b> substitute x = ${fmt(x)}, y = ${fmt(y)}${lines}<div class="result">${all ? `✓ ${pt(x, y)} is ${I2.length > 1 ? "in the combined solution" : "a solution"}.` : `✗ ${pt(x, y)} is not ${I2.length > 1 ? "in the combined solution" : "a solution"}.`}</div>`;
+}
+
+/* =====================================================================
+   PRACTICE — question generators
+   ===================================================================== */
+const SKILLS = {
+  xint: { name: "x-intercepts", icon: "✖️" }, yint: { name: "y-intercept", icon: "↕️" }, slope: { name: "Slope", icon: "📐" },
+  domain: { name: "Domain", icon: "↔️" }, range: { name: "Range", icon: "↕️" }, extrema: { name: "Maximum & minimum", icon: "⛰️" },
+  incdec: { name: "Increasing & decreasing", icon: "📈" }, parperp: { name: "Parallel & perpendicular", icon: "∥" },
+  ineq1: { name: "Solving inequalities", icon: "⚖️" }, compound: { name: "Compound inequalities", icon: "🔗" }, ineq2: { name: "Graphing inequalities & systems", icon: "🟪" },
+};
+const E = s => `<span class="eq">${s}</span>`;
+function drawF(p, F, { colors = false } = {}) {
+  if (F.kind === "segment") {
+    const { x1, y1, x2, y2, c1, c2 } = F.p;
+    p.seg(x1, y1, x2, y2, { color: COL.fn });
+    p.dot(x1, y1, { color: COL.fn, open: !c1 }); p.dot(x2, y2, { color: COL.fn, open: !c2 });
+    return;
+  }
+  if (F.an.asym != null) p.seg(p.xmin - 1, F.an.asym, p.xmax + 1, F.an.asym, { color: "#8a94a6", width: 1.5, dash: [6, 6] });
+  p.curve(F.f, { from: F.from ?? -Infinity, colorFn: colors ? incDecColor(F.f, true) : null });
+  if (F.kind === "sqrt") p.dot(F.p.h, F.p.k, { color: COL.fn });
+}
+function mkSegment() {
+  for (;;) {
+    const x1 = rnd(-8, 1), x2 = x1 + rnd(3, 9), y1 = rnd(-7, 7), y2 = rnd(-7, 7);
+    if (x2 > 9 || y1 === y2) continue;
+    const c1 = Math.random() < 0.5, c2 = Math.random() < 0.5, m = (y2 - y1) / (x2 - x1);
+    const loC = y1 < y2 ? c1 : c2, hiC = y1 < y2 ? c2 : c1;
+    return { kind: "segment", p: { x1, y1, x2, y2, c1, c2 }, f: x => y1 + m * (x - x1), eq: "", an: {
+      domain: [iv(x1, c1, x2, c2)], range: [iv(Math.min(y1, y2), loC, Math.max(y1, y2), hiC)], inc: y2 > y1 ? [iv(x1, false, x2, false)] : [], dec: y2 < y1 ? [iv(x1, false, x2, false)] : [] } };
+  }
+}
+function rLinear(hard) {
+  for (let t = 0; t < 300; t++) {
+    let m, r;
+    if (hard) { const [n, d] = pick([[1, 2], [-1, 2], [3, 2], [-3, 2], [2, 3], [-2, 3], [1, 3], [-1, 3], [2, 1], [-3, 1], [4, 1], [-1, 1]]); m = n / d; r = d * rnd(-3, 3); }
+    else { m = nz(-4, 4); r = rnd(-5, 5); }
+    const b = -m * r;
+    if (Math.abs(b) <= 8 && Math.abs(b - Math.round(b)) < 1e-9) return mk("linear", { m, b: Math.round(b) });
+  }
+  return mk("linear", { m: 2, b: -4 });
+}
+function rQuad(hard, roots = true) {
+  for (let t = 0; t < 400; t++) {
+    const a = hard ? pick([1, -1, 2, -2, 0.5, -0.5]) : pick([1, -1]);
+    if (roots) {
+      const r1 = rnd(-7, 5), w = rnd(1, 7), r2 = r1 + w; if (r2 > 7) continue;
+      const h = (r1 + r2) / 2, k = -a * (w / 2) ** 2;
+      if (Math.abs(k) > 9 || (!hard && w % 2)) continue;
+      return mk("quadV", { a, h, k });
+    }
+    const h = rnd(-5, 5), k = a > 0 ? rnd(1, 6) : -rnd(1, 6);
+    return mk("quadV", { a, h, k });
+  }
+  return mk("quadV", { a: 1, h: 1, k: -4 });
+}
+function rQuadAny(hard) { const a = pick(hard ? [1, -1, 2, -2, 0.5, -0.5] : [1, -1]); return mk("quadV", { a, h: rnd(-5, 5), k: rnd(-7, 7) }); }
+function rAbs(hard, roots = true) {
+  for (let t = 0; t < 300; t++) {
+    const a = hard ? pick([1, -1, 2, -2, 0.5, -0.5]) : pick([1, -1]), h = rnd(-5, 5);
+    if (roots) { const d = rnd(1, 5), k = -a * d; if (Math.abs(k) > 9 || Math.abs(h) + d > 9) continue; return mk("abs", { a, h, k }); }
+    return mk("abs", { a, h, k: a > 0 ? rnd(1, 6) : -rnd(1, 6) });
+  }
+  return mk("abs", { a: 1, h: 0, k: -3 });
+}
+function rSqrt(hard) { return mk("sqrt", { a: pick(hard ? [1, -1, 2, -2, 0.5] : [1, -1]), h: rnd(-7, 3), k: rnd(-5, 5) }); }
+function rExp(hard) { return mk("exp", { a: pick(hard ? [1, -1, 2, -2] : [1, -1]), b: pick([2, 3, 0.5]), k: rnd(-4, 4) }); }
+
+function checkSet(v, target, { lenient = false, v: letter = "x" } = {}) {
+  const r = parseSet(v);
+  if (r.error) return { ok: false, invalid: true, msg: r.error };
+  if (r.wrong) return { ok: false, msg: r.msg };
+  if (setEq(r.set, target, lenient)) return { ok: true, msg: lenient && !setEq(r.set, target) ? "(We usually write round brackets here.)" : "" };
+  if (setEq(r.set, target, true)) return { ok: false, msg: "The numbers are right. Check the brackets: [ ] or ≤ ≥ include the endpoint; ( ) or < > do not." };
+  const T = normSet(target);
+  if (T.length === 1 && (T[0].a === -Infinity) !== (T[0].b === Infinity)) {
+    const I = T[0], flipped = I.a === -Infinity ? [iv(I.b, I.bc, Infinity, false)] : [iv(-Infinity, false, I.a, I.ac)];
+    if (setEq(r.set, flipped)) return { ok: false, msg: `Check the direction: should it be ${letter} smaller or larger than ${fmt(Number.isFinite(I.a) ? I.a : I.b)}?` };
+  }
+  return { ok: false };
+}
+function checkXints(v, xs) {
+  const r = parsePoints(v);
+  if (r.error) return { ok: false, invalid: true, msg: r.error };
+  if (r.pts && r.pts.some(p => Math.abs(p[1]) > 1e-9)) return { ok: false, msg: "x-intercepts are on the x-axis, so their y-coordinate is always 0." };
+  const got = [...new Set((r.pts ? r.pts.map(p => p[0]) : r.nums || []).map(x => Math.round(x * 1000) / 1000))].sort((a, b) => a - b);
+  const want = [...xs].sort((a, b) => a - b);
+  if (got.length !== want.length) return { ok: false, msg: want.length > 1 && got.length === 1 && want.some(w => sameNum(w, got[0])) ? "That's one of them. There is another x-intercept." : "" };
+  return { ok: got.every((g, i) => sameNum(g, want[i])) };
+}
+function checkYint(v, b) {
+  const r = parsePoints(v);
+  if (r.error) return { ok: false, invalid: true, msg: r.error };
+  if (b == null) return { ok: !!r.none };
+  if (r.none) return { ok: false };
+  if (r.pts) { if (r.pts.length !== 1) return { ok: false, msg: "There is only one y-intercept." }; if (Math.abs(r.pts[0][0]) > 1e-9) return { ok: false, msg: "The y-intercept is on the y-axis, so its x-coordinate is 0." }; return { ok: sameNum(r.pts[0][1], b) }; }
+  return { ok: r.nums.length === 1 && sameNum(r.nums[0], b) };
+}
+function checkNum(v, target, { pointMsg = null } = {}) {
+  const t = String(v).trim().toLowerCase();
+  if (target === "undefined") return { ok: /undefined|no slope|none|vertical|∞|dne/.test(t) };
+  if (/undefined|no slope/.test(t)) return { ok: false };
+  if (/\(.*,.*\)/.test(t)) return { ok: false, invalid: true, msg: pointMsg || "Type one number, not a point." };
+  const n = parseNum(t.replace(/^[a-z]\s*=\s*/, ""));
+  if (Number.isNaN(n)) return { ok: false, invalid: true, msg: "Type a number, like 3, −2 or 3/4." };
+  return { ok: sameNum(n, target) };
+}
+function checkPoint(v, x, y) {
+  const r = parsePoints(v);
+  if (r.error) return { ok: false, invalid: true, msg: r.error };
+  if (!r.pts || r.pts.length !== 1) return { ok: false, invalid: true, msg: "Write one point, like (2, −3)." };
+  return { ok: sameNum(r.pts[0][0], x) && sameNum(r.pts[0][1], y) };
+}
+function checkLine(v, target) {
+  const L = parseLine(fixFrac(v));
+  if (L.error) return { ok: false, invalid: true, msg: L.error };
+  return { ok: sameLine(L, target) };
+}
+const vertexSteps = F => {
+  const { a, h, k } = F.p;
+  return F.kind === "quadV" || F.kind === "abs" ? [`In ${E(F.kind === "abs" ? "y = a|x − h| + k" : "y = a(x − h)² + k")}, the vertex is (h, k) = ${pt(h, k)}.`, `a = ${fmt(a)} is ${a > 0 ? "positive, so the graph opens up and the vertex is the lowest point" : "negative, so the graph opens down and the vertex is the highest point"}.`] : [];
+};
+function xintSteps(F) {
+  if (F.kind === "linear") { const { m, b } = F.p; return [`Set y = 0: ${E(`0 = ${poly([[m, "x"], [b, ""]])}`)}`, `${E(`${poly([[m, "x"]])} = ${fmt(-b)}`)}`, `x = ${fmt(-b)} ÷ ${fmt(m)} = ${fmt(-b / m)}`, `x-intercept: ${pt(-b / m, 0)}`]; }
+  const { a, h, k } = F.p, t = -k / a, quad = F.kind === "quadV";
+  const inner = quad ? `${shiftStr(h)}²` : `|${Math.abs(h) < 1e-12 ? "x" : shiftStr(h).slice(1, -1)}|`;
+  const s = [`Set y = 0: ${E(F.eq.replace(/^y/, "0"))}`, `Move k: ${E(`${coefPrefix(a)}${inner} = ${fmt(-k)}`)}`];
+  if (Math.abs(a - 1) > 1e-12) s.push(`Divide by ${fmt(a)}: ${E(`${inner} = ${fmt(t)}`)}`);
+  if (t < -1e-12) s.push(`${quad ? "A square" : "An absolute value"} can't be negative, so there are <b>no x-intercepts</b>.`);
+  else if (Math.abs(t) < 1e-12) s.push(`Only x = ${fmt(h)} works: the vertex touches the x-axis.`);
+  else { const d = quad ? Math.sqrt(t) : t; s.push(`${quad ? "Take the square root" : "Two cases"}: ${E(`x ${h > 0 ? "−" : "+"} ${fmt(Math.abs(h))} = ±${fmt(d)}`.replace("x + 0", "x").replace("x − 0", "x"))}`, `x = ${fmt(h - d)} or x = ${fmt(h + d)}`); }
+  return s;
+}
+
+const GEN = {};
+GEN.xint = hard => {
+  const kind = pick(["linear", "quad", "quad", "abs"]), none = hard && kind !== "linear" && Math.random() < 0.25;
+  const F = kind === "linear" ? rLinear(hard) : kind === "quad" ? rQuad(hard, !none) : rAbs(hard, !none);
+  const xs = F.an.xints, graph = Math.random() < 0.45;
+  return { q: graph ? `Find the <b>x-intercept(s)</b> of the function graphed. ${E(F.eq)}` : `Find the <b>x-intercept(s)</b> of ${E(F.eq)}.`,
+    draw: graph ? p => drawF(p, F) : null, reveal: p => { drawF(p, F); xs.forEach(x => p.dot(x, 0, { color: COL.orange, label: pt(x, 0), dy: 18 })); },
+    input: "points", ph: "like (2, 0), (−3, 0)   or   none", check: v => checkXints(v, xs),
+    ans: xs.length ? xs.map(x => pt(x, 0)).join(", ") : "none", hint: "x-intercepts are on the x-axis, where y = 0. Set y = 0 and solve for x.", steps: xintSteps(F) };
+};
+GEN.yint = hard => {
+  const kind = pick(hard ? ["std", "quadS", "quadV", "sqrt", "std"] : ["std", "quadS", "graph", "quadV"]);
+  let eq, b, steps, F = null;
+  if (kind === "std") {
+    const A = nz(-6, 6), B = nz(-6, 6), b0 = rnd(-6, 6), C = B * b0;
+    eq = `${poly([[A, "x"], [B, "y"]])} = ${fmt(C)}`; b = b0;
+    steps = [`At the y-intercept, x = 0.`, `${E(`${poly([[B, "y"]])} = ${fmt(C)}`)}`, `y = ${fmt(C)} ÷ ${fmt(B)} = ${fmt(b0)}`];
+    F = mk("linear", { m: -A / B, b: b0 });
+  } else if (kind === "quadS") {
+    const a = pick([1, -1, 2, -2]), bb = rnd(-6, 6), c = rnd(-8, 8); F = mk("quadS", { a, b: bb, c }); eq = F.eq.slice(4); b = c;
+    steps = ["At the y-intercept, x = 0.", `Every term with x becomes 0, so y = ${fmt(c)} (the constant term).`];
+  } else if (kind === "quadV") {
+    F = rQuadAny(hard); const { a, h, k } = F.p; eq = F.eq.slice(4); b = a * h * h + k;
+    steps = ["At the y-intercept, x = 0.", `${E(`y = ${coefPrefix(a)}(0 ${h > 0 ? "−" : "+"} ${fmt(Math.abs(h))})² ${plusK(k).trim() || "+ 0"}`)}`, `y = ${fmt(a)} · ${fmt(h * h)} ${plusK(k).trim() || ""} = ${fmt(b)}`];
+  } else if (kind === "sqrt") {
+    F = rSqrt(hard); eq = F.eq.slice(4); b = F.an.yint;
+    steps = b == null ? [`The domain is x ≥ ${fmt(F.p.h)}, and 0 is not in it.`, "So the graph never touches the y-axis: <b>no y-intercept</b>."] : ["At the y-intercept, x = 0.", `y = ${fmt(F.p.a)}·√${fmt(-F.p.h)} ${plusK(F.p.k)} = ${fmt(b)}`];
+  } else { F = rLinear(false); eq = F.eq.slice(4); b = F.p.b; steps = ["Find where the line crosses the y-axis (x = 0).", `It crosses at ${pt(0, b)}.`]; }
+  const graph = kind === "graph";
+  return { q: graph ? "Find the <b>y-intercept</b> of the line graphed." : `Find the <b>y-intercept</b> of ${E((kind === "std" ? "" : "y = ") + eq)}.`,
+    draw: graph ? p => drawF(p, F) : null, reveal: p => { drawF(p, F); if (b != null) p.dot(0, b, { color: COL.purple, label: pt(0, b) }); },
+    input: "points", ph: "like (0, 4)   or   none", check: v => checkYint(v, b), ans: b == null ? "none" : pt(0, b), hint: "The y-intercept is on the y-axis, where x = 0. Put x = 0 into the equation.", steps };
+};
+GEN.slope = hard => {
+  const kind = pick(hard ? ["pts", "std", "ptslope", "special", "graph"] : ["pts", "pts", "std", "graph", "graph"]);
+  if (kind === "pts" || kind === "special") {
+    let x1, y1, x2, y2;
+    if (kind === "special") { x1 = rnd(-7, 7); y1 = rnd(-7, 7); if (Math.random() < 0.5) { x2 = x1; y2 = y1 + nz(-6, 6); } else { y2 = y1; x2 = x1 + nz(-6, 6); } }
+    else { do { x1 = rnd(-8, 8); y1 = rnd(-8, 8); x2 = rnd(-8, 8); y2 = rnd(-8, 8); } while (x1 === x2 || y1 === y2); }
+    const m = x1 === x2 ? "undefined" : (y2 - y1) / (x2 - x1);
+    const L = x1 === x2 ? { A: 1, B: 0, C: -x1 } : fromSlope(m, y1 - m * x1);
+    return { q: `Find the <b>slope</b> of the line through ${pt(x1, y1)} and ${pt(x2, y2)}.`, reveal: p => { p.line(L, { color: COL.fn }); p.dot(x1, y1, { label: pt(x1, y1) }); p.dot(x2, y2, { label: pt(x2, y2) }); },
+      input: "number", ph: "like 3/4, −2, 0, or undefined", check: v => checkNum(v, m), ans: m === "undefined" ? "undefined" : fmt(m),
+      hint: "slope = rise ÷ run = (y₂ − y₁) ÷ (x₂ − x₁).", steps: [`m = (y₂ − y₁) ÷ (x₂ − x₁) = (${fmt(y2)} − ${fmt(y1)}) ÷ (${fmt(x2)} − ${fmt(x1)}) = ${fmt(y2 - y1)} ÷ ${fmt(x2 - x1)}`, x1 === x2 ? "You can't divide by 0, so the slope is <b>undefined</b> (a vertical line)." : `m = ${fmt(m)}${m === 0 ? " (a horizontal line)" : ""}`] };
+  }
+  if (kind === "std") {
+    const A = nz(-6, 6), B = nz(-6, 6), C = rnd(-12, 12), m = -A / B;
+    return { q: `Find the <b>slope</b> of ${E(`${poly([[A, "x"], [B, "y"]])} = ${fmt(C)}`)}.`, reveal: p => p.line({ A, B, C: -C }, { color: COL.fn }), input: "number", ph: "like −2/3", check: v => checkNum(v, m), ans: fmt(m),
+      hint: "Solve for y to get y = mx + b. The number in front of x is the slope.", steps: [`${E(`${poly([[B, "y"]])} = ${poly([[-A, "x"], [C, ""]])}`)}`, `Divide by ${fmt(B)}: ${E(lineEq(m, C / B))}`, `m = ${fmt(m)}`] };
+  }
+  if (kind === "ptslope") {
+    const m = pick([2, -3, 0.5, -1.5, 4, -2 / 3]), x1 = rnd(-5, 5), y1 = rnd(-5, 5);
+    return { q: `Find the <b>slope</b> of ${E(pointSlopeStr(m, x1, y1))}.`, reveal: p => p.line(fromSlope(m, y1 - m * x1), { color: COL.fn }), input: "number", ph: "a number", check: v => checkNum(v, m), ans: fmt(m),
+      hint: "Point-slope form is y − y₁ = m(x − x₁). The slope m is the number in front of the brackets.", steps: [`Compare with y − y₁ = m(x − x₁).`, `m = ${fmt(m)}`] };
+  }
+  const x1 = rnd(-7, 0), run = rnd(1, 5), rise = nz(-5, 5), y1 = rnd(-4, 4), m = rise / run;
+  const L = fromSlope(m, y1 - m * x1);
+  return { q: "Find the <b>slope</b> of the line graphed. Use the two marked points.", draw: p => { p.line(L, { color: COL.fn }); p.dot(x1, y1, { label: pt(x1, y1) }); p.dot(x1 + run, y1 + rise, { label: pt(x1 + run, y1 + rise) }); },
+    reveal: p => { p.seg(x1, y1, x1 + run, y1, { color: COL.orange, width: 2, dash: [5, 4] }); p.seg(x1 + run, y1, x1 + run, y1 + rise, { color: COL.inc, width: 2, dash: [5, 4] }); },
+    input: "number", ph: "like 3/2", check: v => checkNum(v, m), ans: fmt(m), hint: "Count the rise (up or down) and the run (to the right) between the two points.", steps: [`Run: ${run} to the right.`, `Rise: ${Math.abs(rise)} ${rise > 0 ? "up" : "down"} (${fmt(rise)}).`, `slope = rise ÷ run = ${fmt(rise)} ÷ ${run} = ${fmt(m)}`] };
+};
+function rForDR(hard) { const k = pick(["segment", "segment", "quad", "abs", "sqrt", "linear", hard ? "exp" : "sqrt"]); return k === "segment" ? mkSegment() : k === "quad" ? rQuadAny(hard) : k === "abs" ? rAbs(hard, Math.random() < .5) : k === "sqrt" ? rSqrt(hard) : k === "exp" ? rExp(hard) : rLinear(hard); }
+function drSteps(F, which) {
+  const an = F.an, S = which === "domain" ? an.domain : an.range, v = which === "domain" ? "x" : "y";
+  if (F.kind === "segment") {
+    const { x1, y1, x2, y2, c1, c2 } = F.p;
+    if (which === "domain") return [`Read left to right. The graph starts at x = ${fmt(x1)} with ${c1 ? "a closed dot ●, so it is included" : "an open dot ○, so it is not included"}.`, `It ends at x = ${fmt(x2)} with ${c2 ? "a closed dot ● (included)" : "an open dot ○ (not included)"}.`, `Domain: ${setBoth(S, v)}`];
+    const lo = y1 < y2 ? [y1, c1] : [y2, c2], hi = y1 < y2 ? [y2, c2] : [y1, c1];
+    return [`Read bottom to top. The lowest point has y = ${fmt(lo[0])} (${lo[1] ? "closed dot, included" : "open dot, not included"}).`, `The highest has y = ${fmt(hi[0])} (${hi[1] ? "closed dot, included" : "open dot, not included"}).`, `Range: ${setBoth(S, v)}`];
+  }
+  if (which === "domain") {
+    if (F.kind === "sqrt") return [`The number inside √ can't be negative: ${E(`x ${F.p.h > 0 ? "−" : "+"} ${fmt(Math.abs(F.p.h))} ≥ 0`.replace(" + 0", "").replace(" − 0", ""))}`, `So x ≥ ${fmt(F.p.h)}. The graph starts there and goes right forever.`, `Domain: ${setBoth(S, v)}`];
+    return ["The graph keeps going left and right forever. Every x-value works.", `Domain: ${setBoth(S, v)}`];
+  }
+  if (F.kind === "linear") return ["A slanted line goes up and down forever, so it reaches every y-value.", `Range: ${setBoth(S, v)}`];
+  if (F.kind === "exp") return [`The graph gets closer and closer to y = ${fmt(F.p.k)} (dashed line) but never touches it, so ${fmt(F.p.k)} is <b>not</b> included.`, `It goes ${F.p.a > 0 ? "up" : "down"} forever on the other side.`, `Range: ${setBoth(S, v)}`];
+  if (F.kind === "sqrt") return [`The graph starts at ${pt(F.p.h, F.p.k)} and goes ${F.p.a > 0 ? "up" : "down"} forever.`, `Range: ${setBoth(S, v)}`];
+  return [...vertexSteps(F), `So y ${F.p.a > 0 ? "≥" : "≤"} ${fmt(F.p.k)}.`, `Range: ${setBoth(S, v)}`];
+}
+const SETPH = "like [−3, 5)  or  −3 ≤ x < 5  or  all real numbers";
+GEN.domain = hard => {
+  const F = rForDR(hard), S = F.an.domain;
+  return { q: `What is the <b>domain</b> of the function graphed?${F.eq ? " " + E(F.eq) : ""}`, draw: p => drawF(p, F), reveal: p => { drawF(p, F); p.band(S, "x", COL.orange); },
+    input: "set", ph: SETPH, check: v => checkSet(v, S), ans: setBoth(S, "x"), ansPlain: setToIneq(S, "x"), hint: "Domain = all the x-values the graph uses. Read the graph from left to right.", steps: drSteps(F, "domain") };
+};
+GEN.range = hard => {
+  let F; do { F = rForDR(hard); } while (F.kind === "linear" && Math.random() < 0.6);
+  const S = F.an.range;
+  return { q: `What is the <b>range</b> of the function graphed?${F.eq ? " " + E(F.eq) : ""}`, draw: p => drawF(p, F), reveal: p => { drawF(p, F); p.band(S, "y", COL.purple); },
+    input: "set", ph: "like y ≥ −4  or  [−4, ∞)", check: v => checkSet(v, S, { v: "y" }), ans: setBoth(S, "y"), ansPlain: setToIneq(S, "y"), hint: "Range = all the y-values the graph reaches. Read the graph from bottom to top.", steps: drSteps(F, "range") };
+};
+GEN.extrema = hard => {
+  const kind = pick(["which", "value", "value", "vertex"]);
+  if (kind === "which") {
+    const neither = hard && Math.random() < 0.3;
+    const F = neither ? pick([rLinear(hard), rExp(hard)]) : pick([rQuadAny(hard), rAbs(hard)]);
+    const correct = neither ? "Neither" : F.p.a > 0 ? "Minimum" : "Maximum";
+    return { q: `Does ${E(F.eq)} have a <b>maximum</b> or a <b>minimum</b>?`, draw: hard ? null : p => drawF(p, F), reveal: p => drawF(p, F),
+      choices: ["Maximum", "Minimum", "Neither"], correct, check: v => ({ ok: v === correct }), ans: correct,
+      hint: "Does the graph open up (∪ has a lowest point) or down (∩ has a highest point)? Look at the sign of a.",
+      steps: neither ? [`This graph keeps going ${F.kind === "linear" ? "up and down" : "toward the asymptote and up (or down)"} forever, so it has no highest or lowest point.`] : vertexSteps(F) };
+  }
+  const std = hard && Math.random() < 0.5;
+  let F;
+  if (std) { const a = pick([1, -1, 2, -2]), h = rnd(-4, 4), k = rnd(-6, 6); F = mk("quadS", { a, b: -2 * a * h, c: a * h * h + k }); F.p.h = h; F.p.k = k; }
+  else F = pick([rQuadAny(hard), rAbs(hard, Math.random() < 0.5)]);
+  const { a, h, k } = F.p, word = a > 0 ? "minimum" : "maximum";
+  const steps = std ? [`For y = ax² + bx + c, the vertex is at x = −b ÷ (2a) = ${fmt(-F.p.b)} ÷ ${fmt(2 * a)} = ${fmt(h)}.`, `y = ${fmt(a)}(${fmt(h)})² ${F.p.b < 0 ? "−" : "+"} ${fmt(Math.abs(F.p.b))}(${fmt(h)}) ${F.p.c < 0 ? "−" : "+"} ${fmt(Math.abs(F.p.c))} = ${fmt(k)}`, `a ${a > 0 ? "> 0: opens up, so this is a minimum" : "< 0: opens down, so this is a maximum"}.`] : vertexSteps(F);
+  if (kind === "vertex") return { q: `What is the <b>vertex</b> of ${E(F.eq)}? Is it a maximum or a minimum point?`, draw: hard ? null : p => drawF(p, F), reveal: p => { drawF(p, F); p.dot(h, k, { color: COL.ink, label: `${word} ${pt(h, k)}` }); },
+    input: "point", ph: "like (1, −4)", check: v => checkPoint(v, h, k), ans: `${pt(h, k)}, a ${word}`, ansPlain: pt(h, k), hint: std ? "Find x = −b ÷ (2a), then put it in to find y." : "In vertex form, the vertex is (h, k). Watch the signs: (x − 3) means h = 3.", steps };
+  return { q: `What is the <b>${word} value</b> of ${E(F.eq)}?`, draw: hard ? null : p => drawF(p, F), reveal: p => { drawF(p, F); p.dot(h, k, { color: COL.ink, label: `${word} ${fmt(k)}` }); },
+    input: "number", ph: "the y-value", check: v => checkNum(v, k, { pointMsg: `Give just the ${word} value: the y-coordinate of the vertex.` }), ans: fmt(k),
+    hint: `The ${word} value is the y-coordinate of the vertex.`, steps: [...steps, `The ${word} value is y = ${fmt(k)}.`] };
+};
+GEN.incdec = hard => {
+  const F = pick([() => rQuadAny(hard), () => rAbs(hard, Math.random() < .5), () => rQuadAny(hard), () => (hard ? rSqrt(hard) : rLinear(hard)), () => (hard ? rExp(hard) : mkSegment())])();
+  const dir = pick(["increasing", "decreasing"]), S = dir === "increasing" ? F.an.inc : F.an.dec;
+  let steps;
+  if (F.p && F.p.h !== undefined && (F.kind === "quadV" || F.kind === "abs")) steps = [`The turning point (vertex) is at x = ${fmt(F.p.h)}.`, `Reading left to right, the graph goes ${F.p.a > 0 ? "down until x = " + fmt(F.p.h) + ", then up" : "up until x = " + fmt(F.p.h) + ", then down"}.`, `${dir[0].toUpperCase() + dir.slice(1)}: ${S.length ? setToInterval(S) : "never"}`, "We use round brackets at the turning point."];
+  else if (F.kind === "sqrt") steps = [`The graph starts at x = ${fmt(F.p.h)} and goes ${F.p.a > 0 ? "up" : "down"} to the right.`, `${dir[0].toUpperCase() + dir.slice(1)}: ${S.length ? setToInterval(S) : "never"}`];
+  else steps = [`Reading left to right, the graph always goes ${F.an.inc.length ? "up" : "down"}.`, `${dir[0].toUpperCase() + dir.slice(1)}: ${S.length ? setToInterval(S) : "never"}`];
+  return { q: `On what interval is this function <b>${dir}</b>?${F.eq ? " " + E(F.eq) : ""}`, draw: p => drawF(p, F), reveal: p => drawF(p, F, { colors: true }),
+    input: "set", ph: "like (−∞, 2)  or  x < 2  or  none", check: v => checkSet(v, S, { lenient: true }), ans: S.length ? setBoth(S, "x") : "never (none)", ansPlain: S.length ? setToIneq(S) : "none",
+    hint: "Read the graph from left to right. Uphill = increasing, downhill = decreasing. Answer with x-values!", steps };
+};
+function slopePick(hard) { return hard ? pick([2, -3, 0.5, -0.5, 2 / 3, -3 / 2, 4, -1 / 3, 3]) : pick([1, -1, 2, -2, 3, -3, 4, -4, 0.5, -0.5]); }
+function lineText(m, b, hard) {
+  if (hard && Math.random() < 0.5) { const f = toFrac(m), n = f[0], d = f[1]; const A = -n, B = d, C = b * d; return `${poly([[A, "x"], [B, "y"]])} = ${fmt(C)}`; }
+  return lineEq(m, b);
+}
+GEN.parperp = hard => {
+  const kind = pick(hard ? ["par", "perp", "classify", "eq", "eq"] : ["par", "perp", "perp", "classify", "classify"]);
+  if (kind === "par" || kind === "perp") {
+    const vertical = hard && Math.random() < 0.2, m = slopePick(hard), b = rnd(-6, 6);
+    const txt = vertical ? `x = ${fmt(b)}` : lineText(m, b, hard);
+    const ans = vertical ? (kind === "par" ? "undefined" : 0) : kind === "par" ? m : -1 / m;
+    const L = vertical ? { A: 1, B: 0, C: -b } : fromSlope(m, b);
+    return { q: `Line ℓ: ${E(txt)}. What is the slope of a line <b>${kind === "par" ? "parallel" : "perpendicular"}</b> to ℓ?`, reveal: p => p.line(L, { color: COL.fn }),
+      input: "number", ph: "like −1/2", check: v => checkNum(v, ans), ans: ans === "undefined" ? "undefined" : fmt(ans),
+      hint: kind === "par" ? "Parallel lines have the same slope." : "Perpendicular slopes are negative reciprocals: flip the fraction and change the sign.",
+      steps: vertical ? [`${E(txt)} is a vertical line (undefined slope).`, kind === "par" ? "A parallel line is also vertical: slope undefined." : "A perpendicular line is horizontal: slope 0."]
+        : [txt.startsWith("y") ? `ℓ has slope m = ${fmt(m)}.` : `Solve for y: ${E(lineEq(m, b))}, so m = ${fmt(m)}.`, kind === "par" ? `Parallel: same slope, ${fmt(m)}.` : `Perpendicular: −1 ÷ ${fmt(m)} = ${fmt(-1 / m)}.`] };
+  }
+  if (kind === "classify") {
+    const type = pick(["parallel", "perpendicular", "neither"]), m1 = slopePick(hard), b1 = rnd(-5, 5);
+    let m2 = type === "parallel" ? m1 : type === "perpendicular" ? -1 / m1 : null, b2 = rnd(-5, 5);
+    if (type === "parallel") while (b2 === b1) b2 = rnd(-5, 5);
+    if (type === "neither") { do { m2 = slopePick(hard) * pick([1, -1]); } while (Math.abs(m2 - m1) < 1e-9 || Math.abs(m1 * m2 + 1) < 1e-9); }
+    const correct = type[0].toUpperCase() + type.slice(1);
+    const t1 = lineText(m1, b1, hard), t2 = lineText(m2, b2, hard);
+    return { q: `Are these lines parallel, perpendicular, or neither?<div style="margin-top:6px">${E(t1)}<br>${E(t2)}</div>`, reveal: p => { p.line(fromSlope(m1, b1), { color: COL.fn }); p.line(fromSlope(m2, b2), { color: COL.orange }); },
+      choices: ["Parallel", "Perpendicular", "Neither"], correct, check: v => ({ ok: v === correct }), ans: correct,
+      hint: "Find both slopes. Same slope → parallel. Slopes multiply to −1 → perpendicular.",
+      steps: [`Slopes: ${fmt(m1)} and ${fmt(m2)}.`, type === "parallel" ? "They are equal, so the lines are parallel." : type === "perpendicular" ? `${fmt(m1)} × ${fmt(m2)} = −1, so they are perpendicular.` : `Not equal, and ${fmt(m1)} × ${fmt(m2)} = ${fmt(m1 * m2)} (not −1): neither.`] };
+  }
+  const dir = pick(["parallel", "perpendicular"]);
+  for (;;) {
+    const m = slopePick(hard), b = rnd(-6, 6), px = rnd(-5, 5), py = rnd(-5, 5);
+    const m2 = dir === "parallel" ? m : -1 / m, b2 = py - m2 * px;
+    if (Math.abs(b2 - Math.round(b2 * 6) / 6) > 1e-9 || Math.abs(b2) > 12) continue;
+    const target = fromSlope(m2, b2);
+    return { q: `Write the equation of the line through ${pt(px, py)} that is <b>${dir}</b> to ${E(lineText(m, b, hard))}.`, reveal: p => { p.line(fromSlope(m, b), { color: COL.fn }); p.line(target, { color: COL.orange }); p.dot(px, py, { label: pt(px, py) }); },
+      input: "line", ph: "like y = 2x − 3  (any form is OK)", check: v => checkLine(v, target), ans: lineEq(m2, b2), ansPlain: lineEq(m2, b2),
+      hint: `First find the ${dir} slope. Then use the point to find b in y = mx + b.`,
+      steps: [`Slope of the given line: ${fmt(m)}.`, `${dir === "parallel" ? "Parallel" : "Perpendicular"} slope: ${fmt(m2)}.`, `Point-slope: ${E(pointSlopeStr(m2, px, py))}`, `Find b: ${fmt(py)} = ${fmt(m2)}·(${fmt(px)}) + b, so b = ${fmt(b2)}.`, `${E(lineEq(m2, b2))}`] };
+  }
+};
+function clauseFor(op, r, hard) {
+  const a = hard ? nz(-5, 5) : nz(1, 5), b = rnd(-8, 8), c = a * r + b;
+  return `${poly([[a, "x"], [b, ""]])} ${a > 0 ? op : FLIP[op]} ${fmt(c)}`;
+}
+GEN.ineq1 = hard => {
+  const op = pick(["<", "≤", ">", "≥"]), r = rnd(-6, 6); let str;
+  const form = hard ? pick(["basic", "both", "dist"]) : pick(["basic", "basic", "neg"]);
+  if (form === "basic") { const a = nz(-6, 6), b = rnd(-9, 9); str = `${poly([[a, "x"], [b, ""]])} ${op} ${fmt(a * r + b)}`; }
+  else if (form === "neg") { const a = nz(-6, -1), b = rnd(-9, 9); str = `${poly([[b, ""], [a, "x"]])} ${op} ${fmt(a * r + b)}`; }
+  else if (form === "both") { const a = nz(-6, 6); let d; do { d = nz(-6, 6); } while (d === a); const b = rnd(-9, 9), e = a * r + b - d * r; str = `${poly([[a, "x"], [b, ""]])} ${op} ${poly([[d, "x"], [e, ""]])}`; }
+  else { const a = nz(-5, 5), p0 = nz(-6, 6); str = `${coefPrefix(a)}${shiftStr(-p0)} ${op} ${fmt(a * (r + p0))}`; }
+  const sol = solve1(str);
+  return { q: `Solve: ${E(str)}<div class="muted" style="font-weight:600">Answer like x > 3, or in interval notation like (3, ∞).</div>`, input: "set", ph: "like x ≥ −2  or  [−2, ∞)",
+    check: v => checkSet(v, sol.set), ans: setBoth(sol.set), ansPlain: setToIneq(sol.set), nl: sol.set, steps: sol.steps,
+    hint: "Get x by itself. If you multiply or divide both sides by a negative number, flip the inequality sign!" };
+};
+GEN.compound = hard => {
+  const kind = pick(hard ? ["chain", "or", "and", "special", "chain"] : ["chain", "chain", "or", "or"]);
+  let str;
+  if (kind === "chain") {
+    const r1 = rnd(-6, 3), r2 = r1 + rnd(1, 6), a = hard ? nz(-4, 4) : nz(1, 4), b = rnd(-6, 6), op1 = pick(["<", "≤"]), op2 = pick(["<", "≤"]);
+    const lo = a > 0 ? a * r1 + b : a * r2 + b, hi = a > 0 ? a * r2 + b : a * r1 + b;
+    str = `${fmt(lo)} ${op1} ${poly([[a, "x"], [b, ""]])} ${op2} ${fmt(hi)}`;
+  } else if (kind === "or") {
+    const r1 = rnd(-6, 2), r2 = r1 + rnd(1, 5);
+    str = `${clauseFor(pick(["<", "≤"]), r1, hard)} or ${clauseFor(pick([">", "≥"]), r2, hard)}`;
+  } else if (kind === "and") {
+    const r1 = rnd(-6, 2), r2 = r1 + rnd(1, 5), empty = Math.random() < 0.3;
+    str = empty ? `${clauseFor(pick(["<", "≤"]), r1, hard)} and ${clauseFor(pick([">", "≥"]), r2, hard)}` : `${clauseFor(pick([">", "≥"]), r1, hard)} and ${clauseFor(pick(["<", "≤"]), r2, hard)}`;
+  } else {
+    const r1 = rnd(-6, 2), r2 = r1 + rnd(1, 5);
+    str = `${clauseFor(pick(["<", "≤"]), r2, hard)} or ${clauseFor(pick([">", "≥"]), r1, hard)}`;
+  }
+  const sol = solve1(str);
+  return { q: `Solve the compound inequality: ${E(str)}<div class="muted" style="font-weight:600">Answer like −2 < x ≤ 5, x < 1 or x > 4, all real numbers, or no solution.</div>`, input: "set", ph: "like −2 < x ≤ 5   or   (−2, 5]",
+    check: v => checkSet(v, sol.set), ans: setBoth(sol.set), ansPlain: setToIneq(sol.set), nl: sol.set, steps: sol.steps,
+    hint: "Solve each part. “and” = numbers that work for both (overlap). “or” = numbers that work for at least one." };
+};
+function rLineIneq(hard, opts = {}) {
+  const m = opts.m ?? (hard ? pick([2, -3, 0.5, -0.5, 2 / 3, -1, 1, 3]) : nz(-3, 3)), b = opts.b ?? rnd(-5, 5), op = opts.op ?? pick(["<", "≤", ">", "≥"]);
+  return { m, b, op, text: `y ${op} ${poly([[m, "x"], [b, ""]])}` };
+}
+GEN.ineq2 = hard => {
+  const kind = pick(hard ? ["point", "system", "side", "match", "system", "dash"] : ["point", "point", "dash", "side", "match", "system"]);
+  if (kind === "point" || kind === "system") {
+    const n = kind === "system" ? 2 : 1, list = [];
+    for (let i = 0; i < n; i++) { let L; do { L = rLineIneq(hard); } while (list.some(o => Math.abs(o.m - L.m) < 1e-9)); list.push(L); }
+    const I = list.map(L => parseIneq2(L.text));
+    let px = rnd(-6, 6), py = rnd(-6, 6);
+    if (Math.random() < 0.2) { const L = list[0]; px = rnd(-4, 4) * (toFrac(L.m)[1]); py = L.m * px + L.b; if (Math.abs(py) > 9) { px = 0; py = L.b; } }
+    const truth = I.every(t => t.test(px, py)), correct = truth ? "Yes" : "No";
+    return { q: `Is ${pt(px, py)} a solution of ${n > 1 ? "the system" : ""}${list.map(L => `<div>${E(L.text)}</div>`).join("")}`,
+      reveal: p => { I.forEach((t, i) => drawIneq2(p, t, COL.ineq[i], { alpha: n > 1 ? 0.12 : 0.18 })); if (n > 1) p.shade((x, y) => I.every(t => t.test(x, y)), COL.both, 0.3); p.dot(px, py, { color: truth ? COL.inc : COL.dec, label: pt(px, py) }); },
+      choices: ["Yes", "No"], correct, check: v => ({ ok: v === correct }), ans: correct,
+      hint: "Substitute the x- and y-values into each inequality. It is a solution only if every one is true.",
+      steps: [...list.map((L, i) => { const l = py, r = L.m * px + L.b, ok = I[i].test(px, py); return `${E(`${fmt(l)} ${L.op} ${fmt(L.m)}(${fmt(px)}) ${L.b < 0 ? "−" : "+"} ${fmt(Math.abs(L.b))}`)} → ${E(`${fmt(l)} ${L.op} ${fmt(r)}`)} <b class="${ok ? "ok" : "bad"}">${ok ? "true" : "false"}</b>`; }),
+        truth ? "Every inequality is true, so it <b>is</b> a solution." : `At least one is false, so it is <b>not</b> a solution.${list.some((L, i) => Math.abs(py - (L.m * px + L.b)) < 1e-9 && I[i].strict) ? " (Points on a dashed line are not included.)" : ""}`] };
+  }
+  if (kind === "dash") {
+    const L = rLineIneq(hard), I = parseIneq2(L.text), correct = I.strict ? "Dashed" : "Solid";
+    return { q: `When you graph ${E(L.text)}, is the boundary line dashed or solid?`, reveal: p => drawIneq2(p, I, COL.fn),
+      choices: ["Dashed", "Solid"], correct, check: v => ({ ok: v === correct }), ans: correct, hint: "Is the boundary itself included? ≤ and ≥ include it.",
+      steps: [`The sign is ${L.op}.`, I.strict ? "< or > means points on the line are <b>not</b> solutions: dashed line." : "≤ or ≥ means points on the line <b>are</b> solutions: solid line."] };
+  }
+  if (kind === "side") {
+    let text, I;
+    if (hard && Math.random() < 0.6) {
+      const A = nz(-4, 4), B = nz(-4, 4), C = rnd(-8, 8), op = pick(["<", "≤", ">", "≥"]);
+      text = `${poly([[A, "x"], [B, "y"]])} ${op} ${fmt(C)}`; I = parseIneq2(text);
+      const correct = I.side === "above" ? "Above the line" : "Below the line";
+      return { q: `For ${E(text)}, do you shade <b>above</b> or <b>below</b> the boundary line?`, reveal: p => drawIneq2(p, I, COL.fn), choices: ["Above the line", "Below the line"], correct, check: v => ({ ok: v === correct }), ans: correct,
+        hint: "Solve for y first. If you divide by a negative, flip the sign. Then y > or y ≥ means above.",
+        steps: [`Move the x-term: ${E(`${poly([[B, "y"]])} ${op} ${poly([[-A, "x"], [C, ""]])}`)}`, `Divide by ${fmt(B)}${B < 0 ? " (negative, so flip the sign)" : ""}: ${E(I.slopeForm)}`, `${I.side === "above" ? "y > or y ≥: shade above." : "y < or y ≤: shade below."}`] };
+    }
+    const L = rLineIneq(hard); I = parseIneq2(L.text);
+    const correct = I.side === "above" ? "Above the line" : "Below the line";
+    return { q: `For ${E(L.text)}, do you shade <b>above</b> or <b>below</b> the boundary line?`, reveal: p => drawIneq2(p, I, COL.fn), choices: ["Above the line", "Below the line"], correct, check: v => ({ ok: v === correct }), ans: correct,
+      hint: "When y is by itself: y > or y ≥ → above; y < or y ≤ → below. You can also test (0, 0).",
+      steps: [`${E(L.text)}: y is ${I.side === "above" ? "greater than" : "less than"} the line, so shade <b>${I.side}</b>.`, `Check with (0, 0): ${E(`0 ${L.op} ${fmt(L.b)}`)} is ${I.test(0, 0) ? "true, so (0, 0)'s side is shaded" : "false, so shade the other side from (0, 0)"}.`] };
+  }
+  const L = rLineIneq(hard), I = parseIneq2(L.text);
+  const opts = ["<", "≤", ">", "≥"].map(o => `y ${o} ${poly([[L.m, "x"], [L.b, ""]])}`);
+  return { q: "Which inequality is graphed?", draw: p => drawIneq2(p, I, COL.fn), choices: shuffle(opts.slice()), correct: L.text, check: v => ({ ok: v === L.text }), ans: L.text,
+    hint: "Dashed → < or >. Solid → ≤ or ≥. Shaded above → y > or y ≥.", steps: [`The boundary is ${I.strict ? "dashed, so the sign is < or >" : "solid, so the sign is ≤ or ≥"}.`, `The shading is ${I.side} the line, so y is ${I.side === "above" ? "greater" : "less"}.`, `Answer: ${E(L.text)}`] };
+};
+
+/* =====================================================================
+   PRACTICE — engine
+   ===================================================================== */
+const PLAN = (AM && AM.settings) || {};
+let SET = load("gl-set", { skills: ["xint", "yint", "slope", "domain", "range"], level: "basic", planStamp: null });
+if (PLAN._updated && SET.planStamp !== PLAN._updated) {
+  if (Array.isArray(PLAN.skills) && PLAN.skills.length) SET.skills = PLAN.skills.filter(s => SKILLS[s]);
+  if (PLAN.level === "basic" || PLAN.level === "challenge") SET.level = PLAN.level;
+  if (!SET.skills.length) SET.skills = ["slope"];
+  SET.planStamp = PLAN._updated; save("gl-set", SET);
+}
+let STATS = load("gl-stats", {}), best = load("gl-best", 0), streak = 0, sess = { n: 0, c: 0 };
+let Q = null, qStart = 0, tries = 0, done = false, usedHelp = false;
+let pqPlot;
+function chipsUI() {
+  $("skillChips").innerHTML = Object.entries(SKILLS).map(([k, s]) => `<button class="chip${SET.skills.includes(k) ? " on" : ""}" data-s="${k}">${s.icon} ${s.name}</button>`).join("");
+  $("levelChips").innerHTML = [["basic", "Basic"], ["challenge", "Challenge (fractions, harder forms)"]].map(([k, n]) => `<button class="chip${SET.level === k ? " on" : ""}" data-l="${k}">${n}</button>`).join("");
+  document.querySelectorAll("#skillChips .chip").forEach(c => c.onclick = () => { const s = c.dataset.s; SET.skills = SET.skills.includes(s) ? SET.skills.filter(x => x !== s) : [...SET.skills, s]; if (!SET.skills.length) SET.skills = [s]; save("gl-set", SET); chipsUI(); newQ(); });
+  document.querySelectorAll("#levelChips .chip").forEach(c => c.onclick = () => { SET.level = c.dataset.l; save("gl-set", SET); chipsUI(); newQ(); });
+}
+function weightedSkill() {
+  const w = SET.skills.map(s => { const st = STATS[s]; if (!st || st.recent.length < 3) return 3; const r = st.recent.slice(-10); return 1 + 4 * (1 - r.reduce((a, b) => a + b, 0) / r.length); });
+  let r = Math.random() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < w.length; i++) if ((r -= w[i]) <= 0) return SET.skills[i];
+  return SET.skills[0];
+}
+const plainText = h => { const d = document.createElement("div"); d.innerHTML = String(h).replace(/<div class="muted"[^>]*>[\s\S]*?<\/div>/g, "").replace(/<br\s*\/?>|<\/div>/gi, " ; "); return d.textContent.replace(/\s+/g, " ").replace(/(\s*;\s*)+$/, "").replace(/;\s*;/g, ";").trim(); };
+function newQ() {
+  const skill = weightedSkill();
+  Q = GEN[skill](SET.level === "challenge"); Q.skill = skill;
+  tries = 0; done = false; usedHelp = false; qStart = performance.now();
+  $("pqSkill").textContent = `${SKILLS[skill].icon} ${SKILLS[skill].name} · ${SET.level === "challenge" ? "Challenge" : "Basic"}`;
+  $("pqText").innerHTML = Q.q; $("pqFb").textContent = ""; $("pqFb").className = "fb"; $("pqWork").innerHTML = "";
+  if (Q.choices) {
+    $("pqAns").innerHTML = `<div class="ansrow">${Q.choices.map(c => `<button class="btn choice" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
+    document.querySelectorAll("#pqAns .choice").forEach(b => b.onclick = () => submit(b.dataset.v, b));
+  } else {
+    const keys = Q.input === "set" ? ["≤", "≥", "<", ">", "∞", "−∞", "(", ")", "[", "]", "∪", " or ", "all real numbers", "none"] : Q.input === "points" ? ["(", ")", ",", "−", "none"] : Q.input === "number" ? ["−", "/", "undefined"] : Q.input === "line" ? ["y = ", "x", "−", "/", "(", ")"] : ["(", ")", ",", "−"];
+    $("pqAns").innerHTML = `<div class="ansrow"><input type="text" id="pqIn" placeholder="${esc(Q.ph || "Your answer")}" autocomplete="off" spellcheck="false" autocapitalize="off"><button class="btn primary" id="pqCheck">Check</button></div>
+      <div class="keys" data-target="pqIn">${keys.map(k => `<button data-ins="${esc(k)}">${esc(k.trim() || k)}</button>`).join("")}</div>`;
+    $("pqCheck").onclick = () => submit($("pqIn").value);
+    $("pqIn").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); done ? newQ() : submit($("pqIn").value); } };
+    bindKeys($("pqAns"));
+    if (window.innerWidth > 900) setTimeout(() => $("pqIn").focus({ preventScroll: true }), 30);
+  }
+  drawPractice();
+}
+function drawPractice() {
+  const show = Q.draw || (done && Q.reveal);
+  $("pqPlotCard").hidden = !show;
+  if (show) { pqPlot.layers = p => { if (Q.draw && !done) Q.draw(p); if (done && Q.reveal) Q.reveal(p); else if (done && Q.draw) Q.draw(p); }; pqPlot.resize(); }
+  $("pqNLCard").hidden = !(done && Q.nl);
+  if (done && Q.nl) drawNumberLine($("pqNL"), Q.nl);
+}
+function submit(v, btn) {
+  if (done) return;
+  if (!String(v).trim()) { $("pqFb").className = "fb badc"; $("pqFb").textContent = "Type an answer first."; return; }
+  const r = Q.check(v);
+  if (r.invalid) { $("pqFb").className = "fb info"; $("pqFb").textContent = r.msg; return; }
+  tries++;
+  const ok = !!r.ok, ms = performance.now() - qStart;
+  if (AM) AM.attempt({ question: plainText(Q.q).slice(0, 290), response: String(v).trim().slice(0, 190), answer: plainText(Q.ansPlain || Q.ans).slice(0, 190), correct: ok, ms,
+    topic: SKILLS[Q.skill].name, mode: tries === 1 ? (usedHelp ? "after hint" : "first try") : "second try", meta: { skill: Q.skill, level: SET.level } });
+  if (btn) btn.classList.add(ok ? "right" : "wrong");
+  if (ok) {
+    finish(tries === 1 && !usedHelp);
+    $("pqFb").className = "fb okc";
+    $("pqFb").innerHTML = `✓ ${pick(["Correct!", "Nice work!", "You got it!", "Exactly right!"])} ${r.msg ? `<span style="font-weight:600">${r.msg}</span>` : ""}`;
+  } else if (tries < 2) {
+    $("pqFb").className = "fb badc"; $("pqFb").innerHTML = `Not quite. ${r.msg || ""} Try once more. <div class="muted" style="font-weight:600">💡 ${Q.hint}</div>`;
+    usedHelp = true;
+  } else {
+    finish(false);
+    $("pqFb").className = "fb badc"; $("pqFb").innerHTML = `${r.msg ? r.msg + " " : ""}The answer is <span class="eq">${Q.ans}</span>.`;
+  }
+}
+function finish(firstTry) {
+  done = true;
+  const st = STATS[Q.skill] || { n: 0, c: 0, recent: [] };
+  st.n++; if (firstTry) st.c++; st.recent.push(firstTry ? 1 : 0); if (st.recent.length > 20) st.recent.shift();
+  STATS[Q.skill] = st; save("gl-stats", STATS);
+  sess.n++; if (firstTry) sess.c++;
+  streak = firstTry ? streak + 1 : 0; if (streak > best) { best = streak; save("gl-best", best); }
+  $("hdrStreak").textContent = `🎯 ${streak} in a row`;
+  if (AM) {
+    const r = st.recent.slice(-10);
+    if (st.n >= 10 && r.length >= 10 && r.reduce((a, b) => a + b, 0) >= 8) AM.award(`master-${Q.skill}`, `Mastered: ${SKILLS[Q.skill].name}`, SKILLS[Q.skill].icon);
+    if (streak === 10) AM.award("streak-10", "10 graphing answers right in a row", "🎯");
+    if (streak === 25) AM.award("streak-25", "25 graphing answers right in a row", "🔥");
+    const tot = Object.values(STATS).reduce((a, s) => a + s.c, 0);
+    [[50, "⭐"], [150, "🏆"]].forEach(([n, ic]) => { if (tot >= n) AM.award(`total-${n}`, `${n} graphing problems right on the first try`, ic); });
+  }
+  showSteps();
+  if ($("pqCheck")) $("pqCheck").textContent = "Next ›", $("pqCheck").onclick = newQ;
+  $("sess").innerHTML = `<b style="font-size:26px">${sess.c} / ${sess.n}</b> right on the first try<div class="bar" style="margin-top:6px"><div style="width:${sess.c / sess.n * 100}%;background:var(--green)"></div></div><div class="muted" style="margin-top:6px">Best streak ever: <b>${best}</b></div>`;
+  drawPractice();
+}
+function showSteps() { if (Q.steps && Q.steps.length) $("pqWork").innerHTML = `<ol class="steps">${Q.steps.map(s => `<li>${s}</li>`).join("")}</ol>`; }
+$("pqHint").onclick = () => { if (done || !Q) return; usedHelp = true; $("pqFb").className = "fb info"; $("pqFb").innerHTML = `💡 ${Q.hint}`; };
+$("pqSteps").onclick = () => {
+  if (!Q || done) { showSteps(); return; }
+  if (AM && tries === 0) AM.attempt({ question: plainText(Q.q).slice(0, 290), response: "(showed the steps)", answer: plainText(Q.ansPlain || Q.ans).slice(0, 190), correct: false, ms: performance.now() - qStart, topic: SKILLS[Q.skill].name, mode: "showed answer", meta: { skill: Q.skill, level: SET.level } });
+  finish(false); $("pqFb").className = "fb info"; $("pqFb").innerHTML = `The answer is <span class="eq">${Q.ans}</span>.`;
+};
+$("pqNext").onclick = newQ;
+function bindKeys(root) {
+  root.querySelectorAll(".keys").forEach(k => k.querySelectorAll("button").forEach(b => b.onclick = e => {
+    e.preventDefault(); const inp = $(k.dataset.target); const ins = b.dataset.ins ?? b.textContent;
+    const s = inp.selectionStart ?? inp.value.length, en = inp.selectionEnd ?? inp.value.length;
+    inp.value = ins.length > 6 && ins !== " and " && ins !== " or " ? ins : inp.value.slice(0, s) + ins + inp.value.slice(en);
+    const pos = ins.length > 6 && ins !== " and " && ins !== " or " ? inp.value.length : s + ins.length;
+    inp.focus(); inp.setSelectionRange(pos, pos); inp.dispatchEvent(new Event("input"));
+  }));
+}
+
+/* =====================================================================
+   PROGRESS
+   ===================================================================== */
+function renderProgress() {
+  let n = 0, c = 0;
+  $("progTable").innerHTML = `<tr><th>Skill</th><th>Answered</th><th>Last 10</th><th></th></tr>` + Object.entries(SKILLS).map(([k, s]) => {
+    const st = STATS[k] || { n: 0, c: 0, recent: [] }; n += st.n; c += st.c;
+    const r = st.recent.slice(-10), pct = r.length ? Math.round(r.reduce((a, b) => a + b, 0) / r.length * 100) : 0;
+    const status = !st.n ? '<span class="muted">not tried</span>' : r.length >= 10 && pct >= 80 ? '<b class="ok">✓ mastered</b>' : pct >= 60 ? '<b style="color:#b7791f">getting there</b>' : '<b class="bad">keep practicing</b>';
+    return `<tr><td>${s.icon} ${s.name}</td><td>${st.n}</td><td style="min-width:110px"><div class="bar"><div style="width:${pct}%;background:${pct >= 80 ? "var(--green)" : pct >= 60 ? "#f2b01e" : "var(--red)"}"></div></div></td><td>${status}</td></tr>`;
+  }).join("");
+  $("progTotals").innerHTML = `<p style="font-size:20px;margin:0"><b>${n}</b> questions answered</p><p style="font-size:20px;margin:6px 0"><b>${n ? Math.round(c / n * 100) : 0}%</b> right on the first try</p><p style="font-size:20px;margin:0">Best streak: <b>${best}</b> in a row</p>`;
+}
+
+/* =====================================================================
+   NAV & BOOT
+   ===================================================================== */
+const VIEWS = ["explore", "lines", "ineq", "practice", "progress"];
+function go(v) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.v === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === v));
+  if (v === "practice" && !Q) newQ();
+  if (v === "progress") renderProgress();
+  [exPlot, lnPlot, iqPlot, pqPlot].forEach(p => p && p.resize());
+  if (v === "ineq") drawNumberLine($("i1NL"), I1SET ? I1SET.set : null);
+  try { save("gl-tab", v); } catch (e) {}
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => go(t.dataset.v));
+
+function boot() {
+  if (AM && AM.student) { $("appTitle").textContent = `${AM.student.firstName}'s Graphing Lab`; document.title = $("appTitle").textContent; $("logo").textContent = AM.student.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase(); }
+  if (Array.isArray(PLAN.skills) && PLAN.skills.length || PLAN.note) {
+    $("plan").innerHTML = `<b style="color:var(--accent)">📌 ${PLAN._by ? esc(PLAN._by.split(" ")[0]) + "’s" : "Your tutor’s"} plan:</b> ` +
+      (PLAN.skills && PLAN.skills.length ? `practice <b>${PLAN.skills.filter(s => SKILLS[s]).map(s => SKILLS[s].name).join(", ")}</b>. ` : "") + (PLAN.note ? esc(PLAN.note) : "");
+    $("plan").style.display = "block";
+  }
+  // explore
+  exPlot = new Plot($("exCanvas"), { interactive: true, onHover: (x, y) => { $("exCoord").textContent = x == null ? "Drag the graph to move it. Point at it to read coordinates." : `x = ${(+x.toFixed(2))}, y = ${(+y.toFixed(2))}` + (EXF ? `   ·   on the graph: f(${+x.toFixed(2)}) = ${Number.isFinite(EXF.f(x)) ? +EXF.f(x).toFixed(2) : "undefined"}` : ""); } });
+  exPlot.layers = drawExplore;
+  $("samples").innerHTML = SAMPLES.map((s, i) => `<button class="chip" data-i="${i}">${s[0]}</button>`).join("");
+  document.querySelectorAll("#samples .chip").forEach(c => c.onclick = () => { const [, fam, p] = SAMPLES[+c.dataset.i]; EX.fam = fam; if (fam === "custom") EX.custom = p; else EX.params[fam] = { ...p }; renderFamUI(); renderExplore(); });
+  $("customGo").onclick = () => { EX.custom = $("customIn").value; renderExplore(); };
+  $("customIn").onkeydown = e => { if (e.key === "Enter") { EX.custom = $("customIn").value; renderExplore(); } };
+  $("cmpIn").oninput = () => { EX.cmp = $("cmpIn").value; renderExplore(); };
+  $("exColor").onchange = renderExplore; $("quizMe").onchange = renderExplore;
+  renderFamUI(); renderExplore();
+  // lines
+  lnPlot = new Plot($("lnCanvas"), { interactive: true, onClick: (x, y) => { if (LN.mode !== "point") return; const sn = v => (Math.abs(v - Math.round(v)) < 0.3 ? Math.round(v) : Math.round(v * 2) / 2); $("pX").value = sn(x); $("pY").value = sn(y); renderLines(); },
+    onHover: (x, y) => { $("lnCoord").textContent = x == null ? (LN.mode === "point" ? "Tap the graph to move point P." : "") : `x = ${+x.toFixed(2)}, y = ${+y.toFixed(2)}`; } });
+  lnPlot.layers = drawLines;
+  $("lnSamples").innerHTML = LN_SAMPLES.map(s => `<button class="chip">${s}</button>`).join("");
+  document.querySelectorAll("#lnSamples .chip").forEach(c => c.onclick = () => { $("lnIn").value = c.textContent; renderLines(); });
+  $("cmpSamples").innerHTML = CMP_SAMPLES.map((s, i) => `<button class="chip" data-i="${i}">${s[0]} &amp; ${s[1]}</button>`).join("");
+  document.querySelectorAll("#cmpSamples .chip").forEach(c => c.onclick = () => { const s = CMP_SAMPLES[+c.dataset.i]; $("lnA").value = s[0]; $("lnB").value = s[1]; renderLines(); });
+  ["lnIn", "pX", "pY", "lnA", "lnB"].forEach(id => $(id).oninput = renderLines);
+  ["showPar", "showPerp"].forEach(id => $(id).onchange = renderLines);
+  document.querySelectorAll("#lnMode button").forEach(b => b.onclick = () => { LN.mode = b.dataset.m; document.querySelectorAll("#lnMode button").forEach(x => x.classList.toggle("on", x === b)); $("lnPointBox").hidden = LN.mode !== "point"; $("lnCmpBox").hidden = LN.mode === "point"; renderLines(); });
+  renderLines();
+  // inequalities
+  document.querySelectorAll("#iqMode button").forEach(b => b.onclick = () => { document.querySelectorAll("#iqMode button").forEach(x => x.classList.toggle("on", x === b)); $("iqOne").hidden = b.dataset.m !== "one"; $("iqTwo").hidden = b.dataset.m === "one"; iqPlot.resize(); drawNumberLine($("i1NL"), I1SET ? I1SET.set : null); });
+  $("i1Samples").innerHTML = I1_SAMPLES.map(s => `<button class="chip">${s}</button>`).join("");
+  document.querySelectorAll("#i1Samples .chip").forEach(c => c.onclick = () => { $("i1In").value = c.textContent; renderI1(); });
+  $("i1In").oninput = renderI1; $("i1TestGo").onclick = testI1; $("i1Test").oninput = testI1;
+  bindKeys($("iqOne"));
+  iqPlot = new Plot($("iqCanvas"), { interactive: true, onClick: (x, y) => { const sn = v => (Math.abs(v - Math.round(v)) < 0.3 ? Math.round(v) : Math.round(v * 2) / 2); IQPT = { x: sn(x), y: sn(y) }; testI2(); iqPlot.render(); },
+    onHover: (x, y) => { $("iqCoord").textContent = x == null ? "Tap the graph to test a point." : `x = ${+x.toFixed(2)}, y = ${+y.toFixed(2)}`; } });
+  iqPlot.layers = drawI2;
+  iqRowsUI(["y ≥ x − 2", "y < −2x + 4", ""]);
+  $("iqSamples").innerHTML = I2_SAMPLES.map((s, i) => `<button class="chip" data-i="${i}">${s.join(" & ")}</button>`).join("");
+  document.querySelectorAll("#iqSamples .chip").forEach(c => c.onclick = () => { iqRowsUI(I2_SAMPLES[+c.dataset.i]); IQPT = null; renderI2(); });
+  ["iqEach", "iqBoth"].forEach(id => $(id).onchange = () => iqPlot.render());
+  renderI1(); renderI2();
+  // practice
+  pqPlot = new Plot($("pqCanvas"), { maxH: 480 });
+  chipsUI();
+  document.querySelectorAll("[data-z]").forEach(b => b.onclick = () => { const p = { ex: exPlot, ln: lnPlot, iq: iqPlot }[b.dataset.p]; b.dataset.z === "in" ? p.zoom(0.7) : b.dataset.z === "out" ? p.zoom(1.4) : p.reset(); });
+  let start = load("gl-tab", "explore");
+  if (PLAN.tab && VIEWS.includes(PLAN.tab) && PLAN._updated && load("gl-tabplan", null) !== PLAN._updated) { start = PLAN.tab; save("gl-tabplan", PLAN._updated); }
+  go(VIEWS.includes(start) ? start : "explore");
+}
+boot();
+</script>
+</body>
+</html>

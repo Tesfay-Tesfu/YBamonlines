@@ -1,0 +1,17 @@
+{
+  "name": "Graphing Lab",
+  "subject": "math",
+  "grade_min": 8,
+  "grade_max": 10,
+  "icon": "📈",
+  "version": "1.0.0",
+  "description": "Algebra 1: graph functions and find intercepts, slope, domain, range, maximum and minimum, and where they increase or decrease. Parallel and perpendicular lines, inequalities, compound inequalities and systems, with practice that records every answer.",
+  "settings": [
+    { "key": "skills", "label": "Skills to practice", "type": "multi",
+      "options": ["xint", "yint", "slope", "domain", "range", "extrema", "incdec", "parperp", "ineq1", "compound", "ineq2"],
+      "labels": ["x-intercepts", "y-intercept", "Slope", "Domain", "Range", "Maximum & minimum", "Increasing & decreasing", "Parallel & perpendicular", "Solving inequalities", "Compound inequalities", "Graphing inequalities & systems"] },
+    { "key": "level", "label": "Level", "type": "select", "options": ["basic", "challenge"], "labels": ["Basic", "Challenge"] },
+    { "key": "tab", "label": "Open on", "type": "select", "options": ["explore", "lines", "ineq", "practice"], "labels": ["Graph & key features", "Parallel & perpendicular", "Inequalities", "Practice"] },
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

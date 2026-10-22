@@ -1,0 +1,16 @@
+{
+  "name": "Motion Lab",
+  "subject": "physics",
+  "grade_min": 6,
+  "grade_max": 10,
+  "icon": "🚗",
+  "version": "1.0.0",
+  "description": "Explore position, velocity and acceleration with a moving car and live graphs, then practice speed, distance, time, unit and graph questions with worked solutions.",
+  "settings": [
+    { "key": "topics", "label": "Topics to practice", "type": "multi",
+      "options": ["speed", "distance", "time", "units", "acceleration", "graphs"],
+      "labels": ["Speed", "Distance", "Time", "Units (km/h ↔ m/s)", "Acceleration", "Position–time graphs"] },
+    { "key": "level", "label": "Level", "type": "select", "options": ["basic", "challenge"], "labels": ["Basic", "Challenge"] },
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "My New Tool",
+  "subject": "math",
+  "grade_min": 5,
+  "grade_max": 8,
+  "icon": "🧮",
+  "version": "1.0.0",
+  "description": "One or two sentences that parents and tutors will read in the tool catalog.",
+  "settings": [
+    { "key": "max", "label": "Largest number", "type": "select", "options": [10, 20, 50, 100] },
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

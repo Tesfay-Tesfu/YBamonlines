@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion Lab</title>
+<style>
+  :root { --brand:#005596; --deep:#002d5f; --accent:#e66414; --ink:#1f2a37; --muted:#5b6b7c; --line:#dde5ee; --bg:#f5f7fb;
+          --green:#0f9d58; --red:#d93025; --blue:#2563eb; --purple:#8b3fc7; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:17px; color:var(--ink); background:var(--bg); line-height:1.5; }
+  button, input, select { font:inherit; }
+  header { background:var(--deep); color:#fff; padding:10px 18px; display:flex; align-items:center; gap:12px; border-bottom:4px solid var(--accent); }
+  header .logo { width:34px; height:34px; border-radius:10px; background:var(--accent); display:grid; place-items:center; font-weight:800; }
+  header h1 { font-size:18px; margin:0; } header .sub { font-size:12.5px; opacity:.75; } header .grow { flex:1; }
+  .pill { background:rgba(255,255,255,.12); border-radius:999px; padding:5px 12px; font-weight:800; white-space:nowrap; }
+  nav { background:#fff; border-bottom:1px solid var(--line); display:flex; gap:4px; padding:6px 12px; overflow-x:auto; position:sticky; top:0; z-index:5; }
+  .tab { border:none; background:none; padding:9px 14px; border-radius:12px; cursor:pointer; font-weight:800; color:var(--muted); white-space:nowrap; }
+  .tab:hover { background:#f1f5fa; color:var(--brand); } .tab.on { background:var(--brand); color:#fff; }
+  main { max-width:1180px; margin:0 auto; padding:18px 16px 60px; }
+  .view { display:none; } .view.on { display:block; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 18px; min-width:0; }
+  .card h3 { margin:0 0 10px; font-size:14px; text-transform:uppercase; letter-spacing:.08em; color:var(--brand); display:flex; align-items:center; gap:8px; }
+  .card h3::before { content:""; width:5px; height:15px; border-radius:3px; background:var(--accent); }
+  .grid2 { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:16px; align-items:start; }
+  .stack { display:flex; flex-direction:column; gap:16px; }
+  .btn { border:2px solid var(--line); background:#fff; border-radius:12px; padding:8px 15px; cursor:pointer; font-weight:800; color:var(--ink); }
+  .btn:hover { border-color:var(--brand); color:var(--brand); }
+  .btn.primary { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .btn.go { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .muted { color:var(--muted); font-size:14.5px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { border:2px solid var(--line); background:#fff; border-radius:999px; padding:5px 13px; cursor:pointer; font-weight:800; font-size:14px; }
+  .chip.on { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .slider { display:grid; grid-template-columns:150px 1fr 90px; gap:10px; align-items:center; margin:8px 0; }
+  .slider b { text-align:right; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--brand); }
+  svg { width:100%; height:auto; display:block; }
+  svg text { font-family:"Nunito",system-ui,sans-serif; }
+  .readout { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:10px; }
+  .readout div { background:#f5f8fc; border-radius:12px; padding:8px 10px; text-align:center; }
+  .readout b { display:block; font-size:22px; font-variant-numeric:tabular-nums; }
+  .readout span { font-size:13px; color:var(--muted); font-weight:700; }
+  .q { font-size:22px; font-weight:800; margin:4px 0 12px; }
+  .ansrow { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .ansrow input { width:160px; font-size:24px; font-weight:800; padding:8px 12px; border:3px solid var(--line); border-radius:12px; }
+  .ansrow input:focus { outline:none; border-color:var(--brand); }
+  .unit { font-size:20px; font-weight:800; color:var(--muted); }
+  .fb { min-height:30px; font-size:18px; font-weight:800; margin-top:10px; }
+  .fb.ok { color:var(--green); } .fb.bad { color:var(--red); }
+  .work { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px; margin-top:10px; font-size:17px; }
+  .work .name { font-weight:900; color:var(--accent); }
+  .tri { display:flex; justify-content:center; }
+  .bar { height:12px; border-radius:6px; background:#edf1f6; overflow:hidden; }
+  .bar div { height:100%; background:var(--green); }
+  table.topics { width:100%; border-collapse:collapse; font-size:15px; }
+  table.topics td, table.topics th { padding:8px 6px; border-bottom:1px solid var(--line); text-align:left; }
+  .plan { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px; margin-bottom:16px; display:none; }
+  @media (max-width:880px) { .grid2 { grid-template-columns:1fr; } .slider { grid-template-columns:110px 1fr 70px; } header .sub { display:none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">ML</div>
+  <div><h1 id="title">Motion Lab</h1><div class="sub">Afro-Merica Tutor · speed, velocity &amp; acceleration</div></div>
+  <div class="grow"></div>
+  <span class="pill" id="hdrStreak">🎯 0 in a row</span>
+</header>
+<nav>
+  <button class="tab on" data-v="explore">🚗 Explore</button>
+  <button class="tab" data-v="practice">🧮 Practice</button>
+  <button class="tab" data-v="progress">📊 My progress</button>
+</nav>
+<main>
+  <div class="plan" id="plan"></div>
+
+  <!-- EXPLORE -->
+  <section class="view on" id="explore">
+    <div class="grid2">
+      <div class="stack">
+        <div class="card"><h3>The track</h3>
+          <svg id="track" viewBox="0 0 640 120"></svg>
+          <div class="row" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn go" id="play">▶ Play</button>
+            <button class="btn" id="reset">↺ Reset</button>
+            <span class="muted" id="hint">Set the sliders, then press Play.</span>
+          </div>
+          <div class="readout">
+            <div><b id="rt">0.0 s</b><span>time t</span></div>
+            <div><b id="rx">0.0 m</b><span>position x</span></div>
+            <div><b id="rv">0.0 m/s</b><span>velocity v</span></div>
+          </div>
+        </div>
+        <div class="card"><h3>Controls</h3>
+          <div class="slider"><label for="x0">Start position x₀</label><input type="range" id="x0" min="0" max="40" step="1" value="0"><b id="x0v"></b></div>
+          <div class="slider"><label for="v0">Start velocity v₀</label><input type="range" id="v0" min="-10" max="20" step="0.5" value="5"><b id="v0v"></b></div>
+          <div class="slider"><label for="acc">Acceleration a</label><input type="range" id="acc" min="-4" max="4" step="0.5" value="0"><b id="accv"></b></div>
+          <p class="muted" style="margin:6px 0 0">Equations: <b>v = v₀ + a·t</b> and <b>x = x₀ + v₀·t + ½·a·t²</b></p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card"><h3>Position–time graph</h3><svg id="gx" viewBox="0 0 420 220"></svg>
+          <p class="muted" style="margin:4px 0 0">The <b>slope</b> of this graph is the velocity. A straight line means constant velocity.</p></div>
+        <div class="card"><h3>Velocity–time graph</h3><svg id="gv" viewBox="0 0 420 220"></svg>
+          <p class="muted" style="margin:4px 0 0">The <b>slope</b> is the acceleration. The <b>area</b> under the line is the distance moved.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section class="view" id="practice">
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center"><b>Topics:</b><div class="chips" id="topicChips"></div></div>
+      <div style="display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-top:10px"><b>Level:</b><div class="chips" id="levelChips"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="muted" id="qTopic"></div>
+        <div class="q" id="qText"></div>
+        <div id="qGraph"></div>
+        <div class="ansrow"><input id="ans" inputmode="decimal" autocomplete="off" aria-label="Your answer"><span class="unit" id="qUnit"></span>
+          <button class="btn primary" id="check">Check</button><button class="btn" id="skip">Next ›</button></div>
+        <div class="fb" id="fb"></div>
+        <div id="work"></div>
+      </div>
+      <div class="stack">
+        <div class="card"><h3>Formula triangle</h3><div class="tri" id="tri"></div>
+          <p class="muted" style="margin:6px 0 0">Cover what you want to find. What's left shows how to calculate it.</p></div>
+        <div class="card"><h3>This session</h3><div id="sess" class="muted">Answer a question to start.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="view" id="progress">
+    <div class="grid2">
+      <div class="card"><h3>Topics</h3><table class="topics" id="topicTable"></table>
+        <p class="muted">A topic is <b>mastered</b> when 8 of your last 10 answers are correct.</p></div>
+      <div class="card"><h3>Totals</h3><div id="totals"></div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const txt = (p, x, y, s, a) => { const t = el("text", { x, y, ...(a || {}) }, p); t.textContent = s; return t; };
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const fmt = (n, d = 1) => (Math.round(n * 10 ** d) / 10 ** d).toString();
+
+// Works inside AMtutorTools (data saved per student) and as a plain file (browser storage).
+const AM = window.AMT || null;
+const store = AM && AM.storage ? AM.storage : window.localStorage;
+const load = (k, d) => { try { const v = JSON.parse(store.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const save = (k, v) => { try { store.setItem(k, JSON.stringify(v)); } catch (e) {} };
+
+if (AM && AM.student) { $("title").textContent = `${AM.student.firstName}'s Motion Lab`; document.title = $("title").textContent; }
+
+/* ============================ EXPLORE ============================ */
+const S = { t: 0, playing: false, raf: 0, last: 0, T: 8 };
+const P = () => ({ x0: +$("x0").value, v0: +$("v0").value, a: +$("acc").value });
+const posAt = (p, t) => p.x0 + p.v0 * t + 0.5 * p.a * t * t;
+const velAt = (p, t) => p.v0 + p.a * t;
+function labels() {
+  const p = P();
+  $("x0v").textContent = `${p.x0} m`; $("v0v").textContent = `${p.v0} m/s`; $("accv").textContent = `${p.a} m/s²`;
+}
+function drawTrack() {
+  const p = P(), svg = $("track"); svg.innerHTML = "";
+  const X = x => 20 + Math.max(-20, Math.min(220, x)) / 200 * 600;
+  el("rect", { x: 0, y: 70, width: 640, height: 26, rx: 6, fill: "#e8edf3" }, svg);
+  for (let m = 0; m <= 200; m += 20) {
+    el("line", { x1: X(m), x2: X(m), y1: 96, y2: 104, stroke: "#5b6b7c", "stroke-width": 1.5 }, svg);
+    txt(svg, X(m), 117, m, { "font-size": 11, fill: "#5b6b7c", "text-anchor": "middle" });
+  }
+  const x = posAt(p, S.t), v = velAt(p, S.t), cx = X(x);
+  // car
+  el("rect", { x: cx - 22, y: 44, width: 44, height: 22, rx: 7, fill: "#e66414" }, svg);
+  el("rect", { x: cx - 12, y: 32, width: 24, height: 16, rx: 5, fill: "#f6a26b" }, svg);
+  el("circle", { cx: cx - 12, cy: 68, r: 6, fill: "#1f2a37" }, svg); el("circle", { cx: cx + 12, cy: 68, r: 6, fill: "#1f2a37" }, svg);
+  // velocity arrow
+  if (Math.abs(v) > 0.05) {
+    const len = Math.max(-120, Math.min(120, v * 6)), y = 22;
+    el("line", { x1: cx, x2: cx + len, y1: y, y2: y, stroke: "#2563eb", "stroke-width": 4, "stroke-linecap": "round" }, svg);
+    el("path", { d: `M${cx + len} ${y} l${len > 0 ? -9 : 9} -6 v12 z`, fill: "#2563eb" }, svg);
+    txt(svg, cx + len / 2, y - 7, `v = ${fmt(v)} m/s`, { "font-size": 12, "font-weight": 800, fill: "#2563eb", "text-anchor": "middle" });
+  }
+  $("rt").textContent = `${fmt(S.t)} s`; $("rx").textContent = `${fmt(x)} m`; $("rv").textContent = `${fmt(v)} m/s`;
+}
+function graph(svg, f, yLabel, color, kind) {
+  const p = P(); svg.innerHTML = "";
+  const L = 46, R = 405, T = 12, B = 190, T_MAX = S.T;
+  const vals = []; for (let i = 0; i <= 80; i++) vals.push(f(p, i / 80 * T_MAX));
+  let lo = Math.min(0, ...vals), hi = Math.max(1, ...vals); const pad = (hi - lo) * 0.1; lo -= lo < 0 ? pad : 0; hi += pad;
+  const X = t => L + t / T_MAX * (R - L), Y = v => B - (v - lo) / (hi - lo) * (B - T);
+  for (let i = 0; i <= 4; i++) { const v = lo + (hi - lo) * i / 4, y = Y(v); el("line", { x1: L, x2: R, y1: y, y2: y, stroke: "#eef2f7" }, svg); txt(svg, L - 6, y + 4, fmt(v, 0), { "font-size": 11, fill: "#5b6b7c", "text-anchor": "end" }); }
+  for (let t = 0; t <= T_MAX; t += 2) txt(svg, X(t), B + 15, t, { "font-size": 11, fill: "#5b6b7c", "text-anchor": "middle" });
+  el("line", { x1: L, x2: R, y1: Y(0), y2: Y(0), stroke: "#1f2a37", "stroke-width": 1.2 }, svg);
+  el("line", { x1: L, x2: L, y1: T, y2: B, stroke: "#1f2a37", "stroke-width": 1.2 }, svg);
+  txt(svg, (L + R) / 2, 214, "time t (s)", { "font-size": 12, fill: "#5b6b7c", "text-anchor": "middle" });
+  txt(svg, 4, 10, yLabel, { "font-size": 12, fill: color, "font-weight": 800 });
+  if (kind === "v") { // shaded area = displacement so far
+    const pts = [`${X(0)},${Y(0)}`]; for (let i = 0; i <= 40; i++) { const t = i / 40 * S.t; pts.push(`${X(t)},${Y(f(p, t))}`); } pts.push(`${X(S.t)},${Y(0)}`);
+    if (S.t > 0) el("polygon", { points: pts.join(" "), fill: color, "fill-opacity": .15 }, svg);
+  }
+  el("polyline", { points: vals.map((v, i) => `${X(i / 80 * T_MAX)},${Y(v)}`).join(" "), fill: "none", stroke: color, "stroke-width": 1.5, "stroke-dasharray": "4 4", opacity: .5 }, svg);
+  const done = []; for (let i = 0; i <= 60; i++) { const t = i / 60 * S.t; done.push(`${X(t)},${Y(f(p, t))}`); }
+  el("polyline", { points: done.join(" "), fill: "none", stroke: color, "stroke-width": 3.5, "stroke-linecap": "round" }, svg);
+  el("circle", { cx: X(S.t), cy: Y(f(p, S.t)), r: 5.5, fill: color }, svg);
+}
+function renderExplore() { labels(); drawTrack(); graph($("gx"), posAt, "x (m)", "#e66414", "x"); graph($("gv"), velAt, "v (m/s)", "#2563eb", "v"); }
+function frame(now) {
+  if (!S.playing) return;
+  const dt = Math.min(0.05, (now - S.last) / 1000); S.last = now;
+  S.t = Math.min(S.T, S.t + dt);
+  renderExplore();
+  if (S.t >= S.T) { S.playing = false; $("play").textContent = "▶ Play"; $("hint").textContent = "Try a negative acceleration: the car slows down, stops, then reverses!"; return; }
+  S.raf = requestAnimationFrame(frame);
+}
+$("play").onclick = () => {
+  if (S.playing) { S.playing = false; $("play").textContent = "▶ Play"; return; }
+  if (S.t >= S.T) S.t = 0;
+  S.playing = true; S.last = performance.now(); $("play").textContent = "⏸ Pause"; S.raf = requestAnimationFrame(frame);
+};
+$("reset").onclick = () => { S.playing = false; S.t = 0; $("play").textContent = "▶ Play"; renderExplore(); };
+["x0", "v0", "acc"].forEach(id => $(id).oninput = () => { S.t = 0; S.playing = false; $("play").textContent = "▶ Play"; renderExplore(); });
+
+/* ============================ PRACTICE ============================ */
+const TOPICS = {
+  speed: { name: "Speed = distance ÷ time", icon: "🏃" },
+  distance: { name: "Distance = speed × time", icon: "📏" },
+  time: { name: "Time = distance ÷ speed", icon: "⏱" },
+  units: { name: "Change units (km/h ↔ m/s)", icon: "🔁" },
+  acceleration: { name: "Acceleration = change in v ÷ time", icon: "🚀" },
+  graphs: { name: "Read a position–time graph", icon: "📈" },
+};
+const PLAN = (AM && AM.settings) || {};
+let SET = load("ml-set", { topics: ["speed", "distance", "time"], level: "basic", planStamp: null });
+if (PLAN._updated && SET.planStamp !== PLAN._updated) {
+  if (Array.isArray(PLAN.topics) && PLAN.topics.length) SET.topics = PLAN.topics.filter(t => TOPICS[t]);
+  if (PLAN.level === "basic" || PLAN.level === "challenge") SET.level = PLAN.level;
+  if (!SET.topics.length) SET.topics = ["speed"];
+  SET.planStamp = PLAN._updated; save("ml-set", SET);
+}
+if ((Array.isArray(PLAN.topics) && PLAN.topics.length) || PLAN.note) {
+  const esc = s => String(s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]);
+  $("plan").innerHTML = `<b style="color:var(--accent)">📌 ${PLAN._by ? esc(PLAN._by.split(" ")[0]) + "’s" : "Your tutor’s"} plan:</b> ` +
+    (PLAN.topics && PLAN.topics.length ? `practice <b>${PLAN.topics.filter(t => TOPICS[t]).map(t => TOPICS[t].name.split(" =")[0].split(" (")[0]).join(", ")}</b>. ` : "") + (PLAN.note ? esc(PLAN.note) : "");
+  $("plan").style.display = "block";
+}
+let STATS = load("ml-stats", {});   // topic -> {n, c, recent:[0/1...]}
+let Q = null, qStart = 0, answered = false, streak = 0, best = load("ml-best", 0), sess = { n: 0, c: 0 };
+
+function chipsUI() {
+  $("topicChips").innerHTML = Object.entries(TOPICS).map(([k, t]) => `<button class="chip${SET.topics.includes(k) ? " on" : ""}" data-t="${k}">${t.icon} ${t.name.split(" =")[0].split(" (")[0]}</button>`).join("");
+  $("levelChips").innerHTML = [["basic", "Basic (whole numbers)"], ["challenge", "Challenge (decimals, bigger values)"]].map(([k, n]) => `<button class="chip${SET.level === k ? " on" : ""}" data-l="${k}">${n}</button>`).join("");
+  document.querySelectorAll("#topicChips .chip").forEach(c => c.onclick = () => {
+    const t = c.dataset.t; SET.topics = SET.topics.includes(t) ? SET.topics.filter(x => x !== t) : [...SET.topics, t];
+    if (!SET.topics.length) SET.topics = [t]; save("ml-set", SET); chipsUI(); newQ();
+  });
+  document.querySelectorAll("#levelChips .chip").forEach(c => c.onclick = () => { SET.level = c.dataset.l; save("ml-set", SET); chipsUI(); newQ(); });
+}
+
+function makeQ(topic) {
+  const hard = SET.level === "challenge";
+  const name = pick(["Amara", "Kofi", "Zara", "Malik", "Nia", "Jaden", "Imani", "Tunde"]);
+  if (topic === "speed") {
+    const v = hard ? rnd(12, 95) / (pick([1, 2])) : rnd(2, 15), t = hard ? rnd(4, 40) : rnd(2, 12), d = v * t;
+    return { topic, unit: "m/s", ans: v, tol: 0.05, text: `${name} cycles ${fmt(d, 1)} m in ${t} s. What is the average speed?`,
+      work: [`speed = distance ÷ time`, `speed = ${fmt(d, 1)} ÷ ${t}`, `speed = <b>${fmt(v, 2)} m/s</b>`], tri: "speed" };
+  }
+  if (topic === "distance") {
+    const v = hard ? rnd(15, 120) / 2 : rnd(2, 12), t = hard ? rnd(5, 30) : rnd(2, 10);
+    return { topic, unit: "m", ans: v * t, tol: 0.05, text: `A train moves at ${fmt(v, 1)} m/s for ${t} s. How far does it go?`,
+      work: [`distance = speed × time`, `distance = ${fmt(v, 1)} × ${t}`, `distance = <b>${fmt(v * t, 2)} m</b>`], tri: "distance" };
+  }
+  if (topic === "time") {
+    const v = hard ? rnd(4, 25) : rnd(2, 10), t = hard ? rnd(3, 60) / 2 : rnd(2, 12), d = v * t;
+    return { topic, unit: "s", ans: t, tol: 0.05, text: `${name} runs ${fmt(d, 1)} m at ${v} m/s. How long does it take?`,
+      work: [`time = distance ÷ speed`, `time = ${fmt(d, 1)} ÷ ${v}`, `time = <b>${fmt(t, 2)} s</b>`], tri: "time" };
+  }
+  if (topic === "units") {
+    if (Math.random() < 0.5) {
+      const ms = hard ? rnd(3, 40) : pick([5, 10, 15, 20, 25, 30]), kmh = ms * 3.6;
+      return { topic, unit: "km/h", ans: kmh, tol: 0.05, text: `Change ${ms} m/s into km/h.`,
+        work: [`1 m/s = 3.6 km/h  (3600 s in an hour, 1000 m in a km)`, `${ms} × 3.6 = <b>${fmt(kmh, 2)} km/h</b>`], tri: null };
+    }
+    const kmh = hard ? rnd(10, 130) : pick([18, 36, 54, 72, 90, 108]), ms = kmh / 3.6;
+    return { topic, unit: "m/s", ans: ms, tol: 0.05, text: `Change ${kmh} km/h into m/s. ${hard ? "(Round to 1 decimal place.)" : ""}`,
+      work: [`divide by 3.6 to go from km/h to m/s`, `${kmh} ÷ 3.6 = <b>${fmt(ms, 2)} m/s</b>`], tri: null };
+  }
+  if (topic === "acceleration") {
+    const t = hard ? rnd(2, 12) : rnd(2, 6), a = hard ? rnd(-8, 10) / 2 || 1.5 : rnd(1, 5), v1 = hard ? rnd(0, 20) : rnd(0, 10), v2 = v1 + a * t;
+    return { topic, unit: "m/s²", ans: a, tol: 0.05, text: `A car's velocity changes from ${v1} m/s to ${fmt(v2, 1)} m/s in ${t} s. What is its acceleration?`,
+      work: [`acceleration = (final v − starting v) ÷ time`, `a = (${fmt(v2, 1)} − ${v1}) ÷ ${t}`, `a = <b>${fmt(a, 2)} m/s²</b>${a < 0 ? " (negative: it is slowing down)" : ""}`], tri: "accel" };
+  }
+  // graphs: slope of a position-time line
+  const v = hard ? pick([-3, -2, 1.5, 2.5, 3, 4, 6]) : rnd(1, 6), x0 = hard ? rnd(0, 20) : 0, t1 = pick([4, 5, 6, 8]);
+  return { topic: "graphs", unit: "m/s", ans: v, tol: 0.05, text: `The graph shows an object's position. What is its velocity?`,
+    graph: { v, x0, t1 }, work: [`velocity = slope = change in position ÷ change in time`, `= (${x0 + v * t1} − ${x0}) ÷ (${t1} − 0)`, `= <b>${fmt(v, 2)} m/s</b>`], tri: null };
+}
+function drawQGraph(g) {
+  const box = $("qGraph"); box.innerHTML = "";
+  if (!g) return;
+  const svg = el("svg", { viewBox: "0 0 380 210" }, box); svg.style.maxWidth = "420px"; svg.style.margin = "0 0 10px";
+  const L = 44, R = 365, T = 10, B = 180, x1 = g.x0 + g.v * g.t1;
+  const lo = Math.min(0, g.x0, x1), hi = Math.max(g.x0, x1) * 1.1 + 2, step = (hi - lo) > 40 ? 10 : 5;
+  const X = t => L + t / (g.t1 + 1) * (R - L), Y = v => B - (v - lo) / (hi - lo) * (B - T);
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) { el("line", { x1: L, x2: R, y1: Y(v), y2: Y(v), stroke: "#eef2f7" }, svg); txt(svg, L - 6, Y(v) + 4, v, { "font-size": 11, fill: "#5b6b7c", "text-anchor": "end" }); }
+  for (let t = 0; t <= g.t1 + 1; t++) { el("line", { x1: X(t), x2: X(t), y1: T, y2: B, stroke: "#eef2f7" }, svg); txt(svg, X(t), B + 15, t, { "font-size": 11, fill: "#5b6b7c", "text-anchor": "middle" }); }
+  el("line", { x1: L, x2: R, y1: Y(0), y2: Y(0), stroke: "#1f2a37" }, svg); el("line", { x1: L, x2: L, y1: T, y2: B, stroke: "#1f2a37" }, svg);
+  el("line", { x1: X(0), y1: Y(g.x0), x2: X(g.t1), y2: Y(x1), stroke: "#e66414", "stroke-width": 3.5, "stroke-linecap": "round" }, svg);
+  [[0, g.x0], [g.t1, x1]].forEach(([t, x]) => el("circle", { cx: X(t), cy: Y(x), r: 5, fill: "#e66414" }, svg));
+  txt(svg, (L + R) / 2, 205, "time (s)", { "font-size": 12, fill: "#5b6b7c", "text-anchor": "middle" });
+  txt(svg, 2, 10, "x (m)", { "font-size": 12, fill: "#e66414", "font-weight": 800 });
+}
+function drawTri(kind) {
+  const box = $("tri");
+  const sets = { speed: ["d", "s", "t", "s = d ÷ t"], distance: ["d", "s", "t", "d = s × t"], time: ["d", "s", "t", "t = d ÷ s"], accel: ["Δv", "a", "t", "a = Δv ÷ t"] };
+  const s = sets[kind] || sets.speed, hl = kind === "distance" ? 0 : kind === "time" ? 2 : 1;
+  box.innerHTML = `<svg viewBox="0 0 220 170" style="max-width:240px"><path d="M110 10 L210 160 L10 160 Z" fill="#fff8ee" stroke="#e66414" stroke-width="3" stroke-linejoin="round"/>
+    <line x1="45" y1="100" x2="175" y2="100" stroke="#e66414" stroke-width="2.5"/><line x1="110" y1="100" x2="110" y2="160" stroke="#e66414" stroke-width="2.5"/>
+    ${[[110, 80, s[0]], [70, 140, s[1]], [150, 140, s[2]]].map(([x, y, t], i) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="26" font-weight="900" fill="${i === hl ? "#0f9d58" : "#1f2a37"}">${t}</text>`).join("")}</svg>
+    <div style="text-align:center;font-weight:900;font-size:18px">${s[3]}</div>`;
+}
+function weightedTopic() {
+  // more practice on topics that are new or weak
+  const w = SET.topics.map(t => { const s = STATS[t]; if (!s || s.recent.length < 3) return 3; const r = s.recent.slice(-10); return 1 + 4 * (1 - r.reduce((a, b) => a + b, 0) / r.length); });
+  let tot = w.reduce((a, b) => a + b, 0), r = Math.random() * tot;
+  for (let i = 0; i < w.length; i++) { if ((r -= w[i]) <= 0) return SET.topics[i]; }
+  return SET.topics[0];
+}
+function newQ() {
+  Q = makeQ(weightedTopic()); answered = false; qStart = performance.now();
+  $("qTopic").textContent = `${TOPICS[Q.topic].icon} ${TOPICS[Q.topic].name}`;
+  $("qText").textContent = Q.text; $("qUnit").textContent = Q.unit;
+  $("ans").value = ""; $("ans").disabled = false; $("fb").textContent = ""; $("fb").className = "fb"; $("work").innerHTML = "";
+  drawQGraph(Q.graph); drawTri(Q.tri || (Q.topic === "acceleration" ? "accel" : "speed"));
+  if ($("practice").classList.contains("on")) $("ans").focus();
+}
+function check() {
+  if (!Q) return;
+  const raw = $("ans").value.trim().replace(",", ".");
+  if (answered) { newQ(); return; }
+  if (raw === "" || isNaN(+raw)) { $("fb").className = "fb bad"; $("fb").textContent = "Type a number first."; return; }
+  const val = +raw, ok = Math.abs(val - Q.ans) <= Math.max(Q.tol, Math.abs(Q.ans) * 0.01) + 1e-9;
+  const ms = performance.now() - qStart;
+  answered = true; $("ans").disabled = true;
+  const s = STATS[Q.topic] || { n: 0, c: 0, recent: [] };
+  s.n++; if (ok) s.c++; s.recent.push(ok ? 1 : 0); if (s.recent.length > 20) s.recent.shift();
+  STATS[Q.topic] = s; save("ml-stats", STATS);
+  sess.n++; if (ok) sess.c++;
+  streak = ok ? streak + 1 : 0;
+  if (streak > best) { best = streak; save("ml-best", best); }
+  $("hdrStreak").textContent = `🎯 ${streak} in a row`;
+  if (AM) {
+    AM.attempt({ question: Q.text, response: raw + " " + Q.unit, answer: fmt(Q.ans, 2) + " " + Q.unit, correct: ok, ms, topic: TOPICS[Q.topic].name, mode: SET.level });
+    if (streak === 10) AM.award("streak-10", "10 correct in a row", "🎯");
+    if (streak === 25) AM.award("streak-25", "25 correct in a row", "🔥");
+    const r = s.recent.slice(-10); if (r.length >= 10 && r.reduce((a, b) => a + b, 0) >= 8) AM.award(`master-${Q.topic}`, `Mastered: ${TOPICS[Q.topic].name}`, TOPICS[Q.topic].icon);
+  }
+  $("fb").className = "fb " + (ok ? "ok" : "bad");
+  $("fb").textContent = ok ? pick(["✓ Correct!", "✓ Great work!", "✓ Nailed it!"]) + ` (${fmt(ms / 1000)} s)` : `Not quite. The answer is ${fmt(Q.ans, 2)} ${Q.unit}.`;
+  $("work").innerHTML = `<div class="work"><div class="name">How to solve it</div>${Q.work.map(w => `<div>➜ ${w}</div>`).join("")}</div>`;
+  $("check").textContent = "Next ›";
+  $("sess").innerHTML = `<b style="font-size:26px">${sess.c} / ${sess.n}</b> correct<div class="bar" style="margin-top:6px"><div style="width:${sess.c / sess.n * 100}%"></div></div><div class="muted" style="margin-top:6px">Best streak ever: <b>${best}</b></div>`;
+}
+$("check").onclick = () => { check(); if (!answered) $("check").textContent = "Check"; };
+$("skip").onclick = () => { $("check").textContent = "Check"; newQ(); };
+$("ans").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("check").click(); } });
+document.addEventListener("keydown", e => { if (e.key === "Enter" && answered && $("practice").classList.contains("on") && document.activeElement !== $("ans")) $("check").click(); });
+
+/* ============================ PROGRESS ============================ */
+function renderProgress() {
+  let n = 0, c = 0;
+  $("topicTable").innerHTML = `<tr><th>Topic</th><th>Answers</th><th>Last 10</th><th></th></tr>` + Object.entries(TOPICS).map(([k, t]) => {
+    const s = STATS[k] || { n: 0, c: 0, recent: [] }; n += s.n; c += s.c;
+    const r = s.recent.slice(-10), pct = r.length ? Math.round(r.reduce((a, b) => a + b, 0) / r.length * 100) : 0;
+    const status = !s.n ? '<span class="muted">not tried</span>' : r.length >= 10 && pct >= 80 ? '<b style="color:var(--green)">✓ mastered</b>' : pct >= 60 ? '<b style="color:#b7791f">getting there</b>' : '<b style="color:var(--red)">needs work</b>';
+    return `<tr><td>${t.icon} ${t.name}</td><td>${s.n}</td><td style="min-width:120px"><div class="bar"><div style="width:${pct}%;background:${pct >= 80 ? "var(--green)" : pct >= 60 ? "#f2b01e" : "var(--red)"}"></div></div></td><td>${status}</td></tr>`;
+  }).join("");
+  $("totals").innerHTML = `<p style="font-size:20px;margin:0"><b>${n}</b> questions answered</p><p style="font-size:20px;margin:6px 0"><b>${n ? Math.round(c / n * 100) : 0}%</b> correct overall</p><p style="font-size:20px;margin:0">Best streak: <b>${best}</b> in a row</p>`;
+}
+
+/* ============================ NAV ============================ */
+function go(v) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.v === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === v));
+  if (v === "practice") { if (!Q) newQ(); else $("ans").focus(); }
+  if (v === "progress") renderProgress();
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => go(t.dataset.v));
+chipsUI(); renderExplore();
+</script>
+</body>
+</html>

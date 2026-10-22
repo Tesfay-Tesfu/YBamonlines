@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My New Tool</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #f5f7fb; color: #1f2a37; }
+  header { background: #002d5f; color: #fff; padding: 12px 18px; border-bottom: 4px solid #e66414; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px; }
+  .card { background: #fff; border: 1px solid #dde5ee; border-radius: 16px; padding: 18px; }
+  .q { font-size: 32px; font-weight: 800; margin: 8px 0 14px; }
+  input { font: inherit; font-size: 24px; width: 140px; padding: 6px 10px; border: 2px solid #dde5ee; border-radius: 10px; }
+  button { font: inherit; font-weight: 800; padding: 8px 16px; border-radius: 10px; border: 2px solid #005596; background: #005596; color: #fff; cursor: pointer; }
+  .fb { min-height: 28px; font-weight: 800; margin-top: 10px; }
+</style>
+</head>
+<body>
+<header><b id="title">My New Tool</b></header>
+<main>
+  <div class="card">
+    <div class="q" id="q"></div>
+    <input id="ans" inputmode="numeric" aria-label="Answer"> <button id="check">Check</button>
+    <div class="fb" id="fb"></div>
+    <p>Correct so far: <b id="score">0</b></p>
+  </div>
+</main>
+<script>
+// ---------------------------------------------------------------------------
+// Starter tool for AMtutorTools. Copy this folder, rename it (lowercase-with-dashes),
+// edit manifest.json, and redeploy. Or upload a single .html file from Admin → Tools.
+//
+// window.AMT is added by the platform. When you open this file directly on your
+// computer, AMT is missing, so everything below also works on its own.
+// ---------------------------------------------------------------------------
+const AM = window.AMT || null;
+const store = AM ? AM.storage : window.localStorage;          // saved per student on the server
+const tutorPlan = (AM && AM.settings) || {};                  // fields from manifest.json "settings"
+
+if (AM && AM.student) document.getElementById("title").textContent = `${AM.student.firstName}'s New Tool`;
+
+let score = Number(store.getItem("score") || 0);
+document.getElementById("score").textContent = score;
+
+const maxN = Number(tutorPlan.max) || 10;
+let a, b, start;
+function next() {
+  a = 1 + Math.floor(Math.random() * maxN); b = 1 + Math.floor(Math.random() * maxN);
+  document.getElementById("q").textContent = `${a} + ${b} = ?`;
+  document.getElementById("ans").value = ""; start = performance.now();
+}
+document.getElementById("check").onclick = () => {
+  const typed = document.getElementById("ans").value.trim();
+  if (!typed) return;
+  const ok = Number(typed) === a + b;
+  document.getElementById("fb").textContent = ok ? "✓ Correct!" : `Not quite: ${a} + ${b} = ${a + b}`;
+  if (ok) { score++; store.setItem("score", String(score)); document.getElementById("score").textContent = score; }
+
+  // Report the answer so parents and tutors see it in reports
+  if (AM) AM.attempt({ question: `${a} + ${b}`, response: typed, answer: String(a + b), correct: ok, ms: performance.now() - start, topic: "addition" });
+  // Give a badge once
+  if (AM && score === 10) AM.award("ten-correct", "10 correct answers", "🌟");
+
+  setTimeout(next, 900);
+};
+next();
+</script>
+</body>
+</html>

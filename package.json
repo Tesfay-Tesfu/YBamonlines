@@ -1,0 +1,19 @@
+{
+  "name": "amtutortools",
+  "version": "1.0.0",
+  "description": "AMtutorTools \u2014 Afro-Merica Tutor platform for grade 5-12 math and physics tools, with student, parent, tutor and admin access.",
+  "main": "src/server.js",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/migrate.js",
+    "seed:demo": "node scripts/seed-demo.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}

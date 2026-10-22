@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ratios &amp; Proportions Lab · Afro-Merica Tutor</title>
+<style>
+  :root {
+    --brand: #005596; --brand-deep: #002d5f; --accent: #e66414;
+    --ink: #1f2a37; --muted: #5b6b7c; --line: #dbe3ec; --panel: #fff; --bg: #f3f6fa;
+    --blue: #1e64c8; --orange: #e66414; --green: #009650; --red: #d0342c; --purple: #7828a0;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); }
+  header { background: var(--brand-deep); color: #fff; display: flex; align-items: center; gap: 14px; padding: 10px 18px; }
+  header .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; font-weight: 800; font-size: 15px; }
+  header h1 { font-size: 17px; margin: 0; }
+  header .sub { font-size: 13px; opacity: .75; }
+  header .spacer { flex: 1; }
+  header a { color: #ffd38f; font-size: 13px; text-decoration: none; }
+
+  /* tabs */
+  nav { background: #fff; border-bottom: 3px solid var(--accent); display: flex; gap: 18px; padding: 0 18px; overflow-x: auto; }
+  .tgroup { display: flex; align-items: flex-end; gap: 4px; padding-top: 8px; }
+  .tgroup > span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); align-self: center; margin-right: 4px; white-space: nowrap; }
+  .tab { border: none; background: none; padding: 9px 12px; font-size: 13.5px; color: var(--muted); cursor: pointer; border-radius: 8px 8px 0 0; white-space: nowrap; font-weight: 600; }
+  .tab:hover { color: var(--brand); background: #f2f6fb; }
+  .tab.on { background: var(--accent); color: #fff; }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 16px; }
+  .panel { display: none; }
+  .panel.on { display: block; }
+  .lesson-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 14px; }
+  .crumb { font-size: 12px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .lesson-head h2 { margin: 2px 0 0; font-size: 21px; color: var(--brand-deep); }
+  .lesson-head .grow { flex: 1; }
+  .video { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--brand); text-decoration: none; border: 1px solid var(--line); background: #fff; padding: 7px 12px; border-radius: 999px; }
+  .video:hover { border-color: var(--brand); }
+
+  .cols { display: grid; grid-template-columns: 330px 1fr; gap: 14px; align-items: start; }
+  .stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 13px 15px; box-shadow: 0 1px 2px rgba(16,24,40,.04); min-width: 0; }
+  .card h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--brand); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+  .card h3::before { content: ""; width: 4px; height: 13px; background: var(--accent); border-radius: 2px; }
+  .key { background: #fff8f2; border-color: #f6c9a6; font-size: 14px; line-height: 1.5; }
+  .key p { margin: 0 0 8px; }
+  .key p:last-child { margin: 0; }
+  .formula { font-family: Georgia, "Times New Roman", serif; font-size: 16.5px; text-align: center; background: #fff; border: 1px dashed #f1b98f; border-radius: 8px; padding: 7px; margin: 6px 0 10px; }
+
+  /* controls */
+  .ctl { margin-bottom: 12px; }
+  .ctl-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; margin-bottom: 4px; }
+  .ctl-top output { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  select, .inp { font-size: 14px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: #fff; }
+  select { width: 100%; }
+  .inp { width: 80px; }
+  .inp:focus, select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(0,85,150,.12); }
+  label.tg { display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; margin: 6px 0; }
+  label.tg input { accent-color: var(--brand); width: 16px; height: 16px; }
+  .lbl { font-size: 12.5px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .chip { font-size: 12.5px; background: #eef3f9; color: var(--brand); border: none; border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+  .chip:hover { background: #dde8f4; }
+  .btn { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 7px; padding: 7px 12px; font-size: 13.5px; cursor: pointer; }
+  .btn:hover { border-color: var(--brand); color: var(--brand); }
+  .btn.primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn.primary:hover { background: #00467d; color: #fff; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; }
+
+  /* visuals */
+  svg.viz { width: 100%; height: auto; display: block; touch-action: none; user-select: none; }
+  svg text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .verdict { margin-top: 10px; padding: 9px 12px; border-radius: 8px; font-size: 14px; line-height: 1.45; }
+  .verdict.ok { background: #e7f6ee; border: 1px solid #9fd9b8; color: #0b5d34; }
+  .verdict.bad { background: #fdecea; border: 1px solid #f2b3ae; color: #8e1f18; }
+  .verdict.info { background: #eef4fb; border: 1px solid #c6d9ee; color: #0d3c6b; }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .tbl th { background: var(--brand); color: #fff; font-weight: 600; padding: 7px 8px; text-align: center; }
+  .tbl th:first-child { border-radius: 7px 0 0 0; } .tbl th:last-child { border-radius: 0 7px 0 0; }
+  .tbl td { padding: 6px 8px; text-align: center; border-bottom: 1px solid var(--line); }
+  .tbl tr:nth-child(even) td { background: #f7f9fc; }
+  .tbl td.hl { color: var(--accent); font-weight: 700; }
+  .tbl td.bad { color: var(--red); font-weight: 700; }
+  .tbl td.good { color: var(--green); font-weight: 700; }
+  .tbl input { width: 60px; text-align: center; font-size: 13.5px; padding: 3px; border: 1px solid var(--line); border-radius: 5px; }
+  .scroll-x { overflow-x: auto; }
+
+  .bigeq { font-family: Georgia, "Times New Roman", serif; font-size: 30px; text-align: center; padding: 10px; }
+  .bigeq .v-y { color: var(--orange); } .bigeq .v-x { color: var(--blue); } .bigeq .v-k { color: var(--green); font-weight: 700; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid2.wide { grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); }
+  .badge { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #fff; }
+  .badge.ok { background: var(--green); } .badge.bad { background: var(--red); }
+
+  /* practice */
+  .practice { margin-top: 14px; border-top: 3px solid var(--accent); }
+  .pq-q { font-size: 15px; line-height: 1.55; margin-bottom: 10px; }
+  .pq-q table.tbl { width: auto; min-width: 240px; margin: 8px 0; }
+  .pq-q svg { width: 100%; max-width: 360px; display: block; margin: 6px 0; }
+  .pq-a { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .pq-in { font-size: 15px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 7px; width: 220px; }
+  .pq-in:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(0,85,150,.12); }
+  .choice.right { background: var(--green); color: #fff; border-color: var(--green); }
+  .choice.wrong { background: var(--red); color: #fff; border-color: var(--red); }
+  .pq-fb { margin-top: 10px; font-size: 14px; line-height: 1.5; min-height: 1px; }
+  .pq-fb.ok { color: #0b5d34; } .pq-fb.bad { color: #8e1f18; } .pq-fb.info { color: #0d3c6b; }
+  .pq-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .pq-ctl .score { margin-left: auto; font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  @media (max-width: 920px) {
+    .cols, .grid2, .grid2.wide { grid-template-columns: 1fr; }
+    .bigeq { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">AM</div>
+  <div><h1 id="appTitle">Ratios &amp; Proportions Lab</h1><div class="sub">Afro-Merica Tutor · Grade 7 Math</div></div>
+  <div class="spacer"></div>
+  <a href="https://www.amonlines.com" target="_blank" rel="noopener">www.amonlines.com</a>
+</header>
+
+<nav>
+  <div class="tgroup"><span>Unit 1 · Scale Drawings</span>
+    <button class="tab" data-t="p11">1.1 Scale Factor</button>
+    <button class="tab" data-t="p12">1.2 Scale Drawings</button>
+  </div>
+  <div class="tgroup"><span>Unit 2 · Proportional Relationships</span>
+    <button class="tab" data-t="p21">2.1 Constant k</button>
+    <button class="tab" data-t="p22">2.2 Equations</button>
+    <button class="tab" data-t="p23">2.3 Comparing</button>
+    <button class="tab" data-t="p24">2.4 Representations</button>
+  </div>
+</nav>
+
+<main>
+<!-- ===================================================== 1.1 -->
+<section class="panel" id="p11">
+  <div class="lesson-head">
+    <div><div class="crumb">Unit 1 · Sub-Unit 1</div><h2>Using Ratios to Determine the Scale Factor Between Scaled Copies</h2></div>
+    <div class="grow"></div>
+    <a class="video" target="_blank" rel="noopener" href="https://dam.amplify.com/asset/c6822f75-5f42-4bd1-9e29-9f7bc2b3e942/mp4/ADM-refresh-video-7-1-1.mp4">▶ Lesson video</a>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><span class="lbl">Figure</span>
+          <select id="shape11">
+            <option value="house">House</option><option value="arrow">Arrow</option>
+            <option value="lshape">L-shape</option><option value="tri">Right triangle</option>
+          </select></div>
+        <div class="ctl"><div class="ctl-top"><span>Scale factor <i>k</i></span><output id="k11o"></output></div>
+          <input type="range" id="k11" min="0.25" max="3" step="0.25" value="2">
+          <div class="chips" id="k11chips"></div></div>
+        <label class="tg"><input type="checkbox" id="dist11"> Distort it (different vertical factor)</label>
+        <div class="ctl" id="ky11wrap" hidden><div class="ctl-top"><span>Vertical factor</span><output id="ky11o"></output></div>
+          <input type="range" id="ky11" min="0.25" max="3" step="0.25" value="1"></div>
+      </div>
+      <div class="card key">
+        <h3>Key Idea</h3>
+        <p>A <b>scaled copy</b> multiplies <b>every</b> length of the original by the same number, the <b>scale factor</b>.</p>
+        <div class="formula">scale factor = copy length ÷ original length</div>
+        <p><b>k &gt; 1</b> enlarges, <b>k &lt; 1</b> shrinks, and <b>k = 1</b> keeps the same size. Angles never change.</p>
+        <p>Area is multiplied by <b>k²</b>, not k.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card"><svg class="viz" id="svg11"></svg><div id="verdict11"></div></div>
+      <div class="card"><h3>Side-by-Side Ratios</h3><div class="scroll-x" id="tbl11"></div></div>
+    </div>
+  </div>
+  <div class="card practice"><h3>Quick Check</h3><div id="pr11"></div></div>
+</section>
+
+<!-- ===================================================== 1.2 -->
+<section class="panel" id="p12">
+  <div class="lesson-head">
+    <div><div class="crumb">Unit 1 · Sub-Unit 2</div><h2>Using Ratios to Determine Unknown Scales in Scale Drawings</h2></div>
+    <div class="grow"></div>
+    <a class="video" target="_blank" rel="noopener" href="https://dam.amplify.com/asset/8cd355a0-e8ff-4bb9-a208-ab002cfbf1c6/mp4/ADM-refresh-video-7-1-2.mp4">▶ Lesson video</a>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <div class="card">
+        <h3>The Scale</h3>
+        <div class="row">1 cm on the drawing represents
+          <input class="inp" type="number" id="s12" value="2" min="0.1" step="any">
+          <select id="u12" style="width:auto"><option value="m">m</option><option value="ft">ft</option></select></div>
+        <div class="chips" id="s12chips"></div>
+        <div class="verdict info" id="ways12"></div>
+      </div>
+      <div class="card">
+        <h3>Find an Unknown Scale</h3>
+        <div class="row">A length of <input class="inp" type="number" id="d12" value="6" step="any"> cm on the drawing</div>
+        <div class="row" style="margin-top:6px">represents <input class="inp" type="number" id="a12" value="15" step="any">
+          <select id="au12" style="width:auto"><option>m</option><option>ft</option><option>km</option></select> in real life.</div>
+        <div class="verdict ok" id="calc12"></div>
+        <button class="btn primary" id="apply12" style="margin-top:8px">Use this scale on the floor plan</button>
+      </div>
+      <div class="card key">
+        <h3>Key Idea</h3>
+        <p>A scale like <b>1 cm : 2 m</b> is a ratio. Every 1 cm on the drawing stands for 2 m in real life.</p>
+        <div class="formula">1 cm represents (actual ÷ drawing)</div>
+        <p>To get an <b>actual</b> length, multiply the drawing length by the scale. To get a <b>drawing</b> length, divide.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card"><svg class="viz" id="svg12"></svg></div>
+      <div class="card"><h3>Drawing vs. Real Life</h3><div class="scroll-x" id="tbl12"></div><div id="area12"></div></div>
+    </div>
+  </div>
+  <div class="card practice"><h3>Quick Check</h3><div id="pr12"></div></div>
+</section>
+
+<!-- ===================================================== 2.1 -->
+<section class="panel" id="p21">
+  <div class="lesson-head">
+    <div><div class="crumb">Unit 2 · Sub-Unit 1</div><h2>Determining the Constant of Proportionality</h2></div>
+    <div class="grow"></div>
+    <a class="video" target="_blank" rel="noopener" href="https://dam.amplify.com/asset/6ec55683-f5ee-4363-a966-8b313dc8a839/mp4/ADM-refresh-video-7-2-1.mp4">▶ Lesson video</a>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><span class="lbl">Situation</span><select id="ctx21"></select></div>
+        <div class="ctl"><div class="ctl-top"><span>Rate <i>k</i></span><output id="k21o"></output></div><input type="range" id="k21"></div>
+        <label class="tg"><input type="checkbox" id="fee21"> Add a starting amount (breaks it!)</label>
+        <div class="ctl" id="b21wrap" hidden><div class="ctl-top"><span>Starting amount</span><output id="b21o"></output></div><input type="range" id="b21" min="1" max="20" step="1" value="5"></div>
+        <p class="lbl">Tip: type your own x-values in the table.</p>
+      </div>
+      <div class="card key">
+        <h3>Key Idea</h3>
+        <p>In a <b>proportional relationship</b>, y ÷ x is the <b>same for every row</b>. That number is the <b>constant of proportionality</b>, k.</p>
+        <div class="formula">k = y ÷ x</div>
+        <p>k is also the <b>unit rate</b>: the value of y when x = 1.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card"><h3>Table</h3><div class="scroll-x" id="tbl21"></div><div id="verdict21"></div></div>
+      <div class="card"><h3>Graph</h3><svg class="viz" id="svg21"></svg></div>
+    </div>
+  </div>
+  <div class="card practice"><h3>Quick Check</h3><div id="pr21"></div></div>
+</section>
+
+<!-- ===================================================== 2.2 -->
+<section class="panel" id="p22">
+  <div class="lesson-head">
+    <div><div class="crumb">Unit 2 · Sub-Unit 2</div><h2>Writing Equations for Proportional Relationships</h2></div>
+    <div class="grow"></div>
+    <a class="video" target="_blank" rel="noopener" href="https://dam.amplify.com/asset/4689bc36-434b-45d1-9188-b6fd80477ca3/mp4/ADM-refresh-video-7-2-2.mp4">▶ Lesson video</a>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><span class="lbl">Situation</span><select id="ctx22"></select></div>
+        <div class="ctl"><div class="ctl-top"><span>Constant <i>k</i></span><output id="k22o"></output></div><input type="range" id="k22"></div>
+      </div>
+      <div class="card key">
+        <h3>Key Idea</h3>
+        <p>Every proportional relationship has an equation of the form</p>
+        <div class="formula"><span style="color:var(--orange)">y</span> = <b style="color:var(--green)">k</b><span style="color:var(--blue)">x</span></div>
+        <p><b>Find k first</b> (total ÷ number of units), then write the equation.</p>
+        <p>Flip it around and the constant becomes <b>1/k</b>.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card"><h3>The Equation</h3><div class="bigeq" id="eq22"></div><div class="verdict info" id="words22"></div></div>
+      <div class="grid2">
+        <div class="card"><h3>Check It With a Table</h3><div id="tbl22"></div></div>
+        <div class="card"><h3>The Other Direction</h3><div class="bigeq" id="rev22" style="font-size:24px"></div><div id="revwords22" style="font-size:14px;line-height:1.5"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card practice"><h3>Quick Check: Write the Equation</h3><div id="pr22"></div></div>
+</section>
+
+<!-- ===================================================== 2.3 -->
+<section class="panel" id="p23">
+  <div class="lesson-head">
+    <div><div class="crumb">Unit 2 · Sub-Unit 3</div><h2>Comparing Proportional Relationships</h2></div>
+    <div class="grow"></div>
+    <a class="video" target="_blank" rel="noopener" href="https://dam.amplify.com/asset/8107210a-189a-4288-8c95-cd43fc8603eb/mp4/ADM-refresh-video-7-2-3.mp4">▶ Lesson video</a>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><span class="lbl">Situation</span>
+          <select id="sc23"><option value="bikes">Two cyclists</option><option value="stores">Two stores</option><option value="printers">Two printers</option></select></div>
+        <div class="ctl"><div class="ctl-top"><span id="kA23l">A</span><output id="kA23o"></output></div><input type="range" id="kA23"></div>
+        <div class="ctl"><div class="ctl-top"><span id="kB23l">B</span><output id="kB23o"></output></div><input type="range" id="kB23"></div>
+      </div>
+      <div class="card key">
+        <h3>Key Idea</h3>
+        <p>To compare, find each <b>unit rate k</b>, no matter how the relationship is shown: table, equation, graph or words.</p>
+        <p>On a graph, the <b>steeper</b> line has the <b>greater</b> k.</p>
+        <p>Then think about the context: a greater rate is <b>faster</b>, but for prices a smaller rate is the <b>better deal</b>.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="grid2">
+        <div class="card"><h3 id="hA23">A: Table</h3><div id="tblA23"></div><div class="verdict info" id="kAcalc23" style="font-size:13px"></div></div>
+        <div class="card"><h3 id="hB23">B: Equation</h3><div class="bigeq" id="eqB23" style="font-size:24px"></div><div class="verdict info" id="kBcalc23" style="font-size:13px"></div></div>
+      </div>
+      <div class="card"><h3>Both on One Graph</h3><svg class="viz" id="svg23"></svg><div id="verdict23"></div></div>
+    </div>
+  </div>
+  <div class="card practice"><h3>Quick Check</h3><div id="pr23"></div></div>
+</section>
+
+<!-- ===================================================== 2.4 -->
+<section class="panel" id="p24">
+  <div class="lesson-head">
+    <div><div class="crumb">Unit 2 · Sub-Unit 4</div><h2>Representing Proportional Relationships With Multiple Representations</h2></div>
+    <div class="grow"></div>
+    <a class="video" target="_blank" rel="noopener" href="https://dam.amplify.com/asset/68ec3b7c-6312-4eb0-ba50-b4b7b6f94756/mp4/ADM-refresh-video-7-2-4.mp4">▶ Lesson video</a>
+  </div>
+  <div class="cols">
+    <div class="stack">
+      <div class="card">
+        <h3>Controls</h3>
+        <div class="ctl"><span class="lbl">Situation</span><select id="ctx24"></select></div>
+        <div class="ctl"><div class="ctl-top"><span>Unit rate <i>k</i></span><output id="k24o"></output></div><input type="range" id="k24"></div>
+        <div class="ctl"><div class="ctl-top"><span>Starting amount</span><output id="b24o"></output></div><input type="range" id="b24" min="0" max="20" step="1" value="0"></div>
+        <p class="lbl">Drag the big orange point on the graph to change k.</p>
+        <div id="badge24"></div>
+      </div>
+      <div class="card key">
+        <h3>Key Idea</h3>
+        <p>The <b>same relationship</b> can be shown four ways. All four show the same k.</p>
+        <p><b>Table:</b> y ÷ x is constant. <b>Equation:</b> y = kx. <b>Graph:</b> a straight line <b>through (0, 0)</b>, passing through <b>(1, k)</b>. <b>Words:</b> “k for every 1.”</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="grid2">
+        <div class="card"><h3>Words</h3><div id="words24" style="font-size:15px;line-height:1.55"></div></div>
+        <div class="card"><h3>Equation</h3><div class="bigeq" id="eq24" style="font-size:26px"></div></div>
+      </div>
+      <div class="grid2 wide">
+        <div class="card"><h3>Table</h3><div id="tbl24"></div></div>
+        <div class="card"><h3>Graph</h3><svg class="viz" id="svg24" style="cursor:grab"></svg></div>
+      </div>
+    </div>
+  </div>
+  <div class="card practice"><h3>Quick Check: Proportional or Not?</h3><div id="pr24"></div></div>
+</section>
+</main>
+
+<script>
+"use strict";
+/* =========================================================
+   Helpers
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs || {}) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(parent, x, y, s, attrs) { const t = el("text", { x, y, ...(attrs || {}) }, parent); t.textContent = s; return t; }
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function fmt(v, dp = 3) {
+  if (!Number.isFinite(v)) return "—";
+  const r = Math.round(v * 10 ** dp) / 10 ** dp;
+  return (Object.is(r, -0) ? 0 : r).toLocaleString("en-US", { maximumFractionDigits: dp });
+}
+const money = v => "$" + v.toFixed(2);
+function frac(v) {
+  if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v));
+  for (let d = 2; d <= 12; d++) { const n = v * d; if (Math.abs(n - Math.round(n)) < 1e-9) return `${Math.round(n)}/${d}`; }
+  return fmt(v);
+}
+const fracDec = v => { const f = frac(v); return f.includes("/") ? `${f} (${fmt(v)})` : f; };
+function parseNum(s) {
+  s = String(s).trim().toLowerCase().replace(/[−–]/g, "-").replace(/[$,]/g, "");
+  s = s.replace(/^1\s*:\s*/, "").replace(/^[a-z]\s*=\s*/, "").replace(/[a-z²\s.]*$/, m => (/^\.\d/.test(m) ? m : "")).trim();
+  let m;
+  if ((m = s.match(/^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/))) return Math.sign(+m[1] || 1) * (Math.abs(+m[1]) + m[2] / m[3]);
+  if ((m = s.match(/^(-?\d*\.?\d+)\s*\/\s*(\d*\.?\d+)$/))) return m[1] / m[2];
+  if (/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return parseFloat(s);
+  return NaN;
+}
+function numCheck(target, tol = 0.011) {
+  return v => {
+    const n = parseNum(v);
+    if (Number.isNaN(n)) return { ok: false, msg: "Enter a number, like 2.5 or 5/2." };
+    return Math.abs(n - target) <= tol + 1e-9 * Math.abs(target);
+  };
+}
+function tableHTML(head, rows) {
+  return `<table class="tbl"><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</table>`;
+}
+function niceStep(span, target) {
+  const raw = span / Math.max(1, target), p = 10 ** Math.floor(Math.log10(raw)), m = raw / p;
+  const n = m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10;
+  return { step: n * p, div: n === 2 ? 4 : 5 };
+}
+function niceMax(v) {
+  if (!(v > 0)) return 1;
+  const p = 10 ** Math.floor(Math.log10(v)), m = v / p;
+  return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+}
+function bindRange(rangeId, outId, fmtFn, onChange) {
+  const r = $(rangeId);
+  const upd = () => { if (outId) $(outId).textContent = fmtFn(+r.value); onChange(+r.value); };
+  r.addEventListener("input", upd);
+  return upd;
+}
+
+/* =========================================================
+   First-quadrant graph with major + minor grid and ticks
+   ========================================================= */
+function drawGraph(svg, o) {
+  const W = o.w || 560, H = o.h || 380, M = { l: 60, r: 26, t: 24, b: 50 };
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = "";
+  const id = svg.id + "-arr";
+  const mk = el("marker", { id, viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" }, el("defs", {}, svg));
+  el("path", { d: "M0,0 L10,5 L0,10 z", fill: "#1f2a37" }, mk);
+  const pw = W - M.l - M.r, ph = H - M.t - M.b;
+  const X = x => M.l + x / o.xmax * pw, Y = y => M.t + ph - y / o.ymax * ph;
+  const invX = px => (px - M.l) / pw * o.xmax, invY = py => (M.t + ph - py) / ph * o.ymax;
+  const gx = niceStep(o.xmax, pw / 55), gy = niceStep(o.ymax, ph / 40);
+  const lines = (st, max) => {
+    const minor = st.step / st.div, n = Math.floor(max / minor + 1e-9), out = [];
+    for (let i = 0; i <= n; i++) out.push({ v: i * minor, major: i % st.div === 0 });
+    return out;
+  };
+  const xl = lines(gx, o.xmax), yl = lines(gy, o.ymax);
+  el("rect", { x: M.l, y: M.t, width: pw, height: ph, fill: "#fff", stroke: "#dbe3ec" }, svg);
+  const grid = el("g", { "shape-rendering": "crispEdges" }, svg);
+  for (const major of [false, true]) {
+    const st = { stroke: major ? "#cdd8e4" : "#eef2f7", "stroke-width": 1 };
+    xl.filter(t => t.major === major && t.v > 0).forEach(t => el("line", { x1: X(t.v), x2: X(t.v), y1: M.t, y2: M.t + ph, ...st }, grid));
+    yl.filter(t => t.major === major && t.v > 0).forEach(t => el("line", { x1: M.l, x2: M.l + pw, y1: Y(t.v), y2: Y(t.v), ...st }, grid));
+  }
+  const ax = { stroke: "#1f2a37", "stroke-width": 1.6, "marker-end": `url(#${id})` };
+  el("line", { x1: X(0), y1: Y(0), x2: M.l + pw + 14, y2: Y(0), ...ax }, svg);
+  el("line", { x1: X(0), y1: Y(0), x2: X(0), y2: M.t - 14, ...ax }, svg);
+  const tk = el("g", { stroke: "#1f2a37", "shape-rendering": "crispEdges" }, svg);
+  xl.forEach(t => { if (t.v) el("line", { x1: X(t.v), x2: X(t.v), y1: Y(0), y2: Y(0) + (t.major ? 7 : 4), "stroke-width": t.major ? 1.4 : 1 }, tk); });
+  yl.forEach(t => { if (t.v) el("line", { x1: X(0) - (t.major ? 7 : 4), x2: X(0), y1: Y(t.v), y2: Y(t.v), "stroke-width": t.major ? 1.4 : 1 }, tk); });
+  const lab = { "font-size": 12, fill: "#3a4757" };
+  xl.filter(t => t.major).forEach(t => txt(svg, X(t.v), Y(0) + 21, fmt(t.v), { ...lab, "text-anchor": "middle" }));
+  yl.filter(t => t.major && t.v).forEach(t => txt(svg, X(0) - 11, Y(t.v) + 4, o.money ? "$" + fmt(t.v) : fmt(t.v), { ...lab, "text-anchor": "end" }));
+  txt(svg, M.l + pw / 2, H - 8, o.xlabel || "x", { "font-size": 13.5, "font-weight": 600, fill: "#1f2a37", "text-anchor": "middle" });
+  const yt = txt(svg, 0, 0, o.ylabel || "y", { "font-size": 13.5, "font-weight": 600, fill: "#1f2a37", "text-anchor": "middle" });
+  yt.setAttribute("transform", `translate(15 ${M.t + ph / 2}) rotate(-90)`);
+  const clip = "clip-" + svg.id;
+  el("rect", { x: M.l, y: M.t - 2, width: pw + 2, height: ph + 2 }, el("clipPath", { id: clip }, svg.querySelector("defs")));
+  const layer = el("g", { "clip-path": `url(#${clip})` }, svg);
+  const top = el("g", {}, svg);
+  return { X, Y, invX, invY, layer, top, M, pw, ph, W, H, xmax: o.xmax, ymax: o.ymax };
+}
+function dot(parent, x, y, color, r = 5, extra) {
+  return el("circle", { cx: x, cy: y, r, fill: color, stroke: "#fff", "stroke-width": 2, ...(extra || {}) }, parent);
+}
+function haloText(parent, x, y, s, attrs) {
+  const t = txt(parent, x, y, s, { "paint-order": "stroke", stroke: "#fff", "stroke-width": 4, "stroke-linejoin": "round", ...(attrs || {}) });
+  return t;
+}
+
+/* ---- AMtutorTools: who is here, the tutor's plan, reports ---- */
+const AM = window.AMT || null;
+const PLAN = (AM && AM.settings) || {};
+const LESSON = { pr11: "1.1 Scale Factor", pr12: "1.2 Scale Drawings", pr21: "2.1 Constant k", pr22: "2.2 Equations", pr23: "2.3 Comparing", pr24: "2.4 Representations" };
+const plainText = h => { const d = document.createElement("div"); d.innerHTML = String(h).replace(/<\/tr>/gi, " | </tr>").replace(/<\/t[dh]>/gi, " </td>").replace(/<br\s*\/?>/gi, " "); return d.textContent.replace(/\s+/g, " ").replace(/(\s*\|\s*)+$/, "").trim(); };
+let LSTATS = {};
+try { LSTATS = JSON.parse(localStorage.getItem("rpl-stats") || "{}") || {}; } catch (e) { LSTATS = {}; }
+function recordLesson(rootId, firstTry) {
+  const s = LSTATS[rootId] || { n: 0, first: 0 };
+  s.n++; if (firstTry) s.first++;
+  LSTATS[rootId] = s;
+  try { localStorage.setItem("rpl-stats", JSON.stringify(LSTATS)); } catch (e) {}
+  if (AM && s.first >= 10) AM.award(`lesson-${rootId}`, `10 first-try correct: ${LESSON[rootId]}`, "📐");
+  if (AM) { const all = Object.values(LSTATS).reduce((a, x) => a + x.first, 0); [[25, "⭐"], [75, "🏆"]].forEach(([n, ic]) => { if (all >= n) AM.award(`ratio-${n}`, `${n} ratio problems right first try`, ic); }); }
+}
+
+/* =========================================================
+   Practice engine
+   ========================================================= */
+function practice(rootId, gen) {
+  const root = $(rootId);
+  root.innerHTML = `<div class="pq-q"></div><div class="pq-a"></div><div class="pq-fb" aria-live="polite"></div>
+    <div class="pq-ctl"><button class="btn primary" data-a="new">New problem</button><button class="btn" data-a="show">Show answer</button><span class="score"></span></div>`;
+  const q = root.querySelector(".pq-q"), a = root.querySelector(".pq-a"), fb = root.querySelector(".pq-fb"), sc = root.querySelector(".score");
+  let p, tries, done, right = 0, total = 0;
+  const score = () => { sc.textContent = total ? `Score: ${right} / ${total} first-try correct` : ""; };
+  function next() {
+    p = gen(); tries = 0; done = false; p._t0 = performance.now();
+    q.innerHTML = p.q; fb.className = "pq-fb"; fb.innerHTML = "";
+    if (p.choices) {
+      a.innerHTML = p.choices.map(c => `<button class="btn choice">${c}</button>`).join("");
+      a.querySelectorAll(".choice").forEach(b => b.onclick = () => submit(b.textContent, b));
+    } else {
+      a.innerHTML = `<input class="pq-in" placeholder="${p.placeholder || "Your answer"}" autocomplete="off" spellcheck="false"><button class="btn primary">Check</button>`;
+      const inp = a.querySelector("input");
+      a.querySelector("button").onclick = () => submit(inp.value);
+      inp.onkeydown = e => { if (e.key === "Enter") submit(inp.value); };
+    }
+    if (p.after) p.after(q);
+  }
+  function submit(v, btn) {
+    if (done || !String(v).trim()) return;
+    const r = p.check(v), ok = r === true || (r && r.ok === true);
+    if (tries === 0) total++;
+    tries++;
+    if (AM) AM.attempt({ question: plainText(p.q).slice(0, 280), response: String(v).trim(), answer: plainText(p.ans),
+      correct: ok, ms: performance.now() - p._t0, topic: LESSON[rootId] || rootId, mode: tries === 1 ? "first try" : "retry" });
+    if (ok || tries >= 2) recordLesson(rootId, ok && tries === 1);
+    if (ok) {
+      if (tries === 1) right++;
+      done = true;
+      fb.className = "pq-fb ok"; fb.innerHTML = `✓ <b>Correct!</b> ${p.why || ""}`;
+      if (btn) btn.classList.add("right");
+    } else {
+      fb.className = "pq-fb bad";
+      const msg = (r && r.msg) || (p.hint || "Try again.");
+      fb.innerHTML = tries >= 2 ? `✗ ${msg}<br><b>Answer:</b> ${p.ans}. ${p.why || ""}` : `✗ <b>Not quite.</b> ${msg}`;
+      if (btn) btn.classList.add("wrong");
+      if (tries >= 2) done = true;
+    }
+    score();
+  }
+  root.querySelector('[data-a="new"]').onclick = next;
+  root.querySelector('[data-a="show"]').onclick = () => {
+    if (!done && tries === 0) total++;
+    done = true; fb.className = "pq-fb info"; fb.innerHTML = `<b>Answer:</b> ${p.ans}. ${p.why || ""}`; score();
+  };
+  next();
+}
+
+/* =========================================================
+   Equation parser (no eval) — used to check student equations
+   ========================================================= */
+function compile(src) {
+  const s = src.replace(/\s+/g, "");
+  const toks = []; let i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (/[0-9.]/.test(c)) { const m = s.slice(i).match(/^(\d+\.?\d*|\.\d+)/); toks.push({ t: "num", v: parseFloat(m[0]) }); i += m[0].length; continue; }
+    if (c === "x") { toks.push({ t: "x" }); i++; continue; }
+    if ("+-*/()".includes(c)) { toks.push({ t: c }); i++; continue; }
+    throw new Error("bad");
+  }
+  let p = 0;
+  const peek = () => toks[p];
+  function expr() { let n = term(); while (peek() && "+-".includes(peek().t)) { const op = toks[p++].t, a = n, b = term(); n = op === "+" ? x => a(x) + b(x) : x => a(x) - b(x); } return n; }
+  function term() {
+    let n = unary();
+    for (;;) {
+      const tk = peek();
+      if (tk && "*/".includes(tk.t)) { p++; const a = n, b = unary(); n = tk.t === "*" ? x => a(x) * b(x) : x => a(x) / b(x); }
+      else if (tk && (tk.t === "num" || tk.t === "x" || tk.t === "(")) { const a = n, b = prim(); n = x => a(x) * b(x); }
+      else break;
+    }
+    return n;
+  }
+  function unary() { if (peek() && peek().t === "-") { p++; const a = unary(); return x => -a(x); } return prim(); }
+  function prim() {
+    const tk = toks[p++];
+    if (!tk) throw new Error("end");
+    if (tk.t === "num") return () => tk.v;
+    if (tk.t === "x") return x => x;
+    if (tk.t === "(") { const a = expr(); if (!peek() || peek().t !== ")") throw new Error(")"); p++; return a; }
+    throw new Error("bad");
+  }
+  const f = expr();
+  if (p < toks.length) throw new Error("extra");
+  return f;
+}
+function checkEq(input, dep, indep, k) {
+  const s = input.toLowerCase().replace(/\s+/g, "").replace(/[×·]/g, "*").replace(/[−–]/g, "-").replace(/\$/g, "");
+  const parts = s.split("=");
+  if (parts.length !== 2) return { ok: false, msg: `Write an equation with “=”, like <b>${dep} = 3${indep}</b>.` };
+  let rhs;
+  if (parts[0] === dep) rhs = parts[1]; else if (parts[1] === dep) rhs = parts[0];
+  else return { ok: false, msg: `One side should be just <b>${dep}</b>.` };
+  if (!rhs.includes(indep)) return { ok: false, msg: `The other side should use <b>${indep}</b>.` };
+  if (/[a-z]/.test(rhs.split(indep).join(""))) return { ok: false, msg: `Use only numbers and <b>${indep}</b> on that side.` };
+  let f;
+  try { f = compile(rhs.split(indep).join("x")); } catch (e) { return { ok: false, msg: "I couldn’t read that. Try something like <b>" + dep + " = 4" + indep + "</b>." }; }
+  const close = (g, h) => [1, 2, 5, 7.5].every(x => Math.abs(g(x) - h(x)) < 1e-6 * Math.max(1, Math.abs(h(x))));
+  if (close(f, x => k * x)) return true;
+  if (close(f, x => x / k)) return { ok: false, msg: "That’s the reciprocal (flipped). Use k = total ÷ number of units." };
+  return { ok: false, msg: "Check your constant of proportionality k = y ÷ x." };
+}
+
+/* =========================================================
+   Shared contexts for Unit 2
+   ========================================================= */
+const CTX = {
+  apples: { label: "Buying apples", xName: "Pounds of apples", yName: "Cost ($)", xv: "p", yv: "c", xWord: "the number of pounds", yWord: "the cost in dollars",
+            xUnit: "pound", xUnits: "pounds", yUnit: "dollar", yUnits: "dollars", money: true, k: 1.5, kMin: 0.25, kMax: 5, kStep: 0.25 },
+  car:    { label: "Driving at a constant speed", xName: "Time (hours)", yName: "Distance (miles)", xv: "t", yv: "d", xWord: "the number of hours", yWord: "the distance in miles",
+            xUnit: "hour", xUnits: "hours", yUnit: "mile", yUnits: "miles", k: 45, kMin: 5, kMax: 80, kStep: 5 },
+  recipe: { label: "A recipe (flour & sugar)", xName: "Cups of flour", yName: "Cups of sugar", xv: "f", yv: "s", xWord: "the cups of flour", yWord: "the cups of sugar",
+            xUnit: "cup of flour", xUnits: "cups of flour", yUnit: "cup of sugar", yUnits: "cups of sugar", k: 0.5, kMin: 0.25, kMax: 3, kStep: 0.25 },
+  work:   { label: "Earning money", xName: "Hours worked", yName: "Earnings ($)", xv: "h", yv: "e", xWord: "the number of hours worked", yWord: "the earnings in dollars",
+            xUnit: "hour", xUnits: "hours", yUnit: "dollar", yUnits: "dollars", money: true, k: 15, kMin: 8, kMax: 30, kStep: 0.5 }
+};
+const yVal = (c, v) => c.money ? money(v) : `${fmt(v)} ${Math.abs(v - 1) < 1e-9 ? c.yUnit : c.yUnits}`;
+const yNum = (c, v) => c.money ? money(v) : fmt(v);
+const rate = (c, k) => c.money ? `${money(k)} per ${c.xUnit}` : `${fmt(k)} ${c.yUnits} per ${c.xUnit}`;
+const rrate = (c, k) => `${fmt(1 / k)} ${c.xUnits} per ${c.yUnit}`;
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+function fillCtx(selId) { $(selId).innerHTML = Object.entries(CTX).map(([k, c]) => `<option value="${k}">${c.label}</option>`).join(""); }
+function setRange(id, c) { const r = $(id); r.min = c.kMin; r.max = c.kMax; r.step = c.kStep; r.value = c.k; }
+const kText = (c, k) => c.money ? money(k) : fmt(k);
+
+/* =========================================================
+   1.1  Scale factor between scaled copies
+   ========================================================= */
+const SHAPES = {
+  house:  [[0, 0], [4, 0], [4, 2], [2, 4], [0, 2]],
+  arrow:  [[0, 1], [2, 1], [2, 0], [4, 2], [2, 4], [2, 3], [0, 3]],
+  lshape: [[0, 0], [3, 0], [3, 1], [1, 1], [1, 4], [0, 4]],
+  tri:    [[0, 0], [4, 0], [0, 3]]
+};
+const s11 = { shape: "house", k: 2, distort: false, ky: 1 };
+const LET = "ABCDEFGH";
+const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+const lenTxt = v => Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : v.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+const shoelace = P => P.reduce((s, p, i) => { const q = P[(i + 1) % P.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0) / 2;
+
+function draw11() {
+  const base = SHAPES[s11.shape], sx = s11.k, sy = s11.distort ? s11.ky : s11.k;
+  const svg = $("svg11"), cell = 28, GW = 20, GH = 15, W = GW * cell, H = GH * cell;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const g = el("g", { "shape-rendering": "crispEdges" }, svg);
+  for (const major of [false, true]) {
+    for (let i = 0; i <= GW * 2; i++) if ((i % 2 === 0) === major) el("line", { x1: i * cell / 2, x2: i * cell / 2, y1: 0, y2: H, stroke: major ? "#d3dce7" : "#f0f4f8" }, g);
+    for (let j = 0; j <= GH * 2; j++) if ((j % 2 === 0) === major) el("line", { y1: j * cell / 2, y2: j * cell / 2, x1: 0, x2: W, stroke: major ? "#d3dce7" : "#f0f4f8" }, g);
+  }
+  const S = ([x, y]) => [x * cell, H - y * cell];
+  const O = base.map(([x, y]) => [x + 1, y + 1.6]);
+  const C = base.map(([x, y]) => [x * sx + 7, y * sy + 1.6]);
+  const poly = (P, color, prime, sideLabels) => {
+    el("polygon", { points: P.map(S).map(p => p.join(",")).join(" "), fill: color, "fill-opacity": 0.16, stroke: color, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+    const cx = P.reduce((s, p) => s + p[0], 0) / P.length, cy = P.reduce((s, p) => s + p[1], 0) / P.length;
+    const sgn = Math.sign(shoelace(P)) || 1;
+    P.forEach((a, i) => {
+      const b = P[(i + 1) % P.length], L = dist(a, b);
+      if (sideLabels) {
+        let nx = (b[1] - a[1]) / L * sgn, ny = -(b[0] - a[0]) / L * sgn;
+        const [px, py] = S([(a[0] + b[0]) / 2 + nx * 0.42, (a[1] + b[1]) / 2 + ny * 0.42]);
+        haloText(svg, px, py + 4, lenTxt(L / (prime ? 1 : 1)), { "font-size": 11.5, "font-weight": 700, fill: color, "text-anchor": "middle" });
+      }
+      const d = Math.hypot(a[0] - cx, a[1] - cy) || 1;
+      const [vx, vy] = S([a[0] + (a[0] - cx) / d * 0.5, a[1] + (a[1] - cy) / d * 0.5]);
+      haloText(svg, vx, vy + 4, LET[i] + (prime ? "′" : ""), { "font-size": 12.5, "font-weight": 700, fill: "#1f2a37", "text-anchor": "middle" });
+      const [dx, dy] = S(a); dot(svg, dx, dy, color, 3.5);
+    });
+  };
+  poly(O, "#1e64c8", false, true);
+  poly(C, "#e66414", true, Math.min(sx, sy) >= 0.75);
+  const [ox, oy] = S([3, 0.55]); txt(svg, ox, oy, "Original", { "font-size": 14, "font-weight": 700, fill: "#1e64c8", "text-anchor": "middle" });
+  const cw = Math.max(...base.map(p => p[0])) * sx;
+  const [cx2, cy2] = S([7 + Math.max(cw, 2) / 2, 0.55]); txt(svg, cx2, cy2, "Copy", { "font-size": 14, "font-weight": 700, fill: "#e66414", "text-anchor": "middle" });
+
+  // table
+  const rows = [], ratios = [];
+  base.forEach((p, i) => {
+    const q = base[(i + 1) % base.length];
+    const lo = dist(p, q), lc = dist([p[0] * sx, p[1] * sy], [q[0] * sx, q[1] * sy]), r = lc / lo;
+    ratios.push(r);
+    rows.push([`${LET[i]}${LET[(i + 1) % base.length]}`, lenTxt(lo), lenTxt(lc), `<span>${fmt(r, 3)}</span>`]);
+  });
+  const same = ratios.every(r => Math.abs(r - ratios[0]) < 1e-9);
+  rows.forEach(r => r[3] = `<b style="color:${same ? "var(--green)" : "var(--red)"}">${r[3]}</b>`);
+  const Ao = Math.abs(shoelace(base)), Ac = Ao * sx * sy;
+  rows.push(["<b>Area</b>", lenTxt(Ao), lenTxt(Ac), `<b style="color:var(--purple)">${fmt(Ac / Ao)}</b>`]);
+  $("tbl11").innerHTML = tableHTML(["Side", "Original", "Copy", "Copy ÷ Original"], rows);
+
+  const v = $("verdict11");
+  if (same) {
+    const k = sx, kind = k > 1 ? "an <b>enlargement</b>" : k < 1 ? "a <b>reduction</b>" : "the <b>same size</b>";
+    v.className = "verdict ok";
+    v.innerHTML = `✓ Every ratio is <b>${fracDec(k)}</b>, so this <b>is a scaled copy</b> with scale factor <b>k = ${frac(k)}</b>, which makes it ${kind}. The area ratio is k² = ${fmt(k * k)}.`;
+  } else {
+    v.className = "verdict bad";
+    v.innerHTML = `✗ The ratios are <b>not all equal</b> (horizontal ×${fmt(sx)}, vertical ×${fmt(sy)}), so this is <b>NOT a scaled copy</b>. The figure got stretched out of shape.`;
+  }
+  $("k11o").textContent = fracDec(sx);
+  $("ky11o").textContent = fracDec(s11.ky);
+}
+$("shape11").onchange = e => { s11.shape = e.target.value; draw11(); };
+$("k11").oninput = e => { s11.k = +e.target.value; draw11(); };
+$("ky11").oninput = e => { s11.ky = +e.target.value; draw11(); };
+$("dist11").onchange = e => { s11.distort = e.target.checked; $("ky11wrap").hidden = !e.target.checked; draw11(); };
+[["½", 0.5], ["1", 1], ["1½", 1.5], ["2", 2], ["3", 3]].forEach(([t, v]) => {
+  const b = document.createElement("button"); b.className = "chip"; b.textContent = "k = " + t;
+  b.onclick = () => { s11.k = v; $("k11").value = v; draw11(); };
+  $("k11chips").appendChild(b);
+});
+
+function gen11() {
+  const K = pick([[2, 1], [3, 1], [0.5, 2], [1.5, 2], [2.5, 2], [4, 1], [1 / 3, 3], [0.25, 4], [0.75, 4]]);
+  const k = K[0], kf = frac(k), o = rnd(1, 6) * K[1] * (k < 1 ? 1 : 1), c = o * k;
+  const t = rnd(0, 3);
+  if (t === 0) return { q: `Polygon ABCD is scaled to make polygon A′B′C′D′. Side AB is <b>${o} cm</b> and the matching side A′B′ is <b>${fmt(c)} cm</b>. What is the scale factor?`,
+    check: numCheck(k, 0.011), ans: `k = ${kf}`, why: `Copy ÷ original = ${fmt(c)} ÷ ${o} = ${kf}.`, placeholder: "e.g. 3 or 1/2" };
+  if (t === 1) return { q: `A triangle is copied with a scale factor of <b>${kf}</b>. One side of the original is <b>${o} units</b>. How long is the matching side of the copy?`,
+    check: numCheck(c), ans: `${fmt(c)} units`, why: `Original × k = ${o} × ${kf} = ${fmt(c)}.` };
+  if (t === 2) return { q: `A scaled copy was made using a scale factor of <b>${kf}</b>. A side of the <b>copy</b> is <b>${fmt(c)} in</b>. How long is the matching side of the <b>original</b>?`,
+    check: numCheck(o), ans: `${o} in`, why: `Copy ÷ k = ${fmt(c)} ÷ ${kf} = ${o}.` };
+  const k2 = pick([2, 3, 0.5, 4]), A = rnd(2, 9) * 4;
+  return { q: `A rectangle with an area of <b>${A} square units</b> is scaled by a factor of <b>${frac(k2)}</b>. What is the area of the copy?`,
+    check: numCheck(A * k2 * k2), ans: `${fmt(A * k2 * k2)} square units`, why: `Area is multiplied by k² = ${fmt(k2 * k2)}, so ${A} × ${fmt(k2 * k2)} = ${fmt(A * k2 * k2)}.` };
+}
+
+/* =========================================================
+   1.2  Scale drawings
+   ========================================================= */
+const ROOMS = [
+  { n: "Living room", x: 0, y: 0, w: 6, h: 4, c: "#dbeafe" },
+  { n: "Kitchen", x: 6, y: 0, w: 4, h: 4, c: "#fde7d6" },
+  { n: "Bedroom 1", x: 0, y: 4, w: 5, h: 3, c: "#dcfce7" },
+  { n: "Bath", x: 5, y: 4, w: 2, h: 3, c: "#f3e8ff" },
+  { n: "Bedroom 2", x: 7, y: 4, w: 3, h: 3, c: "#fef9c3" }
+];
+const s12 = { s: 2, u: "m" };
+function draw12() {
+  const s = s12.s, u = s12.u, cm = 48, L = 44, T = 46, PW = 10 * cm, PH = 7 * cm, W = PW + L + 20, H = T + PH + 96;
+  const svg = $("svg12"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.innerHTML = "";
+  const g = el("g", { "shape-rendering": "crispEdges" }, svg);
+  for (const major of [false, true]) {
+    for (let i = 0; i <= 20; i++) if ((i % 2 === 0) === major) el("line", { x1: L + i * cm / 2, x2: L + i * cm / 2, y1: T, y2: T + PH, stroke: major ? "#cfd9e4" : "#eef2f7" }, g);
+    for (let j = 0; j <= 14; j++) if ((j % 2 === 0) === major) el("line", { y1: T + j * cm / 2, y2: T + j * cm / 2, x1: L, x2: L + PW, stroke: major ? "#cfd9e4" : "#eef2f7" }, g);
+  }
+  ROOMS.forEach(r => {
+    el("rect", { x: L + r.x * cm, y: T + r.y * cm, width: r.w * cm, height: r.h * cm, fill: r.c, "fill-opacity": 0.85, stroke: "#1f2a37", "stroke-width": 3 }, svg);
+    const cx = L + (r.x + r.w / 2) * cm, cy = T + (r.y + r.h / 2) * cm;
+    txt(svg, cx, cy - 12, r.n, { "font-size": 13, "font-weight": 700, fill: "#1f2a37", "text-anchor": "middle" });
+    txt(svg, cx, cy + 5, `${r.w} cm × ${r.h} cm`, { "font-size": 11, fill: "#5b6b7c", "text-anchor": "middle" });
+    txt(svg, cx, cy + 22, `${fmt(r.w * s)} × ${fmt(r.h * s)} ${u}`, { "font-size": 12.5, "font-weight": 700, fill: "#b84a0b", "text-anchor": "middle" });
+  });
+  // dimension lines
+  const dim = { stroke: "#005596", "stroke-width": 1.4 };
+  el("line", { x1: L, x2: L + PW, y1: T - 16, y2: T - 16, ...dim }, svg);
+  [L, L + PW].forEach(x => el("line", { x1: x, x2: x, y1: T - 22, y2: T - 10, ...dim }, svg));
+  txt(svg, L + PW / 2, T - 24, `10 cm on drawing → ${fmt(10 * s)} ${u} actual`, { "font-size": 12.5, "font-weight": 700, fill: "#005596", "text-anchor": "middle" });
+  el("line", { x1: L - 16, x2: L - 16, y1: T, y2: T + PH, ...dim }, svg);
+  [T, T + PH].forEach(y => el("line", { x1: L - 22, x2: L - 10, y1: y, y2: y, ...dim }, svg));
+  const vt = txt(svg, 0, 0, `7 cm → ${fmt(7 * s)} ${u}`, { "font-size": 12.5, "font-weight": 700, fill: "#005596", "text-anchor": "middle" });
+  vt.setAttribute("transform", `translate(${L - 24} ${T + PH / 2}) rotate(-90)`);
+  // scale bar
+  const by = T + PH + 40;
+  for (let i = 0; i < 5; i++) el("rect", { x: L + i * cm, y: by, width: cm, height: 10, fill: i % 2 ? "#fff" : "#1f2a37", stroke: "#1f2a37" }, svg);
+  for (let i = 0; i <= 5; i++) txt(svg, L + i * cm, by + 26, fmt(i * s), { "font-size": 11.5, fill: "#3a4757", "text-anchor": "middle" });
+  txt(svg, L + 5 * cm + 14, by + 9, u, { "font-size": 12, "font-weight": 700, fill: "#3a4757" });
+  txt(svg, L, by - 8, `Scale bar: each block is 1 cm = ${fmt(s)} ${u}`, { "font-size": 12, fill: "#5b6b7c" });
+
+  // table
+  let totD = 0, totA = 0;
+  const rows = ROOMS.map(r => { totD += r.w * r.h; totA += r.w * s * r.h * s;
+    return [r.n, `${r.w} × ${r.h} cm`, `<b>${fmt(r.w * s)} × ${fmt(r.h * s)} ${u}</b>`, `${fmt(r.w * r.h)} cm²`, `<b>${fmt(r.w * s * r.h * s)} ${u}²</b>`]; });
+  rows.push(["<b>Whole house</b>", "10 × 7 cm", `<b>${fmt(10 * s)} × ${fmt(7 * s)} ${u}</b>`, `${totD} cm²`, `<b>${fmt(totA)} ${u}²</b>`]);
+  $("tbl12").innerHTML = tableHTML(["Room", "Drawing", "Actual", "Drawing area", "Actual area"], rows);
+  $("area12").innerHTML = `<div class="verdict info">Area check: 1 cm² on the drawing is ${fmt(s)} ${u} × ${fmt(s)} ${u} = <b>${fmt(s * s)} ${u}²</b> in real life, so the actual area is the drawing area × ${fmt(s * s)} (not × ${fmt(s)}).</div>`;
+  const metric = u === "m";
+  $("ways12").innerHTML = `<b>Same scale, different ways to write it:</b><br>1 cm : ${fmt(s)} ${u}` +
+    (metric ? `<br>1 cm to ${fmt(s * 100)} cm<br><b>1 : ${fmt(s * 100)}</b> (no units)` : `<br>To write it without units, first convert ${u} to cm.`);
+}
+function calc12() {
+  const d = +$("d12").value, a = +$("a12").value, u = $("au12").value;
+  if (!(d > 0) || !(a > 0)) { $("calc12").innerHTML = "Enter two positive numbers."; return; }
+  const per = a / d, f = u === "m" ? per * 100 : u === "km" ? per * 100000 : null;
+  $("calc12").innerHTML = `${fmt(a)} ${u} ÷ ${fmt(d)} cm = <b>${fmt(per)} ${u} per cm</b><br>Scale: <b>1 cm : ${fmt(per)} ${u}</b>` + (f ? `<br>Without units: <b>1 : ${fmt(f)}</b>` : "");
+  $("apply12").disabled = u === "km";
+  $("apply12").title = u === "km" ? "km is too big for a floor plan; try m or ft" : "";
+}
+const setScale12 = (s, u) => { s12.s = s; s12.u = u; $("s12").value = s; $("u12").value = u; draw12(); };
+$("s12").oninput = e => { const v = +e.target.value; if (v > 0) { s12.s = v; draw12(); } };
+$("u12").onchange = e => { s12.u = e.target.value; draw12(); };
+["d12", "a12"].forEach(id => $(id).oninput = calc12);
+$("au12").onchange = calc12;
+$("apply12").onclick = () => setScale12(+$("a12").value / +$("d12").value, $("au12").value);
+[["1 cm : 1 m", 1, "m"], ["1 cm : 0.5 m", 0.5, "m"], ["1 cm : 2.5 m", 2.5, "m"], ["1 cm : 4 ft", 4, "ft"]].forEach(([t, s, u]) => {
+  const b = document.createElement("button"); b.className = "chip"; b.textContent = t; b.onclick = () => setScale12(s, u); $("s12chips").appendChild(b);
+});
+
+function gen12() {
+  const t = rnd(0, 3);
+  if (t === 0) { const s = pick([5, 10, 15, 20, 25, 50]), d = pick([2, 3, 4, 5, 6, 7, 8, 2.5, 3.5, 4.5]);
+    return { q: `A map has a scale of <b>1 cm to ${s} km</b>. Two towns are <b>${d} cm</b> apart on the map. How far apart are they in real life, in km?`,
+      check: numCheck(s * d), ans: `${fmt(s * d)} km`, why: `${d} × ${s} = ${fmt(s * d)}.` }; }
+  if (t === 1) { const per = pick([0.5, 1.5, 2, 2.5, 3, 4, 5]), D = rnd(2, 8);
+    return { q: `On a floor plan, <b>${D} cm</b> represents <b>${fmt(per * D)} m</b>. What does <b>1 cm</b> represent, in meters?`,
+      check: numCheck(per), ans: `1 cm represents ${fmt(per)} m`, why: `${fmt(per * D)} ÷ ${D} = ${fmt(per)}.` }; }
+  if (t === 2) { const s = pick([2, 4, 5, 8, 10]), n = rnd(2, 9);
+    return { q: `A blueprint uses the scale <b>1 in : ${s} ft</b>. A wall is <b>${s * n} ft</b> long. How long is the wall on the blueprint, in inches?`,
+      check: numCheck(n), ans: `${n} in`, why: `Divide to go from actual to drawing: ${s * n} ÷ ${s} = ${n}.` }; }
+  const s = pick([2, 5, 10, 20, 50]);
+  return { q: `A scale drawing uses <b>1 cm to ${s} m</b>. Write this scale without units: <b>1 : ?</b>`,
+    check: numCheck(s * 100), ans: `1 : ${s * 100}`, why: `${s} m = ${s * 100} cm, so 1 cm on the drawing is ${s * 100} cm in real life.`, placeholder: "the number after 1 :" };
+}
+
+/* =========================================================
+   2.1  Constant of proportionality
+   ========================================================= */
+const s21 = { ctx: "apples", k: 1.5, fee: false, b: 5, xs: [1, 2, 3, 5, 8] };
+function draw21(rebuildTable) {
+  const c = CTX[s21.ctx], k = s21.k, b = s21.fee ? s21.b : 0;
+  $("k21o").textContent = rate(c, k);
+  $("b21o").textContent = c.money ? money(s21.b) : `${s21.b} ${c.yUnits}`;
+  if (rebuildTable) {
+    $("tbl21").innerHTML = `<table class="tbl"><tr><th>${c.xName}</th><th>${c.yName}</th><th>y ÷ x</th></tr>` +
+      s21.xs.map((x, i) => `<tr><td><input type="number" step="any" min="0" data-i="${i}" value="${x}"></td><td data-y="${i}"></td><td data-r="${i}"></td></tr>`).join("") + "</table>";
+    $("tbl21").querySelectorAll("input").forEach(inp => inp.oninput = () => { const v = parseFloat(inp.value); if (v >= 0) { s21.xs[+inp.dataset.i] = v; draw21(false); } });
+  }
+  const ratios = [];
+  s21.xs.forEach((x, i) => {
+    const y = k * x + b;
+    $("tbl21").querySelector(`[data-y="${i}"]`).textContent = yNum(c, y);
+    const r = x > 0 ? y / x : NaN; if (x > 0) ratios.push(r);
+    $("tbl21").querySelector(`[data-r="${i}"]`).innerHTML = x > 0 ? `<b>${fmt(r)}</b>` : "—";
+  });
+  const prop = b === 0;
+  $("tbl21").querySelectorAll("[data-r]").forEach(td => td.className = prop ? "good" : "bad");
+  $("verdict21").innerHTML = prop
+    ? `<div class="verdict ok">✓ y ÷ x is <b>${fmt(k)}</b> in every row, so this <b>is proportional</b>.<br>Constant of proportionality: <b>k = ${fmt(k)}</b> (${rate(c, k)}).</div>`
+    : `<div class="verdict bad">✗ y ÷ x keeps changing (${ratios.slice(0, 3).map(r => fmt(r, 2)).join(", ")}…), so this is <b>not proportional</b>. The starting amount breaks it. Also, x = 0 would give ${yVal(c, b)}, not 0.</div>`;
+  // graph
+  const xmax = niceMax(Math.max(...s21.xs, 4) * 1.1), ymax = niceMax((k * xmax + b) * 1.05);
+  const G = drawGraph($("svg21"), { xmax, ymax, xlabel: c.xName, ylabel: c.yName, money: c.money, h: 340 });
+  el("line", { x1: G.X(0), y1: G.Y(b), x2: G.X(xmax), y2: G.Y(k * xmax + b), stroke: prop ? "#009650" : "#d0342c", "stroke-width": 2, "stroke-dasharray": "6 5" }, G.layer);
+  if (!prop) { dot(G.top, G.X(0), G.Y(b), "#d0342c", 5); haloText(G.top, G.X(0) + 9, G.Y(b) - 8, `starts at ${yNum(c, b)}`, { "font-size": 12, fill: "#d0342c", "font-weight": 700 }); }
+  else dot(G.top, G.X(0), G.Y(0), "#009650", 5);
+  s21.xs.forEach(x => { if (x <= xmax) dot(G.top, G.X(x), G.Y(k * x + b), "#1e64c8", 5.5); });
+  if (prop) { dot(G.top, G.X(1), G.Y(k), "#e66414", 6); haloText(G.top, G.X(1) + 10, G.Y(k) + 20, `(1, ${fmt(k)})  unit rate`, { "font-size": 12, fill: "#b84a0b", "font-weight": 700 }); }
+}
+fillCtx("ctx21");
+$("ctx21").onchange = e => { s21.ctx = e.target.value; const c = CTX[s21.ctx]; setRange("k21", c); s21.k = c.k; s21.xs = [1, 2, 3, 5, 8]; draw21(true); };
+$("k21").oninput = e => { s21.k = +e.target.value; draw21(false); };
+$("fee21").onchange = e => { s21.fee = e.target.checked; $("b21wrap").hidden = !e.target.checked; draw21(false); };
+$("b21").oninput = e => { s21.b = +e.target.value; draw21(false); };
+
+function gen21() {
+  const k = pick([1.5, 2, 2.5, 3, 4, 0.5, 1.25, 6, 0.75, 12]);
+  const xs = shuffle([1, 2, 3, 4, 5, 6, 8, 10]).slice(0, 4).sort((a, b) => a - b);
+  if (Math.random() < 0.4) {
+    const prop = Math.random() < 0.5, add = rnd(1, 4);
+    const ys = xs.map(x => prop ? k * x : k * x + add);
+    return { q: `Is this table a proportional relationship?` + tableHTML(["x", "y"], xs.map((x, i) => [x, fmt(ys[i])])),
+      choices: ["Yes", "No"], check: v => (v === "Yes") === prop, ans: prop ? "Yes" : "No",
+      why: `y ÷ x: ${xs.map((x, i) => fmt(ys[i] / x, 2)).join(", ")}. ` + (prop ? "All the same, so it is proportional." : "Not all the same, so it is not proportional.") };
+  }
+  return { q: `This table shows a proportional relationship. What is the constant of proportionality <b>k</b>?` + tableHTML(["x", "y"], xs.map(x => [x, fmt(k * x)])),
+    check: numCheck(k), ans: `k = ${fmt(k)}`, why: `Divide any y by its x: ${fmt(k * xs[1])} ÷ ${xs[1]} = ${fmt(k)}.`, placeholder: "k = ?" };
+}
+
+/* =========================================================
+   2.2  Writing equations
+   ========================================================= */
+const s22 = { ctx: "apples", k: 1.5 };
+function draw22() {
+  const c = CTX[s22.ctx], k = s22.k;
+  $("k22o").textContent = kText(c, k);
+  $("eq22").innerHTML = `<span class="v-y">${c.yv}</span> = <span class="v-k">${fmt(k)}</span><span class="v-x">${c.xv}</span>`;
+  $("words22").innerHTML = `<span style="color:var(--orange)"><b>${c.yv}</b></span> = ${c.yWord}, &nbsp; <span style="color:var(--blue)"><b>${c.xv}</b></span> = ${c.xWord}<br>
+    ${cap(c.yWord)} is always <b>${fmt(k)} times</b> ${c.xWord}. The unit rate is <b>${rate(c, k)}</b>.`;
+  $("tbl22").innerHTML = tableHTML([c.xv, `${fmt(k)} × ${c.xv}`, c.yv], [1, 2, 4, 10].map(x => [x, `${fmt(k)} × ${x}`, `<b>${yNum(c, k * x)}</b>`]));
+  const r = 1 / k, rf = frac(r);
+  $("rev22").innerHTML = `<span class="v-x">${c.xv}</span> = <span class="v-k">${rf.includes("/") ? "(" + rf + ")" : fmt(r)}</span><span class="v-y">${c.yv}</span>`;
+  $("revwords22").innerHTML = `Solve for <b>${c.xv}</b> instead: the constant becomes <b>1/k = 1 ÷ ${fmt(k)} ${rf.includes("/") ? "= " + rf + " ≈ " + fmt(r) : "= " + fmt(r)}</b>.<br>That means <b>${rrate(c, k)}</b>.`;
+}
+fillCtx("ctx22");
+$("ctx22").onchange = e => { s22.ctx = e.target.value; const c = CTX[s22.ctx]; setRange("k22", c); s22.k = c.k; draw22(); };
+$("k22").oninput = e => { s22.k = +e.target.value; draw22(); };
+
+const SCEN22 = [
+  { t: (a, b) => `Noah reads <b>${b} pages in ${a} minutes</b> at a constant rate. Write an equation for <b>p</b>, the number of pages, in terms of <b>m</b>, the number of minutes.`, dep: "p", ind: "m", ks: [2, 3, 4, 1.5] },
+  { t: (a, b) => `A store sells <b>${a} pounds of rice for ${money(b)}</b>. Write an equation for <b>c</b>, the cost in dollars, in terms of <b>r</b>, the pounds of rice.`, dep: "c", ind: "r", ks: [1.5, 2, 2.25, 3.5, 0.75] },
+  { t: (a, b) => `A train travels <b>${b} miles in ${a} hours</b> at a constant speed. Write an equation for <b>d</b>, the distance, in terms of <b>t</b>, the time in hours.`, dep: "d", ind: "t", ks: [40, 55, 60, 72, 85] },
+  { t: (a, b) => `A recipe uses <b>${fmt(b)} cups of water for every ${a} cups of rice</b>. Write an equation for <b>w</b>, cups of water, in terms of <b>r</b>, cups of rice.`, dep: "w", ind: "r", ks: [1.5, 2, 2.5, 3] },
+  { t: (a, b) => `Lin earns <b>${money(b)} for ${a} hours</b> of babysitting. Write an equation for <b>e</b>, her earnings, in terms of <b>h</b>, the hours worked.`, dep: "e", ind: "h", ks: [12, 14, 15, 16.5, 18] }
+];
+function gen22() {
+  const sc = pick(SCEN22), k = pick(sc.ks), a = rnd(2, 6), b = k * a;
+  return { q: sc.t(a, b), placeholder: `e.g. ${sc.dep} = 5${sc.ind}`, check: v => checkEq(v, sc.dep, sc.ind, k),
+    ans: `<b>${sc.dep} = ${fmt(k)}${sc.ind}</b>`, why: `k = ${fmt(b)} ÷ ${a} = ${fmt(k)}, so ${sc.dep} = ${fmt(k)}${sc.ind}.` };
+}
+
+/* =========================================================
+   2.3  Comparing proportional relationships
+   ========================================================= */
+const SCEN = {
+  bikes:    { A: "Ava", B: "Ben", x: "Time (hours)", y: "Distance (miles)", xv: "t", yv: "d", q: "Who rides faster?", better: "greater", kA: 12, kB: 15, range: [4, 25, 0.5], xmax: 6,
+              rate: k => `${fmt(k)} miles per hour`, win: n => `<b>${n}</b> rides faster`, xs: [2, 3, 5] },
+  stores:   { A: "Store A", B: "Store B", x: "Grapes (pounds)", y: "Cost ($)", xv: "p", yv: "c", q: "Which store has the better deal?", better: "smaller", money: true, kA: 2.5, kB: 2.25, range: [0.5, 6, 0.25], xmax: 8,
+              rate: k => `${money(k)} per pound`, win: n => `<b>${n}</b> is the better deal (cheaper per pound)`, xs: [2, 3, 5] },
+  printers: { A: "Printer A", B: "Printer B", x: "Time (minutes)", y: "Pages printed", xv: "m", yv: "p", q: "Which printer is faster?", better: "greater", kA: 20, kB: 16, range: [4, 40, 1], xmax: 6,
+              rate: k => `${fmt(k)} pages per minute`, win: n => `<b>${n}</b> prints faster`, xs: [2, 3, 5] }
+};
+const s23 = { sc: "bikes", kA: 12, kB: 15 };
+function draw23(resetRanges) {
+  const S = SCEN[s23.sc], kA = s23.kA, kB = s23.kB;
+  if (resetRanges) ["kA23", "kB23"].forEach((id, i) => { const r = $(id); [r.min, r.max, r.step] = S.range; r.value = i ? kB : kA; });
+  $("kA23l").textContent = `${S.A}'s rate`; $("kB23l").textContent = `${S.B}'s rate`;
+  $("kA23o").textContent = S.rate(kA); $("kB23o").textContent = S.rate(kB);
+  $("hA23").textContent = `${S.A}: shown as a table`; $("hB23").textContent = `${S.B}: shown as an equation`;
+  const val = v => S.money ? money(v) : fmt(v);
+  $("tblA23").innerHTML = tableHTML([S.x, S.y], S.xs.map(x => [x, val(kA * x)]));
+  $("kAcalc23").innerHTML = `k = ${val(kA * S.xs[0])} ÷ ${S.xs[0]} = <b>${fmt(kA)}</b>`;
+  $("eqB23").innerHTML = `<span class="v-y">${S.yv}</span> = <span class="v-k">${fmt(kB)}</span><span class="v-x">${S.xv}</span>`;
+  $("kBcalc23").innerHTML = `In y = kx form, k is the number in front: <b>k = ${fmt(kB)}</b>`;
+  const ymax = niceMax(Math.max(kA, kB) * S.xmax * 1.05);
+  const G = drawGraph($("svg23"), { xmax: S.xmax, ymax, xlabel: S.x, ylabel: S.y, money: S.money, h: 360 });
+  [[kA, "#1e64c8", S.A], [kB, "#e66414", S.B]].forEach(([k, col, name], i) => {
+    const xe = Math.min(S.xmax, ymax / k);
+    el("line", { x1: G.X(0), y1: G.Y(0), x2: G.X(xe), y2: G.Y(k * xe), stroke: col, "stroke-width": 3, "stroke-linecap": "round" }, G.layer);
+    dot(G.top, G.X(1), G.Y(k), col, 5.5);
+    const up = k >= (i ? kA : kB);
+    haloText(G.top, G.X(1) + (up ? -10 : 10), G.Y(k) + (up ? -8 : 18), `(1, ${fmt(k)})`, { "font-size": 12, "font-weight": 700, fill: col, "text-anchor": up ? "end" : "start" });
+    haloText(G.top, G.X(xe) - 6, G.Y(k * xe) + (i ? 18 : -8), name, { "font-size": 13, "font-weight": 700, fill: col, "text-anchor": "end" });
+  });
+  S.xs.forEach(x => { if (kA * x <= ymax) dot(G.top, G.X(x), G.Y(kA * x), "#1e64c8", 4); });
+  dot(G.top, G.X(0), G.Y(0), "#1f2a37", 4.5);
+  const v = $("verdict23");
+  if (Math.abs(kA - kB) < 1e-9) { v.innerHTML = `<div class="verdict info">Both have the <b>same rate</b> (${S.rate(kA)}), so the lines are on top of each other.</div>`; return; }
+  const bigger = kA > kB ? S.A : S.B, winner = S.better === "greater" ? bigger : (kA < kB ? S.A : S.B);
+  v.innerHTML = `<div class="verdict ok">${S.A}: ${S.rate(kA)} &nbsp;vs.&nbsp; ${S.B}: ${S.rate(kB)}<br><b>${bigger}</b>'s line is steeper (greater k). ${S.q} → ${S.win(winner)}.</div>`;
+}
+$("sc23").onchange = e => { s23.sc = e.target.value; const S = SCEN[s23.sc]; s23.kA = S.kA; s23.kB = S.kB; draw23(true); };
+$("kA23").oninput = e => { s23.kA = +e.target.value; draw23(false); };
+$("kB23").oninput = e => { s23.kB = +e.target.value; draw23(false); };
+
+function gen23() {
+  const key = pick(Object.keys(SCEN)), S = SCEN[key];
+  const pool = { bikes: [8, 10, 12, 14, 15, 16, 18], stores: [1.5, 1.75, 2, 2.25, 2.5, 3], printers: [10, 12, 15, 18, 20, 24] }[key];
+  const kA = pick(pool), kB = Math.random() < 0.15 ? kA : pick(pool.filter(k => k !== kA));
+  const val = v => S.money ? money(v) : fmt(v);
+  const xsA = shuffle([2, 3, 4, 5, 6]).slice(0, 2).sort((a, b) => a - b);
+  const xB = rnd(2, 7), form = rnd(0, 2);
+  const bText = form === 0 ? `${S.B} is described by the equation <b>${S.yv} = ${fmt(kB)}${S.xv}</b> (${S.yv} = ${S.y.toLowerCase()}, ${S.xv} = ${S.x.toLowerCase()}).`
+    : form === 1 ? `${S.B}: <b>${xB}</b> ${S.x.split(" (")[0].toLowerCase() === "grapes" ? "pounds cost" : "units →"} <b>${val(kB * xB)}</b>.`
+    : `${S.B}'s graph is a straight line through (0, 0) and <b>(${xB}, ${fmt(kB * xB)})</b>.`;
+  const bText2 = form === 1 ? (key === "stores" ? `${S.B}: <b>${xB} pounds cost ${money(kB * xB)}</b>.` : key === "bikes" ? `${S.B} rides <b>${fmt(kB * xB)} miles in ${xB} hours</b>.` : `${S.B} prints <b>${fmt(kB * xB)} pages in ${xB} minutes</b>.`) : bText;
+  const same = kA === kB, bigger = kA > kB ? S.A : S.B, winner = same ? "Same" : (S.better === "greater" ? bigger : (kA < kB ? S.A : S.B));
+  return { q: `${S.q}<br>${S.A} is shown in this table:` + tableHTML([S.x, S.y], xsA.map(x => [x, val(kA * x)])) + bText2,
+    choices: [S.A, S.B, "Same"], check: v => v === winner, ans: winner,
+    why: `${S.A}: k = ${fmt(kA)} (${S.rate(kA)}). ${S.B}: k = ${fmt(kB)} (${S.rate(kB)}).` + (same ? " The rates are equal." : S.better === "smaller" ? " Lower price per pound is the better deal." : " The greater rate is faster.") };
+}
+
+/* =========================================================
+   2.4  Multiple representations
+   ========================================================= */
+const s24 = { ctx: "apples", k: 1.5, b: 0, xh: 4, frozen: null };
+let G24 = null;
+function draw24() {
+  const c = CTX[s24.ctx], k = s24.k, b = s24.b, prop = b === 0;
+  $("k24o").textContent = rate(c, k);
+  $("b24o").textContent = b === 0 ? "none (0)" : yVal(c, b);
+  $("badge24").innerHTML = prop ? `<span class="badge ok">✓ Proportional</span>` : `<span class="badge bad">✗ Not proportional</span>`;
+  $("words24").innerHTML = prop
+    ? `For every <b>1 ${c.xUnit}</b>, ${c.yWord.replace(/^the /, "the ")} goes up by <b>${yVal(c, k)}</b>.<br>With 0 ${c.xUnits}, it is <b>${yVal(c, 0)}</b>.<br><span style="color:var(--muted)">So ${c.yWord} = ${fmt(k)} × ${c.xWord}.</span>`
+    : `It <b>starts at ${yVal(c, b)}</b>, then goes up <b>${yVal(c, k)}</b> for every 1 ${c.xUnit}.<br><span style="color:var(--red)">Because of the starting amount, 0 ${c.xUnits} does <b>not</b> give 0, and y ÷ x is not constant.</span>`;
+  $("eq24").innerHTML = `<span class="v-y">${c.yv}</span> = <span class="v-k">${fmt(k)}</span><span class="v-x">${c.xv}</span>` + (prop ? "" : ` <span style="color:var(--red)">+ ${fmt(b)}</span>`);
+  $("tbl24").innerHTML = tableHTML([c.xv, c.yv, `${c.yv} ÷ ${c.xv}`], [0, 1, 2, 3, 5].map(x => {
+    const y = k * x + b;
+    return [x, (x === 1 ? "<b style='color:var(--orange)'>" : "") + yNum(c, y) + (x === 1 ? "</b>" : ""), x ? `<b style="color:${prop ? "var(--green)" : "var(--red)"}">${fmt(y / x)}</b>` : "—"];
+  }));
+  const xmax = 10, ymax = s24.frozen || niceMax((k * xmax + b) * 1.05);
+  const G = G24 = drawGraph($("svg24"), { xmax, ymax, xlabel: c.xName, ylabel: c.yName, money: c.money, w: 480, h: 360 });
+  el("line", { x1: G.X(0), y1: G.Y(b), x2: G.X(xmax), y2: G.Y(k * xmax + b), stroke: prop ? "#009650" : "#d0342c", "stroke-width": 3, "stroke-linecap": "round" }, G.layer);
+  el("path", { d: `M${G.X(1)} ${G.Y(0)} V${G.Y(k + b)} H${G.X(0)}`, fill: "none", stroke: "#e66414", "stroke-dasharray": "4 4", "stroke-width": 1.4 }, G.layer);
+  dot(G.top, G.X(0), G.Y(b), prop ? "#009650" : "#d0342c", 5.5);
+  haloText(G.top, G.X(0) + 8, prop ? G.Y(0) - 6 : G.Y(b) + 17, `(0, ${fmt(b)})`, { "font-size": 12, "font-weight": 700, fill: prop ? "#009650" : "#d0342c" });
+  dot(G.top, G.X(1), G.Y(k + b), "#7828a0", 5);
+  haloText(G.top, G.X(1) + 8, G.Y(k + b) + 16, `(1, ${fmt(k + b)})`, { "font-size": 12, "font-weight": 700, fill: "#7828a0" });
+  const hx = s24.xh, hy = k * hx + b;
+  if (hy <= ymax) {
+    dot(G.top, G.X(hx), G.Y(hy), "#e66414", 9, { style: "cursor:grab" });
+    haloText(G.top, G.X(hx) + 13, G.Y(hy) + 4, `(${fmt(hx)}, ${fmt(hy, 2)})  drag me`, { "font-size": 12, "font-weight": 700, fill: "#b84a0b" });
+  }
+}
+fillCtx("ctx24");
+$("ctx24").onchange = e => { s24.ctx = e.target.value; const c = CTX[s24.ctx]; setRange("k24", c); s24.k = c.k; s24.b = 0; $("b24").value = 0; draw24(); };
+$("k24").oninput = e => { s24.k = +e.target.value; draw24(); };
+$("b24").oninput = e => { s24.b = +e.target.value; draw24(); };
+(function dragSetup() {
+  const svg = $("svg24");
+  const toSvg = e => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+  let dragging = false;
+  const move = e => {
+    const c = CTX[s24.ctx], pt = toSvg(e);
+    const x = Math.min(10, Math.max(0.5, Math.round(G24.invX(pt.x) * 2) / 2));
+    const y = Math.max(0, G24.invY(pt.y));
+    let k = (y - s24.b) / x;
+    k = Math.min(c.kMax, Math.max(c.kMin, Math.round(k / c.kStep) * c.kStep));
+    s24.xh = x; s24.k = +k.toFixed(4); $("k24").value = s24.k; draw24();
+  };
+  svg.addEventListener("pointerdown", e => { dragging = true; s24.frozen = G24.ymax; svg.setPointerCapture(e.pointerId); svg.style.cursor = "grabbing"; move(e); });
+  svg.addEventListener("pointermove", e => { if (dragging) move(e); });
+  const end = () => { if (!dragging) return; dragging = false; s24.frozen = null; svg.style.cursor = "grab"; draw24(); };
+  svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+})();
+
+function gen24() {
+  const kind = pick(["graph", "table", "equation"]), k = pick([0.5, 1.5, 2, 3, 4]);
+  const variant = rnd(0, 2);
+  if (kind === "graph") {
+    const prop = variant === 0, b = rnd(1, 3);
+    const f = variant === 0 ? x => k * x : variant === 1 ? x => k * x + b : x => x * x / 2;
+    return { q: "Does this graph show a proportional relationship?<svg id='pq24svg'></svg>", choices: ["Yes", "No"],
+      after: () => { const G = drawGraph($("pq24svg"), { xmax: 6, ymax: niceMax(f(6) * 1.05), w: 360, h: 240 });
+        const pts = []; for (let i = 0; i <= 60; i++) { const x = i / 10; pts.push(`${G.X(x)},${G.Y(f(x))}`); }
+        el("polyline", { points: pts.join(" "), fill: "none", stroke: "#1e64c8", "stroke-width": 3 }, G.layer); },
+      check: v => (v === "Yes") === prop, ans: prop ? "Yes" : "No",
+      why: prop ? "It is a straight line through the origin (0, 0)." : variant === 1 ? "It is straight, but it does not pass through (0, 0)." : "It passes through (0, 0), but it is curved, not a straight line." };
+  }
+  if (kind === "table") {
+    const xs = [1, 2, 3, 4], prop = variant === 0, ys = xs.map(x => prop ? k * x : variant === 1 ? k * x + 2 : x * x);
+    return { q: "Does this table show a proportional relationship?" + tableHTML(["x", "y"], xs.map((x, i) => [x, fmt(ys[i])])), choices: ["Yes", "No"],
+      check: v => (v === "Yes") === prop, ans: prop ? "Yes" : "No",
+      why: `y ÷ x = ${xs.map((x, i) => fmt(ys[i] / x, 2)).join(", ")}. ` + (prop ? "Always the same, so it is proportional." : "Not constant, so it is not proportional.") };
+  }
+  const eqs = [[`y = ${fmt(k)}x`, true, "It has the form y = kx."], [`y = ${fmt(k)}x + ${rnd(1, 5)}`, false, "The “+ a number” means y is not 0 when x = 0."], [`y = x + ${fmt(k)}`, false, "Adding a number is not the same as multiplying by k."]];
+  const [e, prop, why] = eqs[variant];
+  return { q: `Does the equation <b style="font-family:Georgia,serif;font-size:18px">${e}</b> represent a proportional relationship?`, choices: ["Yes", "No"],
+    check: v => (v === "Yes") === prop, ans: prop ? "Yes" : "No", why };
+}
+
+/* =========================================================
+   Tabs & boot
+   ========================================================= */
+const RENDER = { p11: draw11, p12: () => { draw12(); calc12(); }, p21: () => draw21(true), p22: draw22, p23: () => draw23(true), p24: draw24 };
+function show(id) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.t === id));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === id));
+  RENDER[id]();
+  try { localStorage.setItem("rpl-tab", id); } catch (e) {}
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => show(t.dataset.t));
+setRange("k21", CTX.apples); setRange("k22", CTX.apples); setRange("k24", CTX.apples);
+practice("pr11", gen11); practice("pr12", gen12); practice("pr21", gen21);
+practice("pr22", gen22); practice("pr23", gen23); practice("pr24", gen24);
+let start = "p11";
+try { const s = localStorage.getItem("rpl-tab"); if (s && RENDER[s]) start = s; } catch (e) {}
+if (AM) {
+  if (AM.student) { $("appTitle").textContent = `${AM.student.firstName}'s Ratios & Proportions Lab`; document.title = $("appTitle").textContent; }
+  if (PLAN.lesson && RENDER[PLAN.lesson] && PLAN._updated) {
+    let seen = null; try { seen = localStorage.getItem("rpl-plan-seen"); } catch (e) {}
+    if (seen !== PLAN._updated) { start = PLAN.lesson; try { localStorage.setItem("rpl-plan-seen", PLAN._updated); } catch (e) {} }
+  }
+  if (PLAN.lesson || PLAN.note) {
+    const esc = s => String(s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]);
+    const lessonName = PLAN.lesson ? LESSON["pr" + PLAN.lesson.slice(1)] : "";
+    const box = document.createElement("div");
+    box.style.cssText = "background:#fff8ee;border:1px solid #f6d4a8;border-radius:12px;padding:10px 14px;margin:12px auto 0;max-width:1180px;font-size:15px";
+    box.innerHTML = `<b style="color:#e66414">📌 ${PLAN._by ? esc(PLAN._by.split(" ")[0]) + "’s" : "Your tutor’s"} plan:</b> ` + (lessonName ? `work on <b>${esc(lessonName)}</b>. ` : "") + (PLAN.note ? esc(PLAN.note) : "");
+    document.querySelector("nav").after(box);
+  }
+}
+show(start);
+</script>
+</body>
+</html>

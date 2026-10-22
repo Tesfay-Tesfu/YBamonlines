@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fast Facts</title>
+<style>
+  :root {
+    --brand: #005596; --deep: #002d5f; --accent: #e66414; --ink: #1f2a37; --muted: #5b6b7c;
+    --line: #dde5ee; --bg: #f5f7fb; --card: #fff;
+    --blue: #2563eb; --orange: #ea6a1a; --green: #0f9d58; --red: #d93025; --yellow: #f2b01e; --purple: #8b3fc7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 17px; color: var(--ink); background: var(--bg); line-height: 1.5; }
+  button { font: inherit; }
+  header { background: var(--deep); color: #fff; padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-bottom: 4px solid var(--accent); }
+  header .logo { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); display: grid; place-items: center; font-weight: 800; }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { font-size: 12.5px; opacity: .75; }
+  header .grow { flex: 1; }
+  .pill { background: rgba(255,255,255,.12); border-radius: 999px; padding: 5px 12px; font-weight: 800; white-space: nowrap; }
+  nav { background: #fff; border-bottom: 1px solid var(--line); display: flex; gap: 4px; padding: 6px 12px; overflow-x: auto; position: sticky; top: 0; z-index: 5; }
+  .tab { border: none; background: none; padding: 9px 14px; border-radius: 12px; cursor: pointer; font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .tab:hover { background: #f1f5fa; color: var(--brand); }
+  .tab.on { background: var(--brand); color: #fff; }
+  main { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }
+  .view { display: none; } .view.on { display: block; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; box-shadow: 0 2px 6px rgba(16,24,40,.04); min-width: 0; }
+  .card h3 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+  .card h3::before { content: ""; width: 5px; height: 15px; border-radius: 3px; background: var(--accent); }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .btn { border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 15px; cursor: pointer; font-weight: 800; color: var(--ink); }
+  .btn:hover { border-color: var(--brand); color: var(--brand); }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .btn.primary:hover { background: #00467d; color: #fff; }
+  .btn.go { background: var(--accent); border-color: var(--accent); color: #fff; font-size: 20px; padding: 12px 26px; }
+  .btn.go:hover { filter: brightness(1.05); color: #fff; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 2px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 5px 13px; cursor: pointer; font-weight: 800; font-size: 15px; min-width: 42px; }
+  .chip.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .muted { color: var(--muted); font-size: 14.5px; }
+  select { font: inherit; padding: 6px 10px; border: 2px solid var(--line); border-radius: 10px; background: #fff; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  svg.viz { width: 100%; height: auto; display: block; }
+  svg text { font-family: "Nunito", system-ui, sans-serif; }
+
+  /* home */
+  .hero { background: linear-gradient(135deg, #003b7a, #005596 60%, #1a73c4); color: #fff; border-radius: 22px; padding: 24px 26px; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+  .hero h2 { font-size: 29px; margin: 0 0 6px; }
+  .hero p { margin: 0; opacity: .92; max-width: 640px; }
+  .plan { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+  .plan .card { cursor: pointer; transition: transform .1s; }
+  .plan .card:hover { transform: translateY(-2px); border-color: var(--brand); }
+  .plan .num { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 900; margin-bottom: 6px; }
+  .plan b { font-size: 18px; display: block; }
+  .ring-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+  .ring { text-align: center; }
+  .ring svg { width: 110px; height: 110px; }
+  .guide { margin-top: 16px; background: #fff; border: 1px dashed #b9c7d8; border-radius: 16px; padding: 4px 18px; }
+  .guide summary { cursor: pointer; font-weight: 800; color: var(--deep); padding: 12px 0; }
+
+  /* strategy lab */
+  .bigfact { font-size: 46px; font-weight: 900; text-align: center; letter-spacing: 1px; margin: 4px 0 8px; }
+  .bigfact .ans { color: var(--green); }
+  .rule { background: #fff8ee; border: 1px solid #f6d4a8; border-radius: 14px; padding: 10px 14px; font-size: 17px; }
+  .rule .name { font-weight: 900; color: var(--accent); font-size: 19px; }
+  .steps div { margin: 4px 0; font-size: 18px; }
+  .skip { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .skip span { background: #eef3f9; border-radius: 10px; padding: 3px 10px; font-weight: 800; color: var(--brand); }
+  .skip span.hit { background: var(--green); color: #fff; }
+  .family { display: grid; grid-template-columns: 160px 1fr; gap: 12px; align-items: center; }
+  .family ul { margin: 0; padding-left: 18px; font-size: 19px; font-weight: 800; }
+  .pickers { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pickers select { font-size: 20px; font-weight: 800; }
+
+  /* practice */
+  .qcard { text-align: center; padding: 22px 18px; }
+  .qtext { font-size: 64px; font-weight: 900; line-height: 1.1; }
+  .answer { display: inline-block; min-width: 140px; border-bottom: 5px solid var(--brand); color: var(--brand); padding: 0 10px; }
+  .answer.ok { color: var(--green); border-color: var(--green); }
+  .answer.bad { color: var(--red); border-color: var(--red); }
+  .fb { min-height: 34px; font-size: 20px; font-weight: 800; margin-top: 10px; }
+  .fb.ok { color: var(--green); } .fb.bad { color: var(--red); } .fb.fast { color: var(--purple); }
+  .pad { display: grid; grid-template-columns: repeat(3, 76px); gap: 10px; justify-content: center; margin-top: 14px; }
+  .pad button { height: 64px; border-radius: 16px; border: 2px solid var(--line); background: #fff; font-size: 28px; font-weight: 900; cursor: pointer; color: var(--ink); }
+  .pad button:active { background: #eef3f9; transform: scale(.97); }
+  .pad .enter { background: var(--green); border-color: var(--green); color: #fff; }
+  .pad .del { color: var(--red); }
+  .timebar { height: 8px; border-radius: 6px; background: #edf1f6; overflow: hidden; margin: 6px auto 0; max-width: 360px; }
+  .timebar div { height: 100%; width: 0; background: var(--green); transition: width .1s linear; }
+  .help { text-align: left; margin-top: 14px; }
+  .counter { display: flex; justify-content: center; gap: 18px; font-weight: 800; color: var(--muted); font-size: 15px; }
+
+  /* speed run */
+  .race { position: relative; height: 92px; background: linear-gradient(#0b1d42, #183a7a); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
+  .race .star { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; opacity: .7; }
+  .race .rocket { position: absolute; top: 24px; font-size: 40px; transition: left .35s ease; transform: rotate(45deg); }
+  .race .goal { position: absolute; right: 12px; top: 22px; font-size: 38px; }
+  .race .best { position: absolute; top: 0; bottom: 0; width: 3px; background: #ffd34d; }
+  .race .best span { position: absolute; top: 4px; left: 6px; color: #ffd34d; font-size: 12px; font-weight: 800; white-space: nowrap; }
+  .clock { font-size: 34px; font-weight: 900; color: var(--accent); }
+  .result { text-align: center; }
+  .result .score { font-size: 64px; font-weight: 900; color: var(--green); line-height: 1; }
+  .missed { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
+  .missed span { background: #fdeceb; color: #8e1f18; border-radius: 10px; padding: 4px 10px; font-weight: 800; }
+
+  /* progress */
+  .heat { border-collapse: separate; border-spacing: 3px; font-size: 13px; font-weight: 800; margin: 0 auto; }
+  .heat td, .heat th { width: 36px; height: 32px; text-align: center; border-radius: 7px; }
+  .heat th { color: var(--muted); }
+  .heat td { cursor: pointer; color: #1f2a37; }
+  .heat td:hover { outline: 2px solid var(--brand); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 10px; font-size: 14px; }
+  .legend i { display: inline-block; width: 16px; height: 16px; border-radius: 4px; vertical-align: -3px; margin-right: 5px; }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; text-align: center; }
+  .stat b { display: block; font-size: 28px; line-height: 1.15; color: var(--deep); }
+  .stat span { font-size: 13.5px; color: var(--muted); font-weight: 700; }
+  .rtable { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rtable th { position: sticky; top: 0; background: var(--brand); color: #fff; padding: 7px 9px; text-align: left; font-weight: 800; }
+  .rtable td { padding: 6px 9px; border-bottom: 1px solid var(--line); }
+  .rtable tr:nth-child(even) td { background: #f8fafc; }
+  .rtable tr.click { cursor: pointer; } .rtable tr.click:hover td { background: #eef4fb; }
+  .rtable tr.sel td { background: #fff3e6 !important; }
+  .ok-t { color: var(--green); font-weight: 800; } .bad-t { color: var(--red); font-weight: 800; }
+  .scrollbox { max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .filters select { font-size: 14px; padding: 5px 8px; }
+  @media (max-width: 880px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .s0 { background: #eef1f5; } .s1 { background: #f8b4ae; } .s2 { background: #fde68a; } .s3 { background: #86efac; }
+
+  @media (max-width: 880px) {
+    .grid2, .grid3, .plan { grid-template-columns: 1fr; }
+    .ring-row { grid-template-columns: repeat(2, 1fr); }
+    .hero { grid-template-columns: 1fr; }
+    .qtext { font-size: 48px; }
+    header .sub { display: none; }
+    header { gap: 8px; padding: 10px 12px; }
+    header h1 { font-size: 16px; }
+    .pill { padding: 4px 9px; font-size: 14px; }
+    .heat td, .heat th { width: 24px; height: 24px; font-size: 10px; border-radius: 5px; }
+    .family { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="logo">FF</div>
+  <div><h1 id="appTitle">Fast Facts</h1><div class="sub">Afro-Merica Tutor · × ÷ + − fluency</div></div>
+  <div class="grow"></div>
+  <span class="pill" id="hdrStreak">🔥 0 days</span>
+  <span class="pill" id="hdrGreen">🟢 0 facts</span>
+</header>
+<nav>
+  <button class="tab on" data-v="home">🏠 Home</button>
+  <button class="tab" data-v="lab">🧠 Strategy Lab</button>
+  <button class="tab" data-v="practice">🎯 Practice</button>
+  <button class="tab" data-v="speed">🚀 Speed Run</button>
+  <button class="tab" data-v="progress">📊 My Progress</button>
+  <button class="tab" data-v="records">📋 Records</button>
+</nav>
+
+<main>
+<!-- ================= HOME ================= -->
+<section class="view on" id="home">
+  <div class="hero">
+    <div><h2 id="hello">Hi! ⚡</h2>
+      <p>Fingers helped you learn to count. Now let's teach your brain <b>shortcuts</b> so facts pop out fast! Every day: learn a trick, practice it, then race your own best score.</p></div>
+    <div style="font-size:64px">🧠</div>
+  </div>
+  <div class="rule" id="tutorPlan" style="display:none;margin-top:16px"></div>
+  <div class="plan">
+    <div class="card" data-go="lab"><div class="num">1</div><b>🧠 Learn a trick</b><span class="muted" id="planLab">2 minutes · see why a fact works</span></div>
+    <div class="card" data-go="practice"><div class="num">2</div><b>🎯 Practice</b><span class="muted">5 minutes · the app repeats the facts you need most</span></div>
+    <div class="card" data-go="speed"><div class="num">3</div><b>🚀 Speed Run</b><span class="muted">1 minute · beat your best score!</span></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>Facts I know fast</h3><div class="ring-row" id="rings"></div>
+    <p class="muted" style="text-align:center;margin:6px 0 0">🟢 <b>Green</b> means correct in 3 seconds or less, twice in a row. That's “brain fast”, no fingers needed!</p></div>
+  <details class="guide adult-only">
+    <summary>📋 For parents &amp; tutors: how this helps students stop counting on fingers</summary>
+    <p><b>Why fingers?</b> Finger counting means a fact isn't stored in memory yet, so the student rebuilds it every time. That's slow and tiring, especially in multi-step problems like fractions. The goal is <b>fluency</b>: accurate, fast (about 3 seconds) and flexible.</p>
+    <p><b>How the app works:</b></p>
+    <ul>
+      <li><b>Strategy Lab:</b> each fact is linked to a fact the student already knows (×2, ×5, ×10). Example: 7 × 8 = 4 × 7 + 4 × 7, and 7 × 6 = 5 × 7 + 1 × 7. This replaces counting with reasoning.</li>
+      <li><b>Practice</b> is adaptive. Facts that are new, wrong or slow come back more often. A wrong answer shows the picture, and the fact returns a few questions later.</li>
+      <li><b>Speed Run</b> compares students only to <b>their own</b> best score. It's never a pass/fail test.</li>
+    </ul>
+    <p><b>Suggested order</b> (one family per week; division goes with its multiplication family):<br>
+      Week 1: ×2, ×5, ×10 · Week 2: ×3, ×4 · Week 3: ×9, ×6 · Week 4: ×7, ×8 · Week 5: ×11, ×12 and mixed review.</p>
+    <p><b>Tips:</b> 10 minutes a day is better than 1 hour once a week. Praise strategies (“You used 5 × 8!”), not just speed. If they reach for their fingers, ask: <i>“Which fact you already know is close?”</i></p>
+    <p class="muted">To reset a student’s progress, use the student’s page in AMtutorTools (tutors and admins).</p>
+  </details>
+</section>
+
+<!-- ================= LAB ================= -->
+<section class="view" id="lab">
+  <div class="card" style="margin-bottom:16px">
+    <div class="pickers">
+      <select id="labA"></select>
+      <select id="labOp"><option>×</option><option>÷</option><option>+</option><option>−</option></select>
+      <select id="labB"></select>
+      <button class="btn primary" id="labRand">🎲 Random fact</button>
+      <span class="muted" id="labNote"></span>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>See it</h3><div class="bigfact" id="labFact"></div><svg class="viz" id="labSvg"></svg><div class="skip" id="labSkip"></div></div>
+    <div class="stack">
+      <div class="card"><h3>The shortcut</h3><div id="labRule"></div></div>
+      <div class="card"><h3>Fact family</h3><div class="family"><svg id="labTri" viewBox="0 0 160 140"></svg><ul id="labFam"></ul></div>
+        <p class="muted" style="margin:8px 0 0">Know one fact → you know all four! Division is multiplication backwards.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRACTICE ================= -->
+<section class="view" id="practice">
+  <div class="card" style="margin-bottom:16px">
+    <div class="row"><b>Operations:</b><div class="chips" id="opChips"></div></div>
+    <div class="row" style="margin-top:10px"><b>Times tables:</b><div class="chips" id="tblChips"></div>
+      <select id="maxF"><option value="10">facts up to ×10</option><option value="12">facts up to ×12</option></select></div>
+    <p class="muted" style="margin:8px 0 0">These settings are used by Practice and by Speed Run. Tip: pick 1–2 times tables at a time.</p>
+  </div>
+  <div class="grid2">
+    <div class="card qcard">
+      <div class="counter"><span id="pCount">0 done</span><span id="pRight">0 ✓</span><span id="pFast">0 ⚡ fast</span></div>
+      <div class="qtext" id="pQ"></div>
+      <div class="timebar"><div id="pBar"></div></div>
+      <div class="fb" id="pFb"></div>
+      <div class="pad" id="pPad"></div>
+    </div>
+    <div class="card"><h3>Need help?</h3><div id="pHelp"><p class="muted">If you get a fact wrong, its <b>picture and shortcut</b> show up here. Think about the trick, and the same fact will come back soon!</p>
+      <button class="btn" id="pHint">💡 Show me the trick for this one</button></div></div>
+  </div>
+</section>
+
+<!-- ================= SPEED RUN ================= -->
+<section class="view" id="speed">
+  <div class="card" id="sSetup" style="text-align:center">
+    <h3 style="justify-content:center">Speed Run</h3>
+    <p style="font-size:19px;margin-top:0">Answer as many as you can. Your rocket flies with every correct answer. Can you pass your <b style="color:#b7791f">best score</b>?</p>
+    <div class="row" style="justify-content:center;margin-bottom:12px">
+      <span>Time:</span><div class="chips" id="durChips"></div>
+    </div>
+    <p class="muted" id="sUsing"></p>
+    <button class="btn go" id="sStart">🚀 Start</button>
+    <p class="muted" id="sBest"></p>
+  </div>
+  <div class="card qcard" id="sRun" style="display:none">
+    <div class="race" id="race"><div class="best" id="raceBest"><span></span></div><div class="goal">🌍</div><div class="rocket" id="rocket">🚀</div></div>
+    <div class="row" style="justify-content:space-between"><span class="clock" id="sClock">60</span><span style="font-size:24px;font-weight:900;color:var(--green)" id="sScore">0 ✓</span></div>
+    <div class="qtext" id="sQ"></div>
+    <div class="fb" id="sFb"></div>
+    <div class="pad" id="sPad"></div>
+  </div>
+  <div class="card result" id="sDone" style="display:none"></div>
+</section>
+
+<!-- ================= RECORDS ================= -->
+<section class="view" id="records">
+  <div class="stats" id="recStats"></div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>Trials over time</h3>
+    <svg class="viz" id="trendSvg"></svg>
+    <p class="muted" style="margin:4px 0 0">Bars = score % per trial (green = Speed Run, blue = Practice). Orange line = average seconds per question (lower is faster).</p>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h3>Trial summary</h3>
+    <div class="filters"><button class="btn" id="dlSess">⬇ Download trials (CSV)</button><span class="muted">Click a row to see its attempts below.</span></div>
+    <div class="scrollbox"><table class="rtable" id="sessTable"></table></div>
+  </div>
+  <div class="card">
+    <h3>Attempt log</h3>
+    <div class="filters">
+      <select id="fSess"></select>
+      <select id="fMode"><option value="">All modes</option><option>Practice</option><option>Speed Run</option></select>
+      <select id="fRes"><option value="">All results</option><option value="1">✓ Correct</option><option value="0">✗ Wrong</option><option value="slow">Correct but slow (&gt; 3 s)</option></select>
+      <select id="fOp"><option value="">All operations</option><option>×</option><option>÷</option><option>+</option><option>−</option></select>
+      <button class="btn" id="dlLog">⬇ Download attempts (CSV)</button>
+          </div>
+    <div class="scrollbox"><table class="rtable" id="logTable"></table></div>
+    <p class="muted" id="logNote" style="margin:6px 0 0"></p>
+  </div>
+</section>
+
+<!-- ================= PROGRESS ================= -->
+<section class="view" id="progress">
+  <div class="grid2">
+    <div class="card"><h3>Fact map</h3>
+      <div class="row" style="justify-content:center;margin-bottom:10px"><div class="chips" id="heatOps"></div></div>
+      <div style="overflow-x:auto"><table class="heat" id="heat"></table></div>
+      <div class="legend"><span><i class="s0"></i>Not tried</span><span><i class="s1"></i>Needs work</span><span><i class="s2"></i>Getting there</span><span><i class="s3"></i>Brain fast!</span></div>
+      <p class="muted" style="text-align:center">Click any square to see its trick.</p></div>
+    <div class="stack">
+      <div class="card"><h3>Speed Run scores</h3><svg class="viz" id="histSvg"></svg><p class="muted" id="histNote" style="margin:4px 0 0"></p></div>
+      <div class="card"><h3>Practice these next</h3><div id="nextFacts"></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs || {}) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs) { const t = el("text", { x, y, ...(attrs || {}) }, parent); t.textContent = s; return t; }
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const FAST_MS = 3000;
+
+/* =========================================================
+   Storage (per browser; falls back to memory)
+   ========================================================= */
+const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+let FACTS = load("ff-facts", {});          // key -> {n, c, st, t, w}
+let HIST = load("ff-hist", []);            // [{d, score, wrong, secs}]
+let DAYS = load("ff-days", []);            // ["2026-10-20", ...]
+// ---- AMtutorTools platform glue ----
+const PLATFORM = !!(window.AMT && AMT.mode !== "standalone");
+const ME = PLATFORM ? AMT.student : null;
+const FIRST = ME ? ME.firstName : "there";
+const FILE = (ME ? ME.name : "student").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+const IS_ADULT = PLATFORM && AMT.isAdult;
+// Attempts are stored on the server (AMT.attempt), not in the browser, so the log can't grow without limit.
+let LOG = PLATFORM ? [] : load("ff-log", []);             // attempts
+let SESS = load("ff-sess", []);           // trials
+let curSess = { Practice: null, "Speed Run": null };
+const MAX_LOG = 20000;
+const pad2 = n => String(n).padStart(2, "0");
+const dStr = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const tStr = ms => { const d = new Date(ms); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; };
+const secs = ms => (ms / 1000).toFixed(1);
+const durStr = ms => { const s = Math.round(ms / 1000); return s >= 60 ? `${Math.floor(s / 60)} min ${s % 60} s` : `${s} s`; };
+function startSession(mode, startMs) {
+  const sess = { id: (SESS.length ? SESS[SESS.length - 1].id : 0) + 1, mode, start: startMs || Date.now(), end: startMs || Date.now(),
+                 settings: setText(), n: 0, c: 0, fast: 0, tsum: 0, plannedSecs: mode === "Speed Run" ? SET.dur : null };
+  SESS.push(sess); curSess[mode] = sess; save("ff-sess", SESS);
+  return sess;
+}
+function endSession(mode) { curSess[mode] = null; }
+function logAttempt(mode, fa, typed, ok, ms, retry) {
+  const now = Date.now();
+  let sess = curSess[mode];
+  if (!sess) sess = startSession(mode, now - ms);
+  const rec = { sid: sess.id, mode, ts: now, op: fa.op, q: fa.text, a: typed, ans: fa.ans, ok, ms: Math.round(ms), retry: !!retry };
+  LOG.push(rec); if (LOG.length > MAX_LOG) LOG.splice(0, LOG.length - MAX_LOG);
+  sess.n++; if (ok) sess.c++; if (ok && ms <= FAST_MS && !retry) sess.fast++; sess.tsum += Math.round(ms); sess.end = now;
+  if (!PLATFORM) save("ff-log", LOG);
+  if (SESS.length > 400) SESS.splice(0, SESS.length - 400);
+  save("ff-sess", SESS);
+  if (PLATFORM) AMT.attempt({ question: fa.text, response: typed, answer: String(fa.ans), correct: ok, ms: Math.round(ms), topic: fa.op,
+    mode, session: `trial-${sess.id}`, meta: { sid: sess.id, op: fa.op, retry: !!retry } });
+}
+let SET = load("ff-set", { ops: ["×", "÷"], tables: [2, 5, 10], max: 10, dur: 60 });
+
+/* =========================================================
+   Facts
+   key  "×:a:b" -> a × b
+        "÷:q:d" -> (q·d) ÷ d = q
+        "+:a:b" -> a + b
+        "−:a:b" -> (a+b) − b = a
+   ========================================================= */
+function fact(op, a, b) {
+  if (op === "×") return { op, key: `×:${a}:${b}`, text: `${a} × ${b}`, ans: a * b, a, b };
+  if (op === "÷") return { op, key: `÷:${a}:${b}`, text: `${a * b} ÷ ${b}`, ans: a, a, b };
+  if (op === "+") return { op, key: `+:${a}:${b}`, text: `${a} + ${b}`, ans: a + b, a, b };
+  return { op, key: `−:${a}:${b}`, text: `${a + b} − ${b}`, ans: a, a, b };
+}
+const factFromKey = k => { const [op, a, b] = k.split(":"); return fact(op, +a, +b); };
+function status(key) {                       // 0 none, 1 needs work, 2 getting there, 3 fast
+  const f = FACTS[key];
+  if (!f || !f.n) return 0;
+  if (f.st >= 2) return 3;
+  if (f.w || f.c / f.n < 0.6) return 1;
+  return 2;
+}
+function record(fa, correct, ms) {
+  const f = FACTS[fa.key] || { n: 0, c: 0, st: 0, t: 0, w: false };
+  f.n++; f.t = ms;
+  if (correct) { f.c++; f.w = false; f.st = ms <= FAST_MS ? f.st + 1 : 0; }
+  else { f.w = true; f.st = 0; }
+  FACTS[fa.key] = f; save("ff-facts", FACTS);
+  if (correct && f.st === 2) setTimeout(checkBadges, 0);
+  const today = dStr(Date.now());
+  if (!DAYS.includes(today)) { DAYS.push(today); save("ff-days", DAYS); }
+  header();
+}
+function pool() {
+  const out = [], M = SET.max;
+  for (const op of SET.ops) {
+    if (op === "×") for (const t of SET.tables) for (let o = 0; o <= M; o++) { out.push(fact("×", t, o)); if (o !== t) out.push(fact("×", o, t)); }
+    if (op === "÷") for (const t of SET.tables) if (t) for (let q = 0; q <= M; q++) out.push(fact("÷", q, t));
+    if (op === "+") for (let a = 0; a <= 10; a++) for (let b = 0; b <= 10; b++) out.push(fact("+", a, b));
+    if (op === "−") for (let a = 0; a <= 10; a++) for (let b = 0; b <= 10; b++) out.push(fact("−", a, b));
+  }
+  const seen = new Set();
+  return out.filter(f => !seen.has(f.key) && seen.add(f.key));
+}
+const W = [3, 6, 3, 1];                       // weight by status: new, needs work, getting there, fast
+function nextFact(last, retry) {
+  if (retry && retry.length && retry[0].due <= 0) return retry.shift().f;
+  const P = pool().filter(f => !last || f.key !== last.key);
+  if (!P.length) return fact("×", 2, 2);
+  let tot = 0; const ws = P.map(f => (tot += W[status(f.key)]));
+  const r = Math.random() * tot;
+  return P[ws.findIndex(w => w >= r)];
+}
+
+/* =========================================================
+   Strategy renderer
+   ========================================================= */
+const PRI = [0, 1, 10, 2, 5, 11, 4, 3, 9, 6, 12, 8, 7];
+const COLS = ["#2563eb", "#ea6a1a", "#0f9d58", "#8b3fc7"];
+function mulPlan(a, b) {
+  const s = PRI.indexOf(a) <= PRI.indexOf(b) ? a : b, o = s === a ? b : a, p = a * b;
+  const P = {
+    0: { name: "Zero rule", say: `Any number × 0 = 0. Zero groups means nothing!`, chunks: [], steps: [`${a} × ${b} = 0`] },
+    1: { name: "One rule", say: `× 1 keeps the number the same: one group of ${o}.`, chunks: [1], steps: [`1 group of ${o} = ${o}`] },
+    2: { name: "Doubles", say: `× 2 means <b>double it</b>: ${o} + ${o}.`, chunks: [1, 1], steps: [`${o} + ${o} = ${p}`] },
+    10: { name: "Tens", say: `× 10: put a <b>0</b> on the end.`, chunks: [10], steps: [`${o} → ${o}0`, `= ${p}`] },
+    5: { name: "Half of ten", say: `× 5 is <b>half of × 10</b>. Or count by 5s like a clock.`, chunks: [5], steps: [`10 × ${o} = ${10 * o}`, `half of ${10 * o} = ${p}`] },
+    4: { name: "Double, double", say: `× 4: <b>double</b>, then <b>double again</b>.`, chunks: [2, 2], steps: [`2 × ${o} = ${2 * o}`, `${2 * o} + ${2 * o} = ${p}`] },
+    3: { name: "Double + one more", say: `× 3: <b>double it</b>, then add <b>one more group</b>.`, chunks: [2, 1], steps: [`2 × ${o} = ${2 * o}`, `${2 * o} + ${o} = ${p}`] },
+    6: { name: "Five + one", say: `× 6: <b>5 groups</b> plus <b>1 more group</b>.`, chunks: [5, 1], steps: [`5 × ${o} = ${5 * o}`, `1 × ${o} = ${o}`, `${5 * o} + ${o} = ${p}`] },
+    7: { name: "Five + two", say: `× 7: <b>5 groups</b> plus <b>2 groups</b>.`, chunks: [5, 2], steps: [`5 × ${o} = ${5 * o}`, `2 × ${o} = ${2 * o}`, `${5 * o} + ${2 * o} = ${p}`] },
+    8: { name: "Four + four", say: `× 8: find <b>4 groups</b>, then <b>double</b> it.`, chunks: [4, 4], steps: [`4 × ${o} = ${4 * o}`, `${4 * o} + ${4 * o} = ${p}`] },
+    9: { name: "Ten − one", say: `× 9: find <b>10 groups</b>, then take away <b>1 group</b>.`, chunks: [9], minus: true, steps: [`10 × ${o} = ${10 * o}`, `${10 * o} − ${o} = ${p}`] },
+    11: { name: "Ten + one", say: `× 11: <b>10 groups</b> plus <b>1 group</b>.`, chunks: [10, 1], steps: [`10 × ${o} = ${10 * o}`, `${10 * o} + ${o} = ${p}`] },
+    12: { name: "Ten + two", say: `× 12: <b>10 groups</b> plus <b>2 groups</b>.`, chunks: [10, 2], steps: [`10 × ${o} = ${10 * o}`, `2 × ${o} = ${2 * o}`, `${10 * o} + ${2 * o} = ${p}`] }
+  }[s];
+  return { s, o, p, ...P };
+}
+function drawArray(svg, rows, cols, chunks, minus, opts) {
+  opts = opts || {};
+  const r = Math.max(rows + (minus ? 1 : 0), 1), c = Math.max(cols, 1);
+  const cell = Math.min(36, 420 / c, 330 / r), L = 120, T = 10, Wd = L + c * cell + 20, Ht = T + r * cell + 10;
+  svg.setAttribute("viewBox", `0 0 ${Math.max(Wd, 300)} ${Math.max(Ht, 60)}`); svg.innerHTML = "";
+  if (!rows || !cols) { txt(svg, 150, 40, "0 groups → 0 dots", { "font-size": 20, "font-weight": 800, fill: "#5b6b7c", "text-anchor": "middle" }); return; }
+  let row = 0;
+  const blocks = minus ? [[rows + 1, 0]] : chunks.map((n, i) => [n, i]);
+  blocks.forEach(([n, ci]) => {
+    const y0 = T + row * cell;
+    el("path", { d: `M${L - 10} ${y0 + 3} h-6 v${n * cell - 6} h6`, fill: "none", stroke: COLS[ci], "stroke-width": 3 }, svg);
+    const label = minus ? `10 × ${cols}` : `${n} × ${cols} = ${n * cols}`;
+    txt(svg, L - 22, y0 + n * cell / 2 + 6, label, { "font-size": Math.min(17, 12 + cell / 6), "font-weight": 800, fill: COLS[ci], "text-anchor": "end" });
+    for (let i = 0; i < n; i++) for (let j = 0; j < cols; j++) {
+      const cx = L + j * cell + cell / 2, cy = y0 + i * cell + cell / 2, gone = minus && row + i === rows;
+      el("circle", { cx, cy, r: cell * .36, fill: gone ? "#fecaca" : COLS[ci], "fill-opacity": gone ? 1 : .85 }, svg);
+    }
+    if (minus) {
+      const yy = T + rows * cell + cell / 2;
+      el("line", { x1: L, x2: L + cols * cell, y1: yy, y2: yy, stroke: "#d93025", "stroke-width": 4, "stroke-linecap": "round" }, svg);
+      txt(svg, L + cols * cell + 8, yy + 6, `− ${cols}`, { "font-size": 17, "font-weight": 800, fill: "#d93025" });
+    }
+    row += n;
+  });
+  if (opts.groupCols) for (let j = 1; j < cols; j++) el("line", { x1: L + j * cell, x2: L + j * cell, y1: T, y2: T + rows * cell, stroke: "#cbd5e1", "stroke-dasharray": "3 4" }, svg);
+}
+function drawTenFrames(svg, a, b) {
+  svg.setAttribute("viewBox", "0 0 520 170"); svg.innerHTML = "";
+  const big = Math.max(a, b), small = Math.min(a, b), need = Math.min(10 - big, small), rest = small - need;
+  const frame = (x0, fill) => {
+    for (let i = 0; i < 10; i++) {
+      const x = x0 + (i % 5) * 44, y = 20 + Math.floor(i / 5) * 44;
+      el("rect", { x, y, width: 44, height: 44, fill: "#fff", stroke: "#334155", "stroke-width": 2 }, svg);
+      if (fill[i]) el("circle", { cx: x + 22, cy: y + 22, r: 15, fill: fill[i] }, svg);
+    }
+  };
+  const f1 = Array(10).fill(null).map((_, i) => i < big ? "#2563eb" : i < big + need ? "#ea6a1a" : null);
+  const f2 = Array(10).fill(null).map((_, i) => i < rest ? "#ea6a1a" : null);
+  frame(10, f1); frame(270, f2);
+  txt(svg, 120, 150, `${big}${need ? ` + ${need}` : ""} = ${big + need}`, { "font-size": 18, "font-weight": 800, fill: "#1f2a37", "text-anchor": "middle" });
+  txt(svg, 380, 150, `+ ${rest}`, { "font-size": 18, "font-weight": 800, fill: "#ea6a1a", "text-anchor": "middle" });
+}
+function drawJumps(svg, from, to) {               // count up from 'from' to 'to'
+  svg.setAttribute("viewBox", "0 0 560 130"); svg.innerHTML = "";
+  const lo = 0, hi = 20, X = v => 20 + (v - lo) / (hi - lo) * 520;
+  el("line", { x1: X(lo), x2: X(hi), y1: 95, y2: 95, stroke: "#1f2a37", "stroke-width": 2.5 }, svg);
+  for (let v = lo; v <= hi; v++) { el("line", { x1: X(v), x2: X(v), y1: 89, y2: 101, stroke: "#1f2a37", "stroke-width": v % 5 ? 1.2 : 2.2 }, svg); if (v % 5 === 0 || v === from || v === to || v === 10) txt(svg, X(v), 120, v, { "font-size": 14, "font-weight": 800, "text-anchor": "middle", fill: "#1f2a37" }); }
+  const stops = [from]; if (from < 10 && to > 10) stops.push(10); stops.push(to);
+  for (let i = 0; i < stops.length - 1; i++) {
+    const a = X(stops[i]), b = X(stops[i + 1]), m = (a + b) / 2, h = 30 + (b - a) * .15, col = COLS[i];
+    el("path", { d: `M${a} 88 Q${m} ${88 - h * 1.6} ${b} 88`, fill: "none", stroke: col, "stroke-width": 3 }, svg);
+    txt(svg, m, 88 - h * .8 - 6, `+${stops[i + 1] - stops[i]}`, { "font-size": 17, "font-weight": 900, fill: col, "text-anchor": "middle" });
+  }
+  el("circle", { cx: X(from), cy: 95, r: 6, fill: "#1f2a37" }, svg);
+}
+function strategy(fa) {               // returns {fact, rule html, draw(svg), skip html, fam:[top,l,r,list]}
+  const { op, a, b } = fa;
+  if (op === "×" || op === "÷") {
+    const A = op === "×" ? a : a, B = b;                  // × : a×b ; ÷ : (a·b) ÷ b = a  → same array a rows of b? use plan on (a,b)
+    const m = mulPlan(A, B), prod = A * B;
+    if (op === "×") {
+      return {
+        title: `${a} × ${b} = <span class="ans">${prod}</span>`,
+        rule: `<div class="rule"><div class="name">${m.name}</div>${m.say}</div><div class="steps" style="margin-top:10px">${m.steps.map(s => `<div>➜ ${s}</div>`).join("")}</div>`,
+        draw: svg => drawArray(svg, m.s, m.o, m.chunks, m.minus),
+        skip: m.o && m.s <= 12 ? Array.from({ length: m.s }, (_, i) => `<span${i === m.s - 1 ? ' class="hit"' : ""}>${(i + 1) * m.o}</span>`).join("") : "",
+        skipLabel: `Skip count by ${m.o}s, ${m.s} times:`,
+        fam: [prod, a, b, "×"]
+      };
+    }
+    const q = a, d = b, n = q * d, mm = mulPlan(q, d);
+    return {
+      title: `${n} ÷ ${d} = <span class="ans">${q}</span>`,
+      rule: `<div class="rule"><div class="name">Think multiplication!</div>Ask yourself: <b>${d} × ? = ${n}</b></div>
+        <div class="steps" style="margin-top:10px"><div>➜ ${n} dots in rows of ${d}</div><div>➜ How many rows? <b>${q}</b></div><div>➜ Because ${d} × ${q} = ${n}</div></div>
+        <div class="muted" style="margin-top:8px">Not sure of ${d} × ${q}? Its trick: <b>${mm.name}</b>.</div>`,
+      draw: svg => drawArray(svg, q, d, [q], false, { groupCols: false }),
+      skip: q && d ? Array.from({ length: q }, (_, i) => `<span${i === q - 1 ? ' class="hit"' : ""}>${(i + 1) * d}</span>`).join("") : "",
+      skipLabel: `Count by ${d}s until you reach ${n}. Count the jumps:`,
+      fam: [n, d, q, "×"]
+    };
+  }
+  if (op === "+") {
+    const s = a + b, big = Math.max(a, b), small = Math.min(a, b);
+    let name, say, steps;
+    if (!small) { name = "Plus zero"; say = "Adding 0 changes nothing."; steps = [`${a} + ${b} = ${s}`]; }
+    else if (a === b) { name = "Doubles"; say = `Doubles you know: ${a} + ${a}.`; steps = [`${a} + ${a} = ${s}`]; }
+    else if (Math.abs(a - b) === 1) { name = "Near doubles"; say = `Use a double, then add 1.`; steps = [`${small} + ${small} = ${2 * small}`, `${2 * small} + 1 = ${s}`]; }
+    else if (s > 10) { const need = 10 - big; name = "Make a ten"; say = `Fill up to <b>10</b> first, then add the rest.`; steps = [`${big} + ${need} = 10`, `${small} − ${need} = ${small - need} left`, `10 + ${small - need} = ${s}`]; }
+    else { name = "Count on from the bigger"; say = `Start at <b>${big}</b> and count on ${small}.`; steps = [`${big} … ${s}`]; }
+    return { title: `${a} + ${b} = <span class="ans">${s}</span>`, rule: `<div class="rule"><div class="name">${name}</div>${say}</div><div class="steps" style="margin-top:10px">${steps.map(x => `<div>➜ ${x}</div>`).join("")}</div>`,
+      draw: svg => drawTenFrames(svg, a, b), skip: "", fam: [s, a, b, "+"] };
+  }
+  const c = a + b;
+  return { title: `${c} − ${b} = <span class="ans">${a}</span>`,
+    rule: `<div class="rule"><div class="name">Think addition: count up!</div>Ask: <b>${b} + ? = ${c}</b>. Jump from ${b} up to ${c}${b < 10 && c > 10 ? ", stopping at 10" : ""}.</div>
+      <div class="steps" style="margin-top:10px">${b < 10 && c > 10 ? `<div>➜ ${b} + ${10 - b} = 10</div><div>➜ 10 + ${c - 10} = ${c}</div><div>➜ ${10 - b} + ${c - 10} = <b>${a}</b></div>` : `<div>➜ ${b} + ${a} = ${c}</div>`}</div>`,
+    draw: svg => drawJumps(svg, b, c), skip: "", fam: [c, b, a, "+"] };
+}
+function drawFamily(svg, ul, fam) {
+  const [top, l, r, op] = fam; svg.innerHTML = "";
+  el("path", { d: "M80 14 L150 128 L10 128 Z", fill: "#fff8ee", stroke: "#e66414", "stroke-width": 3, "stroke-linejoin": "round" }, svg);
+  el("circle", { cx: 80, cy: 50, r: 22, fill: "#e66414" }, svg);
+  txt(svg, 80, 57, top, { "font-size": 20, "font-weight": 900, fill: "#fff", "text-anchor": "middle" });
+  txt(svg, 42, 116, l, { "font-size": 22, "font-weight": 900, fill: "#2563eb", "text-anchor": "middle" });
+  txt(svg, 118, 116, r, { "font-size": 22, "font-weight": 900, fill: "#2563eb", "text-anchor": "middle" });
+  const inv = op === "×" ? "÷" : "−";
+  const list = op === "×" ? [`${l} × ${r} = ${top}`, `${r} × ${l} = ${top}`, l ? `${top} ÷ ${l} = ${r}` : null, r ? `${top} ÷ ${r} = ${l}` : null]
+                          : [`${l} + ${r} = ${top}`, `${r} + ${l} = ${top}`, `${top} − ${l} = ${r}`, `${top} − ${r} = ${l}`];
+  ul.innerHTML = [...new Set(list.filter(Boolean))].map(s => `<li>${s}</li>`).join("") + (op === "×" && (!l || !r) ? `<li class="muted" style="font-size:14px">(You can't divide by 0!)</li>` : "");
+}
+
+/* =========================================================
+   Strategy Lab
+   ========================================================= */
+function fillLab() {
+  const op = $("labOp").value, a = $("labA"), b = $("labB"), opts = n => Array.from({ length: n + 1 }, (_, i) => `<option>${i}</option>`).join("");
+  const keepA = a.value, keepB = b.value;
+  if (op === "×") { a.innerHTML = opts(12); b.innerHTML = opts(12); $("labNote").textContent = ""; }
+  if (op === "÷") { const n = []; for (let i = 0; i <= 144; i++) n.push(i); a.innerHTML = n.map(i => `<option>${i}</option>`).join(""); b.innerHTML = Array.from({ length: 12 }, (_, i) => `<option>${i + 1}</option>`).join(""); }
+  if (op === "+" || op === "−") { a.innerHTML = opts(20); b.innerHTML = opts(10); }
+  if (keepA && [...a.options].some(o => o.value === keepA)) a.value = keepA;
+  if (keepB && [...b.options].some(o => o.value === keepB)) b.value = keepB;
+}
+function showLab(fa) {
+  $("labOp").value = fa.op; fillLab();
+  if (fa.op === "×" || fa.op === "+") { $("labA").value = fa.a; $("labB").value = fa.b; }
+  if (fa.op === "÷") { $("labA").value = fa.a * fa.b; $("labB").value = fa.b; }
+  if (fa.op === "−") { $("labA").value = fa.a + fa.b; $("labB").value = fa.b; }
+  renderLab();
+}
+function labFact() {
+  const op = $("labOp").value, A = +$("labA").value, B = +$("labB").value;
+  $("labNote").textContent = "";
+  if (op === "×") return fact("×", A, B);
+  if (op === "+") return fact("+", A, B);
+  if (op === "÷") { if (A % B) { const q = Math.floor(A / B); $("labNote").textContent = `${A} isn't in the ${B}s family, so I picked ${q * B} ÷ ${B}.`; return fact("÷", q, B); } return fact("÷", A / B, B); }
+  if (B > A) { $("labNote").textContent = `Pick a first number at least as big as ${B}.`; return fact("−", 0, A); }
+  if (A - B > 10) { $("labNote").textContent = "Try a smaller difference (10 or less)."; return fact("−", 10, B); }
+  return fact("−", A - B, B);
+}
+function renderLab(fa) {
+  fa = fa || labFact();
+  const S = strategy(fa);
+  $("labFact").innerHTML = S.title;
+  S.draw($("labSvg"));
+  $("labSkip").innerHTML = S.skip ? `<div class="muted" style="width:100%">${S.skipLabel}</div>${S.skip}` : "";
+  $("labRule").innerHTML = S.rule;
+  drawFamily($("labTri"), $("labFam"), S.fam);
+}
+["labA", "labB"].forEach(id => $(id).onchange = () => renderLab());
+$("labOp").onchange = () => { fillLab(); renderLab(); };
+$("labRand").onclick = () => { const op = $("labOp").value; showLab(op === "×" ? fact("×", rnd(2, 12), rnd(2, 12)) : op === "÷" ? fact("÷", rnd(2, 12), rnd(2, 12)) : op === "+" ? fact("+", rnd(2, 10), rnd(2, 10)) : fact("−", rnd(2, 10), rnd(2, 10))); };
+
+/* =========================================================
+   Settings chips
+   ========================================================= */
+function settingsUI() {
+  $("opChips").innerHTML = ["×", "÷", "+", "−"].map(o => `<button class="chip${SET.ops.includes(o) ? " on" : ""}" data-o="${o}">${o}</button>`).join("");
+  $("tblChips").innerHTML = Array.from({ length: 13 }, (_, i) => `<button class="chip${SET.tables.includes(i) ? " on" : ""}" data-t="${i}">${i}</button>`).join("") + `<button class="chip" data-t="all">All</button>`;
+  $("maxF").value = SET.max;
+  document.querySelectorAll("#opChips .chip").forEach(c => c.onclick = () => {
+    const o = c.dataset.o; SET.ops = SET.ops.includes(o) ? SET.ops.filter(x => x !== o) : [...SET.ops, o];
+    if (!SET.ops.length) SET.ops = [o];
+    save("ff-set", SET); settingsUI(); newQ();
+  });
+  document.querySelectorAll("#tblChips .chip").forEach(c => c.onclick = () => {
+    if (c.dataset.t === "all") SET.tables = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    else { const t = +c.dataset.t; SET.tables = SET.tables.includes(t) ? SET.tables.filter(x => x !== t) : [...SET.tables, t].sort((a, b) => a - b); }
+    if (!SET.tables.length) SET.tables = [2];
+    save("ff-set", SET); settingsUI(); newQ();
+  });
+  $("durChips").innerHTML = [30, 60, 120].map(s => `<button class="chip${SET.dur === s ? " on" : ""}" data-d="${s}">${s < 60 ? s + " sec" : s / 60 + " min"}</button>`).join("");
+  document.querySelectorAll("#durChips .chip").forEach(c => c.onclick = () => { SET.dur = +c.dataset.d; save("ff-set", SET); settingsUI(); speedSetup(); });
+}
+$("maxF").onchange = e => { SET.max = +e.target.value; save("ff-set", SET); newQ(); };
+const setText = () => `${SET.ops.join(" ")} with the ${SET.tables.join(", ")} ${SET.tables.length > 1 ? "tables" : "table"}`;
+
+/* =========================================================
+   Keypad helper
+   ========================================================= */
+function keypad(root, onKey) {
+  root.innerHTML = ["7", "8", "9", "4", "5", "6", "1", "2", "3", "⌫", "0", "✓"].map(k => `<button data-k="${k}" class="${k === "✓" ? "enter" : k === "⌫" ? "del" : ""}">${k}</button>`).join("");
+  root.querySelectorAll("button").forEach(b => b.onclick = () => onKey(b.dataset.k));
+}
+
+/* =========================================================
+   Practice (adaptive)
+   ========================================================= */
+const PR = { cur: null, typed: "", t0: 0, lock: false, done: 0, right: 0, fast: 0, retry: [], timer: null, first: true };
+function renderPQ(cls) { $("pQ").innerHTML = `${PR.cur.text} = <span class="answer ${cls || ""}">${PR.typed || "&nbsp;"}</span>`; }
+function newQ() {
+  if (!$("practice").classList.contains("on")) { PR.cur = null; return; }
+  PR.retry.forEach(r => r.due--);
+  PR.cur = nextFact(PR.cur, PR.retry); PR.typed = ""; PR.lock = false; PR.first = true; PR.t0 = performance.now();
+  $("pFb").className = "fb"; $("pFb").textContent = ""; renderPQ();
+  clearInterval(PR.timer);
+  PR.timer = setInterval(() => { const pct = Math.min(100, (performance.now() - PR.t0) / FAST_MS * 100); $("pBar").style.width = pct + "%"; $("pBar").style.background = pct < 100 ? "var(--green)" : "var(--yellow)"; }, 100);
+}
+function pKey(k) {
+  if (!PR.cur || PR.lock) return;
+  if (k === "⌫") PR.typed = PR.typed.slice(0, -1);
+  else if (k === "✓") { if (PR.typed) pSubmit(); return; }
+  else if (PR.typed.length < 3) PR.typed += k;
+  renderPQ();
+  if (PR.typed.length >= String(PR.cur.ans).length) pSubmit();
+}
+function pSubmit() {
+  const ms = performance.now() - PR.t0, ok = +PR.typed === PR.cur.ans;
+  PR.lock = true; clearInterval(PR.timer);
+  logAttempt("Practice", PR.cur, PR.typed, ok, PR.first ? ms : performance.now() - PR.tRetry, !PR.first);
+  if (PR.first) { record(PR.cur, ok, ms); PR.done++; if (ok) { PR.right++; if (ms <= FAST_MS) PR.fast++; } }
+  $("pCount").textContent = `${PR.done} done`; $("pRight").textContent = `${PR.right} ✓`; $("pFast").textContent = `${PR.fast} ⚡ fast`;
+  if (ok) {
+    renderPQ("ok");
+    const fast = ms <= FAST_MS && PR.first;
+    $("pFb").className = "fb " + (fast ? "fast" : "ok");
+    $("pFb").textContent = fast ? pick(["⚡ Lightning fast!", "⚡ Brain fast!", "⚡ Super quick!"]) + ` (${(ms / 1000).toFixed(1)}s)` : PR.first ? `✓ Correct! (${(ms / 1000).toFixed(1)}s) Next time, try the shortcut to be faster.` : "✓ Yes! Remember this one.";
+    setTimeout(newQ, fast ? 700 : 1300);
+  } else {
+    renderPQ("bad");
+    $("pFb").className = "fb bad"; $("pFb").textContent = `Not quite. Look at the trick, then try again.`;
+    showHelp(PR.cur);
+    if (PR.first) PR.retry.push({ f: PR.cur, due: 3 });
+    PR.first = false;
+    setTimeout(() => { PR.typed = ""; PR.lock = false; PR.tRetry = performance.now(); renderPQ(); }, 900);
+  }
+}
+function showHelp(fa) {
+  const S = strategy(fa);
+  $("pHelp").innerHTML = `<div class="bigfact" style="font-size:32px">${S.title}</div><svg class="viz" id="pHelpSvg"></svg>${S.rule}${S.skip ? `<div class="skip">${S.skip}</div>` : ""}`;
+  S.draw($("pHelpSvg"));
+}
+keypad($("pPad"), pKey);
+$("pHint").onclick = () => { if (PR.cur) { PR.first && (PR.first = false); showHelp(PR.cur); } };
+
+/* =========================================================
+   Speed Run
+   ========================================================= */
+const SR = { on: false, cur: null, typed: "", t0: 0, end: 0, score: 0, wrong: [], tick: null, lock: false };
+function bestScore(dur) { return HIST.filter(h => h.secs === dur).reduce((m, h) => Math.max(m, h.score), 0); }
+function speedSetup() {
+  $("sUsing").innerHTML = `Using your Practice settings: <b>${setText()}</b>`;
+  const b = bestScore(SET.dur);
+  $("sBest").innerHTML = b ? `🏆 Your best for ${SET.dur < 60 ? SET.dur + " sec" : SET.dur / 60 + " min"}: <b>${b}</b>` : "No score yet. This is your first run!";
+}
+function stars() { const r = $("race"); r.querySelectorAll(".star").forEach(s => s.remove()); for (let i = 0; i < 40; i++) { const s = document.createElement("div"); s.className = "star"; s.style.left = Math.random() * 100 + "%"; s.style.top = Math.random() * 100 + "%"; r.appendChild(s); } }
+function rocketPos() {
+  const best = bestScore(SET.dur), goal = Math.max(best + 3, 15), pct = Math.min(1, SR.score / goal);
+  $("rocket").style.left = `calc(${pct * 86}% + 4px)`;
+  const bb = $("raceBest");
+  if (best) { bb.style.display = "block"; bb.style.left = `calc(${best / goal * 86}% + 28px)`; bb.querySelector("span").textContent = `best ${best}`; } else bb.style.display = "none";
+}
+function sRender(cls) { $("sQ").innerHTML = `${SR.cur.text} = <span class="answer ${cls || ""}">${SR.typed || "&nbsp;"}</span>`; }
+function sNext() { SR.cur = nextFact(SR.cur); SR.typed = ""; SR.lock = false; SR.t0 = performance.now(); $("sFb").textContent = ""; sRender(); }
+function sKey(k) {
+  if (!SR.on || SR.lock) return;
+  if (k === "⌫") SR.typed = SR.typed.slice(0, -1);
+  else if (k === "✓") { if (SR.typed) sSubmit(); return; }
+  else if (SR.typed.length < 3) SR.typed += k;
+  sRender();
+  if (SR.typed.length >= String(SR.cur.ans).length) sSubmit();
+}
+function sSubmit() {
+  const ms = performance.now() - SR.t0, ok = +SR.typed === SR.cur.ans;
+  record(SR.cur, ok, ms); logAttempt("Speed Run", SR.cur, SR.typed, ok, ms, false); SR.lock = true;
+  if (ok) { SR.score++; sRender("ok"); $("sScore").textContent = `${SR.score} ✓`; rocketPos(); setTimeout(sNext, 180); }
+  else { SR.wrong.push(SR.cur); sRender("bad"); $("sFb").className = "fb bad"; $("sFb").textContent = `${SR.cur.text} = ${SR.cur.ans}`; setTimeout(sNext, 1200); }
+}
+function sStart() {
+  SR.on = true; SR.score = 0; SR.wrong = []; SR.cur = null; startSession("Speed Run");
+  $("sSetup").style.display = "none"; $("sDone").style.display = "none"; $("sRun").style.display = "block";
+  $("sScore").textContent = "0 ✓"; stars(); rocketPos();
+  SR.end = performance.now() + SET.dur * 1000; sNext();
+  clearInterval(SR.tick);
+  SR.tick = setInterval(() => { const left = Math.max(0, Math.ceil((SR.end - performance.now()) / 1000)); $("sClock").textContent = `⏱ ${left}`; if (left <= 0) sFinish(); }, 200);
+}
+function sFinish() {
+  clearInterval(SR.tick); if (!SR.on) return; SR.on = false;
+  const ss = curSess["Speed Run"]; if (ss) { ss.end = ss.start + SET.dur * 1000; save("ff-sess", SESS); } endSession("Speed Run");
+  const prevBest = bestScore(SET.dur);
+  HIST.push({ d: dStr(Date.now()), score: SR.score, wrong: SR.wrong.length, secs: SET.dur }); save("ff-hist", HIST);
+  const beat = SR.score > prevBest && prevBest > 0, first = prevBest === 0;
+  const uniq = [...new Map(SR.wrong.map(f => [f.key, f])).values()];
+  $("sRun").style.display = "none"; $("sDone").style.display = "block";
+  $("sDone").innerHTML = `<div style="font-size:48px">${beat ? "🏆" : first ? "🎉" : "💪"}</div>
+    <div class="score">${SR.score}</div><div style="font-size:18px;font-weight:800">correct in ${SET.dur < 60 ? SET.dur + " seconds" : SET.dur / 60 + " minute" + (SET.dur > 60 ? "s" : "")}</div>
+    <p style="font-size:19px">${beat ? `<b>NEW BEST!</b> You beat ${prevBest}. Amazing, ${FIRST}!` : first ? "Great first run! Now you have a score to beat." : `Your best is ${prevBest}. Keep going, your brain is getting faster!`}</p>
+    ${uniq.length ? `<p style="margin-bottom:4px"><b>Facts to practice:</b></p><div class="missed">${uniq.map(f => `<span>${f.text} = ${f.ans}</span>`).join("")}</div>
+      <button class="btn" id="sStudy">🧠 See the tricks for these</button> ` : `<p>No mistakes! 🌟</p>`}
+    <button class="btn go" id="sAgain">🚀 Try again</button>`;
+  $("sAgain").onclick = sStart;
+  if ($("sStudy")) $("sStudy").onclick = () => { go("lab"); showLab(uniq[0]); };
+  header();
+  if (PLATFORM) [10, 20, 30, 40, 50].forEach(n => { if (SR.score >= n) AMT.award(`speed-${n}`, `${n} correct in one Speed Run`, "🏆"); });
+  checkBadges();
+}
+keypad($("sPad"), sKey);
+$("sStart").onclick = sStart;
+
+/* =========================================================
+   Progress
+   ========================================================= */
+let heatOp = "×";
+function renderProgress() {
+  $("heatOps").innerHTML = ["×", "÷", "+", "−"].map(o => `<button class="chip${o === heatOp ? " on" : ""}" data-h="${o}">${o}</button>`).join("");
+  document.querySelectorAll("#heatOps .chip").forEach(c => c.onclick = () => { heatOp = c.dataset.h; renderProgress(); });
+  const N = heatOp === "×" || heatOp === "÷" ? 12 : 10, start = heatOp === "÷" ? 1 : 0;
+  let html = `<tr><th>${heatOp === "÷" ? "÷" : heatOp}</th>${Array.from({ length: N + 1 - start }, (_, j) => `<th>${j + start}</th>`).join("")}</tr>`;
+  for (let i = 0; i <= N; i++) {
+    html += `<tr><th>${i}</th>`;
+    for (let j = start; j <= N; j++) {
+      const fa = heatOp === "×" ? fact("×", i, j) : heatOp === "÷" ? fact("÷", i, j) : heatOp === "+" ? fact("+", i, j) : fact("−", i, j);
+      html += `<td class="s${status(fa.key)}" data-k="${fa.key}" title="${fa.text} = ${fa.ans}">${fa.ans}</td>`;
+    }
+    html += "</tr>";
+  }
+  $("heat").innerHTML = html;
+  if (heatOp === "÷") $("heat").insertAdjacentHTML("afterend", "");
+  document.querySelectorAll("#heat td").forEach(td => td.onclick = () => { go("lab"); showLab(factFromKey(td.dataset.k)); });
+  // history chart
+  const svg = $("histSvg"), H = HIST.slice(-15);
+  svg.setAttribute("viewBox", "0 0 460 200"); svg.innerHTML = "";
+  if (!H.length) { txt(svg, 230, 100, "Do a Speed Run to see your scores here!", { "font-size": 16, fill: "#5b6b7c", "text-anchor": "middle" }); $("histNote").textContent = ""; }
+  else {
+    const mx = Math.max(10, ...H.map(h => h.score)), bw = 400 / H.length;
+    el("line", { x1: 40, x2: 450, y1: 170, y2: 170, stroke: "#1f2a37", "stroke-width": 2 }, svg);
+    [0, .5, 1].forEach(f => { const y = 170 - f * 140; el("line", { x1: 40, x2: 450, y1: y, y2: y, stroke: "#e5eaf0" }, svg); txt(svg, 34, y + 4, Math.round(f * mx), { "font-size": 12, fill: "#5b6b7c", "text-anchor": "end" }); });
+    H.forEach((h, i) => {
+      const x = 45 + i * bw, hh = h.score / mx * 140, best = h.score === Math.max(...HIST.filter(k => k.secs === h.secs).map(k => k.score));
+      el("rect", { x: x + bw * .15, y: 170 - hh, width: bw * .7, height: hh, rx: 5, fill: best ? "#f2b01e" : "#2563eb" }, svg);
+      txt(svg, x + bw / 2, 165 - hh, h.score, { "font-size": 12, "font-weight": 800, fill: "#1f2a37", "text-anchor": "middle" });
+      txt(svg, x + bw / 2, 188, h.secs < 60 ? h.secs + "s" : h.secs / 60 + "m", { "font-size": 11, fill: "#5b6b7c", "text-anchor": "middle" });
+    });
+    $("histNote").innerHTML = `Gold bars are personal bests. Last ${H.length} runs shown.`;
+  }
+  // next facts
+  const weak = Object.keys(FACTS).filter(k => status(k) === 1).map(factFromKey).slice(0, 12);
+  $("nextFacts").innerHTML = weak.length ? `<div class="missed" style="justify-content:flex-start">${weak.map(f => `<span style="cursor:pointer" data-k="${f.key}">${f.text} = ${f.ans}</span>`).join("")}</div><p class="muted">Tap one to see its trick.</p>`
+    : `<p class="muted">Nothing red yet. Keep practicing, and any tricky facts will show up here.</p>`;
+  document.querySelectorAll("#nextFacts [data-k]").forEach(s => s.onclick = () => { go("lab"); showLab(factFromKey(s.dataset.k)); });
+}
+
+/* =========================================================
+   Records
+   ========================================================= */
+let selSid = "";
+function sessStats(S) {
+  const pct = S.n ? Math.round(S.c / S.n * 100) : 0;
+  const total = S.mode === "Speed Run" && !S.note ? S.plannedSecs * 1000 : Math.max(S.end - S.start, S.tsum);
+  return { pct, total, avg: S.n ? S.tsum / S.n : 0 };
+}
+function renderRecords() {
+  const sess = SESS.filter(S => S.n > 0);
+  const nQ = LOG.length, nC = LOG.filter(r => r.ok).length, tAll = LOG.reduce((t, r) => t + r.ms, 0);
+  $("recStats").innerHTML = [
+    [sess.length, "trials"], [nQ, "questions answered"], [nQ ? Math.round(nC / nQ * 100) + "%" : "–", "correct overall"], [nQ ? secs(tAll / nQ) + " s" : "–", "average per question"]
+  ].map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+
+  // trial summary
+  $("sessTable").innerHTML = `<tr><th>Trial</th><th>Date</th><th>Start</th><th>Mode</th><th>Facts practiced</th><th>Questions</th><th>Correct</th><th>Wrong</th><th>Score</th><th>⚡ Fast</th><th>Total time</th><th>Avg / question</th></tr>` +
+    (sess.length ? sess.slice().reverse().map(S => { const st = sessStats(S);
+      return `<tr class="click${String(S.id) === selSid ? " sel" : ""}" data-sid="${S.id}"><td><b>#${S.id}</b></td><td>${dStr(S.start)}</td><td>${tStr(S.start)}</td><td>${S.mode === "Speed Run" ? "🚀" : "🎯"} ${S.mode}${S.note ? ` <span class="muted">(${S.note})</span>` : ""}</td><td>${S.settings}</td>
+        <td>${S.n}</td><td class="ok-t">${S.c}</td><td class="bad-t">${S.n - S.c}</td><td><b>${st.pct}%</b></td><td>${S.fast}</td><td>${durStr(st.total)}</td><td>${secs(st.avg)} s</td></tr>`; }).join("")
+      : `<tr><td colspan="12" class="muted" style="text-align:center;padding:18px">No trials yet. Do some Practice or a Speed Run!</td></tr>`);
+  document.querySelectorAll("#sessTable tr[data-sid]").forEach(tr => tr.onclick = () => { selSid = selSid === tr.dataset.sid ? "" : tr.dataset.sid; $("fSess").value = selSid; renderRecords(); });
+
+  // filters
+  $("fSess").innerHTML = `<option value="">All trials</option>` + sess.slice().reverse().map(S => `<option value="${S.id}">Trial #${S.id} · ${dStr(S.start)} ${tStr(S.start).slice(0, 5)} · ${S.mode}</option>`).join("");
+  $("fSess").value = selSid;
+  renderLog();
+  renderTrend(sess);
+}
+function filteredLog() {
+  const m = $("fMode").value, r = $("fRes").value, o = $("fOp").value;
+  return LOG.filter(x => (!selSid || String(x.sid) === selSid) && (!m || x.mode === m) && (!o || x.op === o) &&
+    (!r || (r === "slow" ? x.ok && x.ms > FAST_MS : String(+x.ok) === r)));
+}
+let logLimit = 300;
+function renderLog() {
+  const rows = filteredLog(), shown = rows.slice(-logLimit).reverse();
+  const idx = new Map(LOG.map((x, i) => [x, i + 1]));
+  $("logTable").innerHTML = `<tr><th>#</th><th>Date</th><th>Time</th><th>Mode</th><th>Trial</th><th>Question</th><th>Answer given</th><th>Correct answer</th><th>Result</th><th>Time taken</th><th>Note</th></tr>` +
+    (shown.length ? shown.map(x => `<tr><td>${idx.get(x)}</td><td>${dStr(x.ts)}</td><td>${tStr(x.ts)}</td><td>${x.mode}</td><td>#${x.sid}</td><td><b>${x.q}</b></td><td>${x.a}</td><td>${x.ans}</td>
+      <td class="${x.ok ? "ok-t" : "bad-t"}">${x.ok ? "✓ Correct" : "✗ Wrong"}</td><td>${secs(x.ms)} s</td><td>${x.retry ? "second try" : x.ok && x.ms <= FAST_MS ? "⚡ fast" : x.ok ? "slow" : ""}</td></tr>`).join("")
+      : `<tr><td colspan="11" class="muted" style="text-align:center;padding:18px">No attempts match.</td></tr>`);
+  const c = rows.filter(x => x.ok).length, t = rows.reduce((a, x) => a + x.ms, 0);
+  $("logNote").innerHTML = rows.length ? `Showing ${shown.length} of ${rows.length} attempts (newest first). Of these: <b>${c} correct</b>, <b>${rows.length - c} wrong</b> (${Math.round(c / rows.length * 100)}%), total time ${durStr(t)}, average ${secs(t / rows.length)} s.` +
+    (rows.length > shown.length ? ` <button class="btn" id="moreLog" style="padding:3px 10px;font-size:13px">Show more</button>` : "") : "";
+  if ($("moreLog")) $("moreLog").onclick = () => { logLimit += 300; renderLog(); };
+}
+function renderTrend(sess) {
+  const svg = $("trendSvg"), S = sess.slice(-20);
+  svg.setAttribute("viewBox", "0 0 760 230"); svg.innerHTML = "";
+  if (!S.length) { txt(svg, 380, 115, "Your trials will appear here.", { "font-size": 16, fill: "#5b6b7c", "text-anchor": "middle" }); return; }
+  const L = 46, R = 714, T = 16, B = 190, bw = (R - L) / S.length;
+  const avgs = S.map(x => sessStats(x).avg / 1000), maxA = Math.max(5, Math.ceil(Math.max(...avgs)));
+  [0, 25, 50, 75, 100].forEach(v => { const y = B - v / 100 * (B - T); el("line", { x1: L, x2: R, y1: y, y2: y, stroke: "#e8edf3" }, svg); txt(svg, L - 6, y + 4, v + "%", { "font-size": 11, fill: "#5b6b7c", "text-anchor": "end" }); });
+  [0, .5, 1].forEach(f => { const y = B - f * (B - T); txt(svg, R + 6, y + 4, (f * maxA).toFixed(1) + "s", { "font-size": 11, fill: "#ea6a1a" }); });
+  el("line", { x1: L, x2: R, y1: B, y2: B, stroke: "#1f2a37", "stroke-width": 1.5 }, svg);
+  const pts = [];
+  S.forEach((x, i) => {
+    const st = sessStats(x), cx = L + i * bw + bw / 2, h = st.pct / 100 * (B - T);
+    const bwid = Math.min(bw * .64, 56); el("rect", { x: cx - bwid / 2, y: B - h, width: bwid, height: h, rx: 4, fill: x.mode === "Speed Run" ? "#0f9d58" : "#2563eb", "fill-opacity": .8 }, svg);
+    txt(svg, cx, B - h - 4, st.pct + "%", { "font-size": 10.5, "font-weight": 800, fill: "#1f2a37", "text-anchor": "middle" });
+    txt(svg, cx, B + 15, "#" + x.id, { "font-size": 11, fill: "#5b6b7c", "text-anchor": "middle" });
+    pts.push([cx, B - avgs[i] / maxA * (B - T)]);
+  });
+  txt(svg, (L + R) / 2, 226, "Trial number", { "font-size": 12, fill: "#5b6b7c", "text-anchor": "middle" });
+  el("polyline", { points: pts.map(p => p.join(",")).join(" "), fill: "none", stroke: "#ea6a1a", "stroke-width": 2.5 }, svg);
+  pts.forEach(p => el("circle", { cx: p[0], cy: p[1], r: 4, fill: "#ea6a1a", stroke: "#fff", "stroke-width": 1.5 }, svg));
+}
+function csv(rows) { return rows.map(r => r.map(v => { v = String(v ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; }).join(",")).join("\r\n"); }
+function download(name, text) {
+  const blob = new Blob(["﻿" + text], { type: "text/csv;charset=utf-8" }), a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const stamp = () => dStr(Date.now());
+$("dlLog").onclick = () => download(`${FILE}_attempts_${stamp()}.csv`, csv([["Attempt", "Date", "Time", "Mode", "Trial", "Question", "Answer given", "Correct answer", "Result", "Time taken (s)", "Note"],
+  ...filteredLog().map(x => [LOG.indexOf(x) + 1, dStr(x.ts), tStr(x.ts), x.mode, x.sid, x.q.replace("−", "-"), x.a, x.ans, x.ok ? "Correct" : "Wrong", secs(x.ms), x.retry ? "second try" : x.ok && x.ms <= FAST_MS ? "fast" : x.ok ? "slow" : ""])]));
+$("dlSess").onclick = () => download(`${FILE}_trials_${stamp()}.csv`, csv([["Trial", "Date", "Start time", "Mode", "Facts practiced", "Questions", "Correct", "Wrong", "Score (%)", "Fast (<=3s)", "Total time (s)", "Average per question (s)", "Note"],
+  ...SESS.filter(S => S.n).map(S => { const st = sessStats(S); return [S.id, dStr(S.start), tStr(S.start), S.mode, S.settings.replace(/−/g, "-"), S.n, S.c, S.n - S.c, st.pct, S.fast, Math.round(st.total / 1000), secs(st.avg), S.note || ""]; })]));
+["fMode", "fRes", "fOp"].forEach(id => $(id).onchange = () => { logLimit = 300; renderLog(); });
+$("fSess").onchange = e => { selSid = e.target.value; renderRecords(); };
+
+/* =========================================================
+   Home & navigation
+   ========================================================= */
+function ring(parent, label, pct, count, total, color) {
+  const d = document.createElement("div"); d.className = "ring";
+  const C = 2 * Math.PI * 44;
+  d.innerHTML = `<svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="44" fill="none" stroke="#edf1f6" stroke-width="12"/>
+    <circle cx="55" cy="55" r="44" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C * pct} ${C}" transform="rotate(-90 55 55)"/>
+    <text x="55" y="62" text-anchor="middle" font-size="24" font-weight="900" fill="#1f2a37">${label}</text></svg>
+    <div style="font-weight:800">${count} / ${total}</div><div class="muted">brain fast</div>`;
+  parent.appendChild(d);
+}
+function header() {
+  const green = Object.keys(FACTS).filter(k => status(k) === 3).length;
+  $("hdrGreen").textContent = `🟢 ${green} facts`;
+  let streak = 0; const d = new Date();
+  for (;;) { const k = dStr(d.getTime()); if (DAYS.includes(k)) { streak++; d.setDate(d.getDate() - 1); } else break; }
+  $("hdrStreak").textContent = `🔥 ${streak} day${streak === 1 ? "" : "s"}`;
+}
+function renderHome() {
+  const r = $("rings"); r.innerHTML = "";
+  [["×", 13, 13, "#2563eb"], ["÷", 13, 12, "#ea6a1a"], ["+", 11, 11, "#0f9d58"], ["−", 11, 11, "#8b3fc7"]].forEach(([op, n, m, col]) => {
+    let tot = 0, g = 0;
+    for (let i = 0; i < n; i++) for (let j = op === "÷" ? 1 : 0; j < (op === "÷" ? m + 1 : m); j++) { tot++; if (status(fact(op, i, j).key) === 3) g++; }
+    ring(r, op, g / tot, g, tot, col);
+  });
+  // suggest the multiplication table with the most work left among those chosen
+  const t = [...SET.tables.filter(n => n >= 2), 2, 5, 10, 3, 4, 9, 6, 7, 8, 11, 12].find(t => { let g = 0; for (let o = 0; o <= 10; o++) if (status(`×:${t}:${o}`) === 3) g++; return g < 9; }) || 7;
+  $("planLab").textContent = `2 minutes · this week try the ×${t} trick: ${mulPlan(t, 7).name}`;
+  document.querySelectorAll(".plan .card").forEach(c => c.onclick = () => { if (c.dataset.go === "lab") { go("lab"); showLab(fact("×", t, 7)); } else go(c.dataset.go); });
+}
+function go(v) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.v === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === v));
+  if (v !== "practice") endSession("Practice");
+  if (SR.on && v !== "speed") { const ss = curSess["Speed Run"]; if (ss) { ss.end = Date.now(); ss.note = "stopped early"; save("ff-sess", SESS); } endSession("Speed Run"); SR.on = false; clearInterval(SR.tick); $("sRun").style.display = "none"; $("sSetup").style.display = "block"; }
+  if (v === "home") renderHome();
+  if (v === "practice") { settingsUI(); newQ(); }
+  if (v === "speed") { settingsUI(); speedSetup(); if (!SR.on) { $("sSetup").style.display = "block"; $("sDone").style.display = "none"; $("sRun").style.display = "none"; } }
+  if (v === "progress") renderProgress();
+  if (v === "records") renderRecords();
+  if (v === "lab" && !$("labFact").innerHTML) showLab(fact("×", 7, 8));
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => go(t.dataset.v));
+document.addEventListener("keydown", e => {
+  if (/^[0-9]$/.test(e.key)) { if ($("practice").classList.contains("on")) pKey(e.key); else if (SR.on) sKey(e.key); }
+  else if (e.key === "Backspace") { if ($("practice").classList.contains("on")) pKey("⌫"); else if (SR.on) sKey("⌫"); }
+  else if (e.key === "Enter") { if ($("practice").classList.contains("on")) pKey("✓"); else if (SR.on) sKey("✓"); }
+});
+/* ---- platform: who is here, tutor's plan, badges ---- */
+function applyIdentity() {
+  if (!PLATFORM) return;
+  const initials = (ME ? ME.name : "FF").split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  $("logo").textContent = initials;
+  $("appTitle").textContent = ME ? `${ME.firstName}'s Fast Facts` : "Fast Facts (preview)";
+  document.title = $("appTitle").textContent;
+  $("hello").textContent = `Hi ${FIRST}! ⚡`;
+  if (!IS_ADULT) {
+    // students see the friendly screens; the detailed records are for parents and tutors
+    document.querySelectorAll('.tab[data-v="records"], .adult-only').forEach(e => e.remove());
+  }
+}
+function applyPlan() {
+  const P = PLATFORM ? AMT.settings || {} : {};
+  const box = $("tutorPlan");
+  const valid = a => Array.isArray(a) && a.length;
+  if (P._updated && SET.planStamp !== P._updated) {
+    if (valid(P.ops)) SET.ops = P.ops.filter(o => ["×", "÷", "+", "−"].includes(o));
+    if (valid(P.tables)) SET.tables = P.tables.map(Number).filter(n => n >= 0 && n <= 12).sort((a, b) => a - b);
+    if (+P.max === 10 || +P.max === 12) SET.max = +P.max;
+    if (!SET.ops.length) SET.ops = ["×"];
+    if (!SET.tables.length) SET.tables = [2];
+    SET.planStamp = P._updated; save("ff-set", SET);
+  }
+  if (valid(P.ops) || valid(P.tables) || P.note) {
+    const what = [valid(P.ops) ? P.ops.join(" ") : "", valid(P.tables) ? `with the ${P.tables.join(", ")} table${P.tables.length > 1 ? "s" : ""}` : ""].filter(Boolean).join(" ");
+    box.innerHTML = `<div class="name">📌 ${P._by ? P._by.split(" ")[0] + "’s" : "Your tutor’s"} plan for you</div>${what ? `This week: <b>${what}</b>.` : ""}${P.note ? `<div style="margin-top:4px">${String(P.note).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c])}</div>` : ""}`;
+    box.style.display = "block";
+  }
+}
+function checkBadges() {
+  if (!PLATFORM || !AMT.canSave) return;
+  const green = Object.keys(FACTS).filter(k => status(k) === 3).length;
+  [[10, "🌱"], [25, "⚡"], [50, "🚀"], [100, "🧠"], [200, "🏆"]].forEach(([n, ic]) => { if (green >= n) AMT.award(`green-${n}`, `${n} facts brain fast`, ic); });
+  let streak = 0; const d = new Date();
+  for (;;) { if (DAYS.includes(dStr(d.getTime()))) { streak++; d.setDate(d.getDate() - 1); } else break; }
+  [[3, "🔥"], [7, "🔥"], [14, "🌟"], [30, "👑"]].forEach(([n, ic]) => { if (streak >= n) AMT.award(`streak-${n}`, `${n}-day practice streak`, ic); });
+  if (HIST.length) AMT.award("first-speed-run", "First Speed Run", "🚀");
+}
+async function loadHistory() {
+  if (!IS_ADULT || !ME) return;
+  const rows = await AMT.history({ limit: 5000 });
+  LOG = rows.map(r => ({ sid: r.meta && r.meta.sid || 0, mode: r.mode || "Practice", ts: Date.parse(r.created_at), op: r.meta && r.meta.op || r.topic,
+    q: r.question, a: r.response, ans: r.answer, ok: r.correct, ms: r.ms || 0, retry: !!(r.meta && r.meta.retry) })).reverse();
+  if ($("records") && $("records").classList.contains("on")) renderRecords();
+}
+applyIdentity(); applyPlan();
+fillLab(); settingsUI(); header(); renderHome();
+loadHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "Ratios & Proportions Lab",
+  "subject": "math",
+  "grade_min": 6,
+  "grade_max": 8,
+  "icon": "📐",
+  "version": "1.0.0",
+  "description": "Grade 7 scale factor, scale drawings, the constant of proportionality, equations, comparing rates, and tables, graphs and equations together.",
+  "settings": [
+    { "key": "lesson", "label": "Lesson to open", "type": "select",
+      "options": ["p11", "p12", "p21", "p22", "p23", "p24"],
+      "labels": ["1.1 Scale Factor", "1.2 Scale Drawings", "2.1 Constant k", "2.2 Equations", "2.3 Comparing", "2.4 Representations"] },
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

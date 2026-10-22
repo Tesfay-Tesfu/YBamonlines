@@ -1,0 +1,15 @@
+{
+  "name": "Math Adventure",
+  "subject": "math",
+  "grade_min": 4,
+  "grade_max": 6,
+  "icon": "🗺️",
+  "version": "1.0.0",
+  "description": "Grade 5 fractions, measurement & data, algebraic thinking and geometry. Each topic has a picture tool, then practice with hints, worked steps and stars.",
+  "settings": [
+    { "key": "focus", "label": "Focus areas (shown first)", "type": "multi",
+      "options": ["frac", "meas", "alg", "geo"],
+      "labels": ["Fractions", "Measurement & Data", "Algebraic Thinking", "Geometry"] },
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

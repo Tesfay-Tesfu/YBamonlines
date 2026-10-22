@@ -1,0 +1,15 @@
+{
+  "name": "Fast Facts",
+  "subject": "math",
+  "grade_min": 3,
+  "grade_max": 6,
+  "icon": "⚡",
+  "version": "1.0.0",
+  "description": "Multiplication, division, addition and subtraction fact fluency: learn a shortcut, practice adaptively, then beat your own Speed Run score.",
+  "settings": [
+    { "key": "ops", "label": "Operations to practice", "type": "multi", "options": ["×", "÷", "+", "−"] },
+    { "key": "tables", "label": "Times tables", "type": "multi", "options": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+    { "key": "max", "label": "Facts up to", "type": "select", "options": [10, 12] },
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

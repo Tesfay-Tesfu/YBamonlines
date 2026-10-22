@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math Adventure</title>
+<style>
+  :root {
+    --brand: #005596; --deep: #002d5f; --accent: #e66414; --ink: #1f2a37; --muted: #5b6b7c;
+    --line: #dde5ee; --bg: #f5f7fb; --card: #fff;
+    --blue: #2563eb; --orange: #ea6a1a; --green: #0f9d58; --red: #d93025; --purple: #8b3fc7; --yellow: #f6c445;
+    --frac: #e8505b; --meas: #f2a71b; --alg: #2f80ed; --geo: #1aa37a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 17px; color: var(--ink); background: var(--bg); line-height: 1.5; }
+  button { font: inherit; }
+  header { background: var(--deep); color: #fff; padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-bottom: 4px solid var(--accent); position: sticky; top: 0; z-index: 5; }
+  header .logo { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); display: grid; place-items: center; font-weight: 800; }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { font-size: 12.5px; opacity: .75; }
+  header .grow { flex: 1; }
+  .starpill { background: rgba(255,255,255,.12); border-radius: 999px; padding: 5px 12px; font-weight: 800; white-space: nowrap; }
+  .homebtn { white-space: nowrap; background: #fff; color: var(--deep); border: none; border-radius: 999px; padding: 6px 14px; font-weight: 800; cursor: pointer; }
+  main { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }
+  .view { display: none; } .view.on { display: block; }
+
+  /* home */
+  .hero { background: linear-gradient(135deg, #003b7a, #005596 60%, #1a73c4); color: #fff; border-radius: 22px; padding: 26px 26px; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; overflow: hidden; position: relative; }
+  .hero h2 { font-size: 30px; margin: 0 0 6px; }
+  .hero p { margin: 0; opacity: .92; max-width: 640px; }
+  .hero .bigstar { font-size: 15px; background: rgba(255,255,255,.14); border-radius: 18px; padding: 14px 18px; text-align: center; min-width: 150px; }
+  .hero .bigstar b { display: block; font-size: 34px; line-height: 1.1; }
+  .areas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+  .area { background: var(--card); border-radius: 18px; border: 1px solid var(--line); overflow: hidden; box-shadow: 0 2px 6px rgba(16,24,40,.05); }
+  .area-head { padding: 14px 18px; color: #fff; display: flex; align-items: center; gap: 10px; }
+  .area-head .ic { font-size: 26px; }
+  .area-head h3 { margin: 0; font-size: 19px; }
+  .area-head .tag { margin-left: auto; background: rgba(255,255,255,.95); border-radius: 999px; padding: 3px 11px; font-size: 12.5px; font-weight: 800; white-space: nowrap; }
+  .topic-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: none; background: none; padding: 12px 18px; border-top: 1px solid var(--line); cursor: pointer; color: var(--ink); }
+  .topic-btn:hover { background: #f7f9fc; }
+  .topic-btn .ti { font-size: 24px; width: 34px; text-align: center; }
+  .topic-btn .tt { flex: 1; }
+  .topic-btn .tt b { display: block; font-size: 16px; }
+  .topic-btn .tt span { font-size: 13.5px; color: var(--muted); }
+  .topic-btn .ts { font-size: 13px; font-weight: 800; color: #b7791f; white-space: nowrap; }
+  .start-here { display: inline-block; background: var(--frac); color: #fff; font-size: 11px; font-weight: 800; border-radius: 6px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
+  .guide { margin-top: 18px; background: #fff; border: 1px dashed #b9c7d8; border-radius: 16px; padding: 4px 18px; }
+  .guide summary { cursor: pointer; font-weight: 800; color: var(--deep); padding: 12px 0; }
+  .guide table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 6px 0 14px; }
+  .guide td, .guide th { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+  .guide th { color: var(--deep); }
+
+  /* topic */
+  .t-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+  .t-badge { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 30px; color: #fff; }
+  .t-head h2 { margin: 0; font-size: 25px; }
+  .t-head .crumb { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+  .t-head .grow { flex: 1; }
+  .t-nav { display: flex; gap: 8px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; box-shadow: 0 2px 6px rgba(16,24,40,.04); min-width: 0; }
+  .card h3 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+  .card h3::before { content: ""; width: 5px; height: 15px; border-radius: 3px; background: var(--accent); }
+  .key { background: #fffaf2; border-color: #f6d4a8; }
+  .key ul { margin: 6px 0 0; padding-left: 20px; }
+  .key li { margin-bottom: 6px; }
+  .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  /* controls */
+  .ctl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 12px; }
+  .ctl { display: flex; flex-direction: column; gap: 3px; font-size: 14px; color: var(--muted); }
+  .ctl output { font-weight: 800; color: var(--accent); }
+  input[type=range] { accent-color: var(--accent); width: 150px; }
+  select, .inp { font: inherit; font-size: 16px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+  .inp { width: 90px; }
+  select:focus, .inp:focus { outline: none; border-color: var(--brand); }
+  .btn { border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 7px 14px; cursor: pointer; font-weight: 700; color: var(--ink); }
+  .btn:hover { border-color: var(--brand); color: var(--brand); }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .btn.primary:hover { background: #00467d; color: #fff; }
+  .btn.small { padding: 4px 10px; font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: none; background: #eef3f9; color: var(--brand); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-weight: 700; font-size: 14px; }
+  .chip:hover { background: #dde8f4; }
+  svg.viz { width: 100%; height: auto; display: block; user-select: none; }
+  svg text { font-family: "Nunito", system-ui, sans-serif; }
+  .explain { background: #f2f7fd; border-radius: 12px; padding: 10px 14px; margin-top: 10px; font-size: 16px; }
+  .explain .big { font-size: 22px; font-weight: 800; }
+  .step { display: flex; gap: 10px; margin: 8px 0; align-items: baseline; }
+  .step .n { background: var(--accent); color: #fff; border-radius: 50%; width: 26px; height: 26px; flex: none; display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+
+  /* stacked fractions */
+  .fr { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: .82em; line-height: 1.05; margin: 0 2px; font-weight: inherit; }
+  .fr > span:first-child { border-bottom: 2px solid currentColor; padding: 0 3px 1px; }
+  .fr > span:last-child { padding-top: 1px; }
+  .mark { background: #ffe58a; border-radius: 5px; padding: 0 3px; }
+
+  /* practice */
+  .practice { border-top: 5px solid var(--accent); }
+  .q { font-size: 19px; line-height: 1.6; margin-bottom: 12px; }
+  .q svg { width: 100%; max-width: 520px; display: block; margin: 8px 0; }
+  .ans { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .ans input { font: inherit; font-size: 20px; padding: 8px 12px; border: 2px solid var(--line); border-radius: 12px; width: 190px; }
+  .ans input:focus { outline: none; border-color: var(--brand); }
+  .choice { font-size: 17px; padding: 9px 16px; }
+  .choice.right { background: var(--green); border-color: var(--green); color: #fff; }
+  .choice.wrong { background: var(--red); border-color: var(--red); color: #fff; }
+  .fb { margin-top: 12px; border-radius: 12px; font-size: 17px; }
+  .fb:empty { display: none; }
+  .fb.ok { background: #e7f7ee; color: #0b5d34; padding: 10px 14px; }
+  .fb.bad { background: #fdeceb; color: #8e1f18; padding: 10px 14px; }
+  .fb.info { background: #eef4fb; color: #0d3c6b; padding: 10px 14px; }
+  .fb ol { margin: 6px 0 0; padding-left: 22px; }
+  .fb li { margin-bottom: 4px; }
+  .pbtns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .pbtns .grow { flex: 1; }
+  .hint-txt { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .pop { animation: pop .5s ease; }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+
+  table.tbl { border-collapse: collapse; font-size: 15.5px; }
+  .tbl th { background: var(--brand); color: #fff; padding: 6px 12px; }
+  .tbl td { padding: 6px 12px; border-bottom: 1px solid var(--line); text-align: center; }
+
+  @media (max-width: 880px) {
+    .grid, .areas { grid-template-columns: 1fr; }
+    .hero { grid-template-columns: 1fr; }
+    .hero h2 { font-size: 24px; }
+    header .sub { display: none; }
+  }
+  @media print { header, .pbtns, .t-nav { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="logo">AM</div>
+  <div><h1 id="appTitle">Math Adventure</h1><div class="sub">Afro-Merica Tutor · Grade 5</div></div>
+  <div class="grow"></div>
+  <span class="starpill" id="starTotal">⭐ 0</span>
+  <button class="homebtn" id="homeBtn">🏠 Map</button>
+</header>
+
+<main>
+  <!-- ================= HOME ================= -->
+  <section class="view on" id="home">
+    <div class="hero">
+      <div>
+        <h2 id="hello">Hi there! 👋</h2>
+        <div id="tutorPlan" style="display:none;background:rgba(255,255,255,.16);border-radius:12px;padding:8px 12px;margin:8px 0"></div>
+        <p>Every math star is a little brain power-up. Start with <b>Fractions</b>: play with the pictures first, then try the practice problems. Stuck? Tap <b>💡 Hint</b> or <b>👣 Show steps</b>. Mistakes help your brain grow!</p>
+      </div>
+      <div class="bigstar"><b id="heroStars">0</b>stars earned</div>
+    </div>
+    <div class="areas" id="areas"></div>
+
+    <details class="guide" id="guide">
+      <summary>📋 For parents &amp; tutors: how to use this</summary>
+      <p>Each topic starts with a picture tool, then practice problems. A student earns a ⭐ for each problem solved on the first try without a hint. Aim for 5 stars in a topic before moving on. Tutors can set the focus areas for each student under <b>Plan</b> in AMtutorTools.</p>
+      <table>
+        <tr><th>Week</th><th>Focus (15–20 minutes a day)</th></tr>
+        <tr><td>1</td><td>🧩 Equivalent Fractions, then ➕ Adding &amp; Subtracting Fractions</td></tr>
+        <tr><td>2</td><td>🧵 Mixed Numbers and 🍪 Sharing = Dividing</td></tr>
+        <tr><td>3</td><td>✖️ Multiplying Fractions, then 💧 Converting Units</td></tr>
+        <tr><td>4</td><td>🥕 Line Plots, 📦 Volume, 🧱 Combining Volumes, plus one review topic each day</td></tr>
+      </table>
+      <p><b>Tips:</b> Use each picture tool <i>with</i> her before practice and ask her to explain what she sees. Have her say the steps out loud. Aim for 5 stars per topic before moving on. Stars are saved in this browser only.</p>
+      <p style="font-size:14px;opacity:.8">To start a student over, use their page in AMtutorTools (Tools → More).</p>
+    </details>
+  </section>
+
+  <!-- ================= TOPIC ================= -->
+  <section class="view" id="topic">
+    <div class="t-head">
+      <div class="t-badge" id="tBadge"></div>
+      <div><div class="crumb" id="tCrumb"></div><h2 id="tTitle"></h2></div>
+      <div class="grow"></div>
+      <div class="t-nav"><button class="btn" id="prevT">← Back</button><button class="btn" id="nextT">Next topic →</button></div>
+    </div>
+    <div class="grid">
+      <div class="stack">
+        <div class="card"><h3>Explore with pictures</h3><div id="learn"></div></div>
+      </div>
+      <div class="stack">
+        <div class="card key"><h3>Remember</h3><div id="keyIdea"></div></div>
+        <div class="card practice"><h3>Practice <span id="tStars" style="margin-left:auto;color:#b7791f;text-transform:none;letter-spacing:0"></span></h3><div id="practice"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+/* =========================================================
+   Helpers
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs || {}) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs) { const t = el("text", { x, y, ...(attrs || {}) }, parent); t.textContent = s; return t; }
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+const fmt = (v, dp = 3) => { const r = Math.round(v * 10 ** dp) / 10 ** dp; return (Object.is(r, -0) ? 0 : r).toLocaleString("en-US", { maximumFractionDigits: dp }); };
+
+/* ---------- fractions ---------- */
+const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; };
+const lcm = (a, b) => a / gcd(a, b) * b;
+const simp = (n, d) => { const g = gcd(n, d); return [n / g, d / g]; };
+const F = (n, d) => `<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+function M(n, d) {                                   // simplified mixed number, HTML
+  [n, d] = simp(n, d);
+  if (d === 1) return String(n);
+  const w = Math.floor(n / d), r = n - w * d;
+  return w ? `<span style="white-space:nowrap">${w}&#8239;${F(r, d)}</span>` : F(r, d);
+}
+function T(n, d) {                                   // simplified mixed number, plain text
+  [n, d] = simp(n, d);
+  if (d === 1) return String(n);
+  const w = Math.floor(n / d), r = n - w * d;
+  return w ? `${w} ${r}/${d}` : `${r}/${d}`;
+}
+function parseFrac(s) {
+  s = String(s).trim().toLowerCase().replace(/[−–]/g, "-").replace(/\s+and\s+/, " ").replace(/[a-z.]*\s*$/, m => /^\.\d/.test(m) ? m : "").trim();
+  let m;
+  if ((m = s.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/))) { const d = +m[3]; return d ? { n: +m[1] * d + +m[2], d } : null; }
+  if ((m = s.match(/^(-?\d+)\s*\/\s*(\d+)$/))) return +m[2] ? { n: +m[1], d: +m[2] } : null;
+  if (/^-?\d+$/.test(s)) return { n: +s, d: 1 };
+  if ((m = s.match(/^(-?\d*)\.(\d+)$/))) { const d = 10 ** m[2].length; return { n: Math.round(parseFloat(s) * d), d }; }
+  return null;
+}
+const parseNum = s => { const f = parseFrac(String(s).replace(/[$,]/g, "")); return f ? f.n / f.d : NaN; };
+function fracCheck(n, d, mustSimplify) {
+  return v => {
+    const f = parseFrac(v);
+    if (!f) return { ok: false, msg: "Type a fraction like <b>3/4</b> or a mixed number like <b>1 1/2</b>." };
+    if (f.n * d !== n * f.d) return { ok: false };
+    const [sn, sd] = simp(n, d), isSimple = gcd(f.n, f.d) === 1;
+    if (mustSimplify && !isSimple) return { ok: false, msg: "That's equal, but it can be simplified more. Divide the top and bottom by the same number." };
+    if (!isSimple) return { ok: true, note: `In simplest form, that's <b>${M(sn, sd)}</b>.` };
+    if (f.n > f.d && f.d > 1 && !/\s/.test(String(v).trim())) return { ok: true, note: `As a mixed number, that's <b>${M(sn, sd)}</b>.` };
+    return true;
+  };
+}
+const numCheck = (target, tol = 0.001) => v => {
+  const n = parseNum(v);
+  if (Number.isNaN(n)) return { ok: false, msg: "Type a number." };
+  return Math.abs(n - target) <= tol + 1e-9 * Math.abs(target);
+};
+
+/* =========================================================
+   Stars (saved in this browser when possible)
+   ========================================================= */
+/* ---- AMtutorTools: who is here, the tutor's plan, reports ---- */
+const AM = window.AMT || null;
+const KID = AM && AM.student ? AM.student.firstName : "";
+const PLAN = (AM && AM.settings) || {};
+const escT = s => String(s).replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]);
+const plainText = h => { const d = document.createElement("div"); d.innerHTML = String(h).replace(/<\/tr>/gi, " | </tr>").replace(/<\/t[dh]>/gi, " </td>").replace(/<br\s*\/?>/gi, " "); return d.textContent.replace(/\s+/g, " ").replace(/(\s*\|\s*)+$/, "").trim(); };
+let STARS = {};
+try { STARS = JSON.parse(localStorage.getItem("aminah-stars") || "{}") || {}; } catch (e) { STARS = {}; }
+const saveStars = () => { try { localStorage.setItem("aminah-stars", JSON.stringify(STARS)); } catch (e) {} };
+const totalStars = () => Object.values(STARS).reduce((a, b) => a + b, 0);
+function refreshStars() {
+  $("starTotal").textContent = `⭐ ${totalStars()}`;
+  $("heroStars").textContent = totalStars();
+  if (current) $("tStars").textContent = `⭐ ${STARS[current.id] || 0}`;
+}
+function addStar(id) { STARS[id] = (STARS[id] || 0) + 1; saveStars(); refreshStars(); checkBadges(id); const p = $("starTotal"); p.classList.remove("pop"); void p.offsetWidth; p.classList.add("pop"); }
+
+/* =========================================================
+   Practice engine
+   ========================================================= */
+const CHEERS = [KID ? `Great job, ${KID}!` : "Great job!", "You got it!", "Awesome thinking!", "Super work!", "Math star!", "Brilliant!", "Way to go!", "You're on fire! 🔥"];
+const TRY = ["Not yet. Try again!", "Close! Look again.", "Hmm, check your work and try once more.", "Good try! Take another look."];
+function practice(root, topic) {
+  root.innerHTML = `<div class="q"></div><div class="ans"></div><div class="fb"></div>
+    <div class="pbtns"><button class="btn" data-a="hint">💡 Hint</button><button class="btn" data-a="steps">👣 Show steps</button><span class="grow"></span><button class="btn primary" data-a="next">Next problem →</button></div>`;
+  const q = root.querySelector(".q"), a = root.querySelector(".ans"), fb = root.querySelector(".fb");
+  let p, tries, done, usedHelp;
+  function next() {
+    p = topic.gen(); tries = 0; done = false; usedHelp = false; p._t0 = performance.now();
+    q.innerHTML = p.q; fb.className = "fb"; fb.innerHTML = "";
+    if (p.choices) {
+      a.innerHTML = p.choices.map(c => `<button class="btn choice">${c}</button>`).join("");
+      a.querySelectorAll(".choice").forEach(b => b.onclick = () => submit(b.textContent, b));
+    } else {
+      a.innerHTML = `<input placeholder="${p.ph || "Your answer"}" autocomplete="off" spellcheck="false" inputmode="text"><button class="btn primary">Check ✓</button>`;
+      const inp = a.querySelector("input");
+      a.querySelector("button").onclick = () => submit(inp.value);
+      inp.onkeydown = e => { if (e.key === "Enter") submit(inp.value); };
+      if (window.innerWidth > 880) setTimeout(() => inp.focus({ preventScroll: true }), 50);
+    }
+    if (p.after) p.after(q);
+  }
+  const stepsHTML = () => `<ol>${p.steps.map(s => `<li>${s}</li>`).join("")}</ol>`;
+  function submit(v, btn) {
+    if (done || !String(v).trim()) return;
+    const r = p.check(v), ok = r === true || (r && r.ok === true);
+    tries++;
+    if (AM) AM.attempt({ question: plainText(p.q).slice(0, 280), response: String(v).trim(), answer: p.ansPlain || plainText(p.ans),
+      correct: ok, ms: performance.now() - p._t0, topic: topic.title, mode: tries === 1 ? (usedHelp ? "after hint" : "first try") : "retry" });
+    if (ok) {
+      done = true;
+      const star = tries === 1 && !usedHelp;
+      if (star) addStar(topic.id);
+      fb.className = "fb ok";
+      fb.innerHTML = `${star ? "⭐ +1 star! " : "✓ "}<b>${pick(CHEERS)}</b> ${(r && r.note) || ""}${p.why ? `<div class="hint-txt" style="color:#0b5d34">${p.why}</div>` : ""}`;
+      if (btn) btn.classList.add("right");
+    } else {
+      if (btn) btn.classList.add("wrong");
+      fb.className = "fb bad";
+      if (tries >= 2) { done = true; fb.innerHTML = `Let's look at it together 👣${stepsHTML()}<b>Answer: ${p.ans}</b>`; }
+      else fb.innerHTML = `${pick(TRY)} ${(r && r.msg) || ""}<div class="hint-txt">💡 ${p.hint}</div>`;
+    }
+  }
+  root.querySelector('[data-a="next"]').onclick = next;
+  root.querySelector('[data-a="hint"]').onclick = () => { if (done) return; usedHelp = true; fb.className = "fb info"; fb.innerHTML = `💡 ${p.hint}`; };
+  root.querySelector('[data-a="steps"]').onclick = () => { usedHelp = true; done = true; fb.className = "fb info"; fb.innerHTML = `👣 Steps:${stepsHTML()}<b>Answer: ${p.ans}</b>`; };
+  next();
+}
+
+/* =========================================================
+   Drawing helpers
+   ========================================================= */
+// a fraction bar: whole split into d pieces, first n shaded
+function bar(svg, x, y, w, h, n, d, color, label) {
+  el("rect", { x, y, width: w, height: h, rx: 6, fill: "#fff", stroke: "#334155", "stroke-width": 2 }, svg);
+  const pw = w / d;
+  for (let i = 0; i < Math.min(n, d); i++) el("rect", { x: x + i * pw, y, width: pw, height: h, fill: color, "fill-opacity": .85, ...(i === 0 ? {} : {}) }, svg);
+  for (let i = 1; i < d; i++) el("line", { x1: x + i * pw, x2: x + i * pw, y1: y, y2: y + h, stroke: "#334155", "stroke-width": 1.4 }, svg);
+  el("rect", { x, y, width: w, height: h, rx: 6, fill: "none", stroke: "#334155", "stroke-width": 2.2 }, svg);
+  if (label) txt(svg, x + w + 12, y + h / 2 + 6, label, { "font-size": 18, "font-weight": 800, fill: "#1f2a37" });
+}
+
+/* =========================================================
+   TOPICS
+   ========================================================= */
+const AREAS = {
+  frac: { name: "Fractions", icon: "🍕", color: "var(--frac)", tag: "⭐ Start here: focus area" },
+  meas: { name: "Measurement & Data", icon: "📏", color: "var(--meas)", tag: "Practice more" },
+  alg:  { name: "Algebraic Thinking", icon: "🔢", color: "var(--alg)", tag: "Review" },
+  geo:  { name: "Geometry", icon: "🗺️", color: "var(--geo)", tag: "Review" }
+};
+const TOPICS = [];
+let current = null;
+
+/* ---------------- F1: Equivalent fractions ---------------- */
+TOPICS.push({
+  id: "f1", area: "frac", icon: "🧩", title: "Equivalent Fractions", sub: "Same amount, different names",
+  key: `<ul><li>Equivalent fractions show the <b>same amount</b>.</li><li>Multiply (or divide) the <b>top and bottom by the same number</b>: ${F(1, 2)} = ${F("1×3", "2×3")} = ${F(3, 6)}.</li><li>Cutting pieces smaller gives you <b>more pieces</b>, but the <b>same amount</b>.</li></ul>`,
+  learn: `<div class="ctl-row">
+      <label class="ctl">Top (numerator) <output id="f1ao"></output><input type="range" id="f1a" min="1" max="5" value="2"></label>
+      <label class="ctl">Bottom (denominator) <output id="f1bo"></output><input type="range" id="f1b" min="2" max="6" value="3"></label>
+      <label class="ctl">Cut each piece into <output id="f1no"></output><input type="range" id="f1n" min="1" max="4" value="2"></label>
+    </div><svg class="viz" id="f1svg"></svg><div class="explain" id="f1x"></div>`,
+  init() {
+    const draw = () => {
+      const b = +$("f1b").value; $("f1a").max = b - 1; if (+$("f1a").value >= b) $("f1a").value = b - 1;
+      const a = +$("f1a").value, n = +$("f1n").value;
+      $("f1ao").textContent = a; $("f1bo").textContent = b; $("f1no").textContent = n;
+      const svg = $("f1svg"); svg.setAttribute("viewBox", "0 0 620 190"); svg.innerHTML = "";
+      bar(svg, 10, 20, 480, 56, a, b, "#2563eb", `${a}/${b}`);
+      bar(svg, 10, 110, 480, 56, a * n, b * n, "#ea6a1a", `${a * n}/${b * n}`);
+      // dashed lines showing the new cuts on the top bar
+      if (n > 1) for (let i = 1; i < b * n; i++) if (i % n) el("line", { x1: 10 + i * 480 / (b * n), x2: 10 + i * 480 / (b * n), y1: 20, y2: 76, stroke: "#fff", "stroke-width": 1.5, "stroke-dasharray": "4 3" }, svg);
+      $("f1x").innerHTML = `<div class="big">${F(a, b)} = ${F(`${a} × ${n}`, `${b} × ${n}`)} = ${F(a * n, b * n)}</div>Both bars are shaded <b>the same amount</b>. Cutting every piece into ${n} made ${n === 1 ? "no change" : `<b>${n} times as many pieces</b>`}, so the top and bottom both got multiplied by ${n}.`;
+    };
+    ["f1a", "f1b", "f1n"].forEach(id => $(id).oninput = draw); draw();
+  },
+  gen() {
+    const t = rnd(0, 2);
+    if (t === 0) {
+      const b = pick([2, 3, 4, 5, 6]), a = rnd(1, b - 1), n = rnd(2, 4);
+      return { q: `Fill in the missing number:<div style="font-size:30px;margin-top:6px">${F(a, b)} = ${F("?", b * n)}</div>`, ph: "missing number",
+        check: numCheck(a * n), ans: `${a * n}`, ansPlain: String(a * n),
+        hint: `How did ${b} become ${b * n}? Do the same thing to the top number.`,
+        steps: [`The bottom changed from ${b} to ${b * n}. That's × ${n}.`, `Do the same to the top: ${a} × ${n} = ${a * n}.`, `So ${F(a, b)} = ${F(a * n, b * n)}.`] };
+    }
+    if (t === 1) {
+      let b = pick([3, 4, 5, 6, 8]), a = rnd(1, b - 1); [a, b] = simp(a, b); const n = rnd(2, 5);
+      return { q: `Write ${F(a * n, b * n)} in <b>simplest form</b>.`, ph: "like 2/3",
+        check: fracCheck(a, b, true), ans: F(a, b), ansPlain: `${a}/${b}`,
+        hint: `Find a number that divides <b>both</b> ${a * n} and ${b * n}.`,
+        steps: [`Both ${a * n} and ${b * n} can be divided by ${n}.`, `${a * n} ÷ ${n} = ${a}, and ${b * n} ÷ ${n} = ${b}.`, `${F(a * n, b * n)} = ${F(a, b)}, and it can't be simplified any more.`] };
+    }
+    let b = pick([3, 4, 5, 6, 8]), d = pick([2, 3, 4, 6, 10, 12].filter(x => x !== b)), a = rnd(1, b - 1), c = rnd(1, d - 1);
+    if (a * d === c * b) c = c === 1 ? 2 : c - 1;
+    if (c >= d || c < 1) c = 1;
+    const L = lcm(b, d), A = a * L / b, C = c * L / d, ans = A > C ? `${a}/${b} is bigger` : A < C ? `${c}/${d} is bigger` : "They are equal";
+    return { q: `Which is bigger: ${F(a, b)} or ${F(c, d)}?`, choices: shuffle([`${a}/${b} is bigger`, `${c}/${d} is bigger`, "They are equal"]),
+      check: v => v === ans, ans, ansPlain: ans,
+      hint: `Rename both fractions so they have the <b>same bottom number</b>, then compare the tops.`,
+      steps: [`A common denominator for ${b} and ${d} is ${L}.`, `${F(a, b)} = ${F(A, L)} and ${F(c, d)} = ${F(C, L)}.`, `Compare the tops: ${A} ${A > C ? ">" : A < C ? "<" : "="} ${C}.`] };
+  }
+});
+
+/* ---------------- F2: Add & subtract unlike denominators ---------------- */
+TOPICS.push({
+  id: "f2", area: "frac", icon: "➕", title: "Adding & Subtracting Fractions", sub: "Different denominators",
+  key: `<ul><li>You can only add or subtract pieces that are the <b>same size</b>.</li><li><b>Step 1:</b> Find a common denominator.<br><b>Step 2:</b> Rename both fractions.<br><b>Step 3:</b> Add or subtract the <b>tops</b>. Keep the bottom!<br><b>Step 4:</b> Simplify.</li><li>${F(1, 2)} + ${F(1, 3)} is <b>not</b> ${F(2, 5)}. Never add the bottoms!</li></ul>`,
+  learn: `<div class="ctl-row">
+      <select id="f2a"></select><span>/</span><select id="f2b"></select>
+      <select id="f2op" style="font-weight:800"><option value="+">+</option><option value="-">−</option></select>
+      <select id="f2c"></select><span>/</span><select id="f2d"></select>
+    </div><div class="chips" style="margin-bottom:8px"><button class="chip" data-v="1,2,+,1,3">1/2 + 1/3</button><button class="chip" data-v="3,4,-,1,6">3/4 − 1/6</button><button class="chip" data-v="2,3,+,3,4">2/3 + 3/4</button><button class="chip" data-v="5,8,-,1,4">5/8 − 1/4</button></div>
+    <svg class="viz" id="f2svg"></svg><div class="explain" id="f2x"></div>`,
+  init() {
+    const dens = [2, 3, 4, 5, 6, 8, 10, 12];
+    const fillD = id => $(id).innerHTML = dens.map(d => `<option>${d}</option>`).join("");
+    fillD("f2b"); fillD("f2d"); $("f2b").value = 2; $("f2d").value = 3;
+    const fillN = (id, d, keep) => { $(id).innerHTML = Array.from({ length: d - 1 }, (_, i) => `<option>${i + 1}</option>`).join(""); $(id).value = Math.min(keep, d - 1); };
+    fillN("f2a", 2, 1); fillN("f2c", 3, 1);
+    const draw = () => {
+      const a = +$("f2a").value, b = +$("f2b").value, c = +$("f2c").value, d = +$("f2d").value, op = $("f2op").value;
+      const L = lcm(b, d), A = a * L / b, C = c * L / d, R = op === "+" ? A + C : A - C;
+      const svg = $("f2svg"); svg.setAttribute("viewBox", "0 0 640 330"); svg.innerHTML = "";
+      const W = 440, x0 = 120;
+      txt(svg, 4, 22, "Step 1", { "font-size": 15, "font-weight": 800, fill: "#e66414" });
+      txt(svg, 4, 40, "Different", { "font-size": 13, fill: "#5b6b7c" }); txt(svg, 4, 56, "size pieces", { "font-size": 13, fill: "#5b6b7c" });
+      bar(svg, x0, 8, W, 34, a, b, "#2563eb", `${a}/${b}`); bar(svg, x0, 50, W, 34, c, d, "#ea6a1a", `${c}/${d}`);
+      txt(svg, 4, 128, "Step 2", { "font-size": 15, "font-weight": 800, fill: "#e66414" });
+      txt(svg, 4, 146, `Cut into ${L}ths`, { "font-size": 13, fill: "#5b6b7c" });
+      bar(svg, x0, 112, W, 34, A, L, "#2563eb", `${A}/${L}`); bar(svg, x0, 154, W, 34, C, L, "#ea6a1a", `${C}/${L}`);
+      txt(svg, 4, 236, "Step 3", { "font-size": 15, "font-weight": 800, fill: "#e66414" });
+      txt(svg, 4, 254, op === "+" ? "Put together" : "Take away", { "font-size": 13, fill: "#5b6b7c" });
+      if (R < 0) {
+        txt(svg, x0, 250, `${a}/${b} is smaller than ${c}/${d}. Try a bigger first fraction!`, { "font-size": 16, fill: "#d93025", "font-weight": 700 });
+        $("f2x").innerHTML = "Subtracting a bigger fraction from a smaller one goes below zero. Swap them to practice."; return;
+      }
+      if (op === "+") {
+        const bars = Math.max(1, Math.ceil(R / L));
+        for (let k = 0; k < bars; k++) {
+          const y = 218 + k * 44, pw = W / L;
+          el("rect", { x: x0, y, width: W, height: 34, rx: 6, fill: "#fff", stroke: "#334155", "stroke-width": 2 }, svg);
+          for (let i = 0; i < L; i++) {
+            const idx = k * L + i;
+            if (idx < A) el("rect", { x: x0 + i * pw, y, width: pw, height: 34, fill: "#2563eb", "fill-opacity": .85 }, svg);
+            else if (idx < A + C) el("rect", { x: x0 + i * pw, y, width: pw, height: 34, fill: "#ea6a1a", "fill-opacity": .85 }, svg);
+          }
+          for (let i = 1; i < L; i++) el("line", { x1: x0 + i * pw, x2: x0 + i * pw, y1: y, y2: y + 34, stroke: "#334155", "stroke-width": 1.2 }, svg);
+          el("rect", { x: x0, y, width: W, height: 34, rx: 6, fill: "none", stroke: "#334155", "stroke-width": 2.2 }, svg);
+        }
+        txt(svg, x0 + W + 12, 241, `${R}/${L}`, { "font-size": 18, "font-weight": 800, fill: "#1f2a37" });
+        svg.setAttribute("viewBox", `0 0 640 ${218 + bars * 44 + 6}`);
+      } else {
+        const y = 218, pw = W / L;
+        el("rect", { x: x0, y, width: W, height: 34, rx: 6, fill: "#fff" }, svg);
+        for (let i = 0; i < A; i++) el("rect", { x: x0 + i * pw, y, width: pw, height: 34, fill: i < R ? "#8b3fc7" : "#fecaca", "fill-opacity": .85 }, svg);
+        for (let i = R; i < A; i++) { const cx = x0 + (i + .5) * pw; el("path", { d: `M${cx - 6} ${y + 11} l12 12 M${cx + 6} ${y + 11} l-12 12`, stroke: "#d93025", "stroke-width": 2.5 }, svg); }
+        for (let i = 1; i < L; i++) el("line", { x1: x0 + i * pw, x2: x0 + i * pw, y1: y, y2: y + 34, stroke: "#334155", "stroke-width": 1.2 }, svg);
+        el("rect", { x: x0, y, width: W, height: 34, rx: 6, fill: "none", stroke: "#334155", "stroke-width": 2.2 }, svg);
+        txt(svg, x0 + W + 12, 241, `${R}/${L}`, { "font-size": 18, "font-weight": 800, fill: "#1f2a37" });
+        svg.setAttribute("viewBox", "0 0 640 262");
+      }
+      const opS = op === "+" ? "+" : "−";
+      $("f2x").innerHTML = `
+        <div class="step"><span class="n">1</span><span>A common denominator for ${b} and ${d} is <b>${L}</b> (both go into ${L}).</span></div>
+        <div class="step"><span class="n">2</span><span>${F(a, b)} = ${F(A, L)} &nbsp; and &nbsp; ${F(c, d)} = ${F(C, L)}</span></div>
+        <div class="step"><span class="n">3</span><span>${F(A, L)} ${opS} ${F(C, L)} = ${F(R, L)} <span class="hint-txt">(${opS === "+" ? "add" : "subtract"} the tops, keep ${L})</span></span></div>
+        <div class="step"><span class="n">4</span><span class="big">= ${R === 0 ? "0" : M(R, L)}</span></div>`;
+    };
+    $("f2b").onchange = () => { fillN("f2a", +$("f2b").value, +$("f2a").value); draw(); };
+    $("f2d").onchange = () => { fillN("f2c", +$("f2d").value, +$("f2c").value); draw(); };
+    ["f2a", "f2c", "f2op"].forEach(id => $(id).onchange = draw);
+    document.querySelectorAll("#learn [data-v]").forEach(ch => ch.onclick = () => {
+      const [a, b, op, c, d] = ch.dataset.v.split(",");
+      $("f2b").value = b; fillN("f2a", +b, +a); $("f2d").value = d; fillN("f2c", +d, +c); $("f2op").value = op; draw();
+    });
+    draw();
+  },
+  gen() {
+    const dens = [2, 3, 4, 5, 6, 8, 10, 12];
+    let b = pick(dens), d = pick(dens.filter(x => x !== b)), a = rnd(1, b - 1), c = rnd(1, d - 1), op = pick(["+", "-"]);
+    if (op === "-" && a / b <= c / d) { if (a / b === c / d) op = "+"; else [a, b, c, d] = [c, d, a, b]; }
+    const L = lcm(b, d), A = a * L / b, C = c * L / d, R = op === "+" ? A + C : A - C;
+    const story = rnd(0, 1);
+    const q = story
+      ? (op === "+" ? `Aminah read for ${F(a, b)} hour before school and ${F(c, d)} hour after school. How many hours did she read in all?`
+                    : `There was ${F(a, b)} of a pizza left. Aminah's brother ate ${F(c, d)} of the pizza. How much pizza is left now?`)
+      : `<span style="font-size:26px">${F(a, b)} ${op === "+" ? "+" : "−"} ${F(c, d)} = ?</span>`;
+    return { q, ph: "like 5/6 or 1 1/4", check: fracCheck(R, L), ans: M(R, L), ansPlain: T(R, L),
+      hint: `Find a number that both ${b} and ${d} go into. Rename both fractions with that bottom number.`,
+      steps: [`Common denominator for ${b} and ${d}: <b>${L}</b>.`, `${F(a, b)} = ${F(A, L)}, &nbsp; ${F(c, d)} = ${F(C, L)}.`, `${F(A, L)} ${op === "+" ? "+" : "−"} ${F(C, L)} = ${F(R, L)}.`, `Simplify: ${F(R, L)} = ${M(R, L)}.`] };
+  }
+});
+
+/* ---------------- F3: Mixed numbers ---------------- */
+const NW = (w, r, L) => `<span style="white-space:nowrap">${w}${r ? " " + F(r, L) : ""}</span>`;
+const NWT = t => `<span style="white-space:nowrap">${t}</span>`;
+function mixedParts(n, d) { const w = Math.floor(n / d); return [w, n - w * d]; }
+TOPICS.push({
+  id: "f3", area: "frac", icon: "🧵", title: "Mixed Numbers", sub: "Story problems like Cassie's fabric",
+  key: `<ul><li>A mixed number like ${M(9, 2)} is a whole number <b>and</b> a fraction.</li><li>Give the fractions a <b>common denominator</b> first: ${M(9, 2)} = <span style="white-space:nowrap">4 ${F(2, 4)}</span>.</li><li>Need to subtract but the fraction is too small? <b>Borrow 1 whole</b>: 10 = <span style="white-space:nowrap">9 ${F(4, 4)}</span>.</li><li>Or turn everything into improper fractions, subtract, then change back.</li></ul>`,
+  learn: `<p style="margin-top:0">Cassie has <input class="inp" id="f3w" value="10" style="width:60px"> yards of fabric. She uses <input class="inp" id="f3x" value="4 1/2"> yards and then <input class="inp" id="f3y" value="2 1/4"> yards. How much is left?</p>
+    <svg class="viz" id="f3svg"></svg><div class="explain" id="f3e"></div>`,
+  init() {
+    const draw = () => {
+      const W = parseFrac($("f3w").value), X = parseFrac($("f3x").value), Y = parseFrac($("f3y").value);
+      const svg = $("f3svg"); svg.innerHTML = "";
+      if (!W || !X || !Y || W.d !== 1 || W.n < 1 || W.n > 20) { $("f3e").innerHTML = "Type a whole number (1–20) and two mixed numbers like <b>4 1/2</b>."; return; }
+      const L = lcm(X.d, Y.d), w = W.n, xL = X.n * L / X.d, yL = Y.n * L / Y.d, total = w * L, left = total - xL - yL;
+      if (left < 0) { $("f3e").innerHTML = "Oops, that uses more fabric than Cassie has! Try smaller numbers."; return; }
+      const PW = 600, x0 = 20, X0 = v => x0 + v / total * PW;
+      svg.setAttribute("viewBox", "0 0 640 170");
+      el("line", { x1: x0, x2: x0 + PW, y1: 110, y2: 110, stroke: "#1f2a37", "stroke-width": 2.5 }, svg);
+      const minor = total <= 80;
+      for (let i = 0; i <= total; i++) {
+        const major = i % L === 0;
+        if (!major && !minor) continue;
+        el("line", { x1: X0(i), x2: X0(i), y1: 110 - (major ? 9 : 5), y2: 110 + (major ? 9 : 5), stroke: "#1f2a37", "stroke-width": major ? 2 : 1 }, svg);
+        if (major) txt(svg, X0(i), 136, i / L, { "font-size": 15, "text-anchor": "middle", fill: "#1f2a37", "font-weight": 700 });
+      }
+      const arc = (from, to, color, label) => {
+        const a = X0(from), b = X0(to), mid = (a + b) / 2, hgt = Math.min(70, 18 + (a - b) * .25);
+        el("path", { d: `M${a} 104 Q${mid} ${104 - hgt * 1.6} ${b} 104`, fill: "none", stroke: color, "stroke-width": 3 }, svg);
+        el("path", { d: `M${b} 104 l9 -6 M${b} 104 l2 -10`, stroke: color, "stroke-width": 3, fill: "none" }, svg);
+        txt(svg, mid, 104 - hgt * .8 - 6, label, { "font-size": 15, "font-weight": 800, "text-anchor": "middle", fill: color });
+      };
+      arc(total, total - xL, "#2563eb", `− ${T(X.n, X.d)}`);
+      arc(total - xL, left, "#ea6a1a", `− ${T(Y.n, Y.d)}`);
+      el("circle", { cx: X0(left), cy: 110, r: 8, fill: "#0f9d58", stroke: "#fff", "stroke-width": 2 }, svg);
+      txt(svg, X0(left), 160, `${T(left, L)} left`, { "font-size": 15, "font-weight": 800, "text-anchor": "middle", fill: "#0f9d58" });
+      const [xw, xr] = mixedParts(xL, L), [yw, yr] = mixedParts(yL, L), used = xL + yL, [uw, ur] = mixedParts(used, L);
+      $("f3e").innerHTML = `
+        <div class="step"><span class="n">1</span><span>Use the same denominator (${L}): ${NWT(T(X.n, X.d))} = ${NW(xw, xr, L)}, &nbsp; ${NWT(T(Y.n, Y.d))} = ${NW(yw, yr, L)}</span></div>
+        <div class="step"><span class="n">2</span><span>Add what she used: ${NW(xw, xr, L)} + ${NW(yw, yr, L)} = ${NW(uw, ur, L)} ${xr + yr >= L ? `<span class="hint-txt">(${F(xr + yr, L)} made an extra whole!)</span>` : ""}</span></div>
+        <div class="step"><span class="n">3</span><span>Subtract from ${w}: ${ur ? `${w} = ${NW(w - 1, L, L)}, so ${NW(w - 1, L, L)} − ${NW(uw, ur, L)}` : `${w} − ${uw}`} = <b class="big">${left === 0 ? "0" : M(left, L)}</b> yards</span></div>`;
+    };
+    ["f3w", "f3x", "f3y"].forEach(id => $(id).oninput = draw); draw();
+  },
+  gen() {
+    const dp = pick([[2, 4], [4, 8], [2, 8], [3, 6], [2, 3], [4, 4], [8, 8]]);
+    const d1 = dp[0], d2 = dp[1], L = lcm(d1, d2);
+    const x = rnd(1, 4) * d1 + rnd(1, d1 - 1), y = rnd(1, 3) * d2 + rnd(1, d2 - 1);   // improper numerators
+    const t = rnd(0, 2), thing = pick([["fabric", "yards"], ["ribbon", "feet"], ["rope", "meters"]]);
+    if (t === 0) {
+      const used = x * L / d1 + y * L / d2, W = Math.ceil(used / L) + rnd(1, 4), left = W * L - used;
+      return { q: `Cassie has <b>${W} ${thing[1]}</b> of ${thing[0]}. She uses <b>${M(x, d1)}</b> ${thing[1]} for one project and <b>${M(y, d2)}</b> ${thing[1]} for another. How many ${thing[1]} are left?`,
+        ph: "like 3 1/4", check: fracCheck(left, L), ans: `${M(left, L)} ${thing[1]}`, ansPlain: T(left, L),
+        hint: `First add the two amounts she used. Then subtract from ${W}. Use denominator ${L}.`,
+        steps: [`Rename with denominator ${L}: ${M(x, d1)} = ${T(x * L / d1, L).split(" ")[0]} ${F(x * L / d1 % L, L)}, ${M(y, d2)} = ${T(y * L / d2, L).split(" ")[0]} ${F(y * L / d2 % L, L)}.`,
+          `Used in all: ${M(used, L)} ${thing[1]}.`, `${W} − ${M(used, L)} = ${M(left, L)}.`] };
+    }
+    const X = x * L / d1, Y = y * L / d2;
+    if (t === 1) return { q: `<span style="font-size:26px">${M(x, d1)} + ${M(y, d2)} = ?</span>`, ph: "like 5 3/4", check: fracCheck(X + Y, L), ans: M(X + Y, L), ansPlain: T(X + Y, L),
+      hint: `Add the whole numbers, then add the fractions (after giving them the same denominator).`,
+      steps: [`Same denominator ${L}: ${M(x, d1)} = ${Math.floor(X / L)} ${F(X % L, L)}, ${M(y, d2)} = ${Math.floor(Y / L)} ${F(Y % L, L)}.`, `Wholes: ${Math.floor(X / L)} + ${Math.floor(Y / L)} = ${Math.floor(X / L) + Math.floor(Y / L)}. Fractions: ${F(X % L, L)} + ${F(Y % L, L)} = ${F(X % L + Y % L, L)}.`, `Total: ${M(X + Y, L)}.`] };
+    const [big, small] = X >= Y ? [X, Y] : [Y, X];
+    if (big === small) return this.gen();
+    const borrow = big % L < small % L;
+    return { q: `<span style="font-size:26px">${M(big, L)} − ${M(small, L)} = ?</span>`, ph: "like 2 1/8", check: fracCheck(big - small, L), ans: M(big - small, L), ansPlain: T(big - small, L),
+      hint: borrow ? `The first fraction is smaller than the second. Borrow 1 whole and turn it into ${F(L, L)}.` : `Subtract the whole numbers, then the fractions.`,
+      steps: [`Same denominator ${L}: ${Math.floor(big / L)} ${F(big % L, L)} − ${Math.floor(small / L)} ${F(small % L, L)}.`,
+        borrow ? `Borrow 1: ${Math.floor(big / L)} ${F(big % L, L)} = ${Math.floor(big / L) - 1} ${F(big % L + L, L)}.` : `No borrowing needed.`,
+        `Answer: ${M(big - small, L)}.`] };
+  }
+});
+
+/* ---------------- F4: Multiplying fractions ---------------- */
+TOPICS.push({
+  id: "f4", area: "frac", icon: "✖️", title: "Multiplying Fractions", sub: "Area models and “of”",
+  key: `<ul><li>“${F(2, 3)} <b>of</b> 12” means ${F(2, 3)} × 12 = 8.</li><li>Fraction × fraction: multiply <b>tops</b>, multiply <b>bottoms</b>: ${F(2, 3)} × ${F(3, 4)} = ${F(6, 12)} = ${F(1, 2)}.</li><li>Multiplying by a fraction <b>less than 1</b> makes a number <b>smaller</b>. Multiplying by a fraction <b>greater than 1</b> makes it <b>bigger</b>.</li></ul>`,
+  learn: `<div class="ctl-row">
+      <label class="ctl">First fraction <output id="f4o1"></output><span><input type="range" id="f4a" min="1" max="5" value="2"><input type="range" id="f4b" min="2" max="6" value="3"></span></label>
+      <label class="ctl">Second fraction <output id="f4o2"></output><span><input type="range" id="f4c" min="1" max="5" value="3"><input type="range" id="f4d" min="2" max="6" value="4"></span></label>
+    </div><svg class="viz" id="f4svg"></svg><div class="explain" id="f4x"></div>`,
+  init() {
+    const draw = () => {
+      ["b", "d"].forEach((k, i) => { const top = $(i ? "f4c" : "f4a"), den = +$("f4" + k).value; top.max = den; if (+top.value > den) top.value = den; });
+      const a = +$("f4a").value, b = +$("f4b").value, c = +$("f4c").value, d = +$("f4d").value;
+      $("f4o1").innerHTML = `${a}/${b}`; $("f4o2").innerHTML = `${c}/${d}`;
+      const svg = $("f4svg"); svg.setAttribute("viewBox", "0 0 640 330"); svg.innerHTML = "";
+      const S = 280, x0 = 40, y0 = 20, cw = S / b, rh = S / d;
+      el("rect", { x: x0, y: y0, width: S, height: S, fill: "#fff" }, svg);
+      for (let i = 0; i < b; i++) for (let j = 0; j < d; j++) {
+        const inA = i < a, inC = j < c;
+        if (inA || inC) el("rect", { x: x0 + i * cw, y: y0 + j * rh, width: cw, height: rh, fill: inA && inC ? "#8b3fc7" : inA ? "#93c5fd" : "#fdba74", "fill-opacity": inA && inC ? .9 : .75 }, svg);
+      }
+      for (let i = 1; i < b; i++) el("line", { x1: x0 + i * cw, x2: x0 + i * cw, y1: y0, y2: y0 + S, stroke: "#334155", "stroke-width": 1.5 }, svg);
+      for (let j = 1; j < d; j++) el("line", { x1: x0, x2: x0 + S, y1: y0 + j * rh, y2: y0 + j * rh, stroke: "#334155", "stroke-width": 1.5 }, svg);
+      el("rect", { x: x0, y: y0, width: S, height: S, fill: "none", stroke: "#1f2a37", "stroke-width": 3 }, svg);
+      txt(svg, x0 + a * cw / 2, y0 + S + 22, `${a}/${b}`, { "font-size": 16, "font-weight": 800, fill: "#2563eb", "text-anchor": "middle" });
+      const yl = txt(svg, 0, 0, `${c}/${d}`, { "font-size": 16, "font-weight": 800, fill: "#ea6a1a", "text-anchor": "middle" });
+      yl.setAttribute("transform", `translate(${x0 - 12} ${y0 + c * rh / 2}) rotate(-90)`);
+      const lx = 360;
+      [["#93c5fd", `${a}/${b} (columns)`], ["#fdba74", `${c}/${d} (rows)`], ["#8b3fc7", "overlap = the answer"]].forEach(([col, t], i) => {
+        el("rect", { x: lx, y: 40 + i * 34, width: 22, height: 22, rx: 4, fill: col }, svg);
+        txt(svg, lx + 32, 57 + i * 34, t, { "font-size": 16, fill: "#1f2a37" });
+      });
+      txt(svg, lx, 175, `${a * c} purple pieces`, { "font-size": 20, "font-weight": 800, fill: "#8b3fc7" });
+      txt(svg, lx, 202, `out of ${b * d} pieces`, { "font-size": 20, "font-weight": 800, fill: "#1f2a37" });
+      $("f4x").innerHTML = `<div class="big">${F(a, b)} × ${F(c, d)} = ${F(`${a} × ${c}`, `${b} × ${d}`)} = ${F(a * c, b * d)}${gcd(a * c, b * d) > 1 || a * c >= b * d ? " = " + M(a * c, b * d) : ""}</div>
+        The answer is <b>smaller than both</b> fractions, because you're taking a part <b>of</b> a part.`;
+    };
+    ["f4a", "f4b", "f4c", "f4d"].forEach(id => $(id).oninput = draw); draw();
+  },
+  gen() {
+    const t = rnd(0, 3);
+    if (t === 0) {
+      const b = pick([2, 3, 4, 5, 8]), a = rnd(1, b - 1), n = rnd(2, 9);
+      return { q: `Each batch of muffins uses ${F(a, b)} cup of sugar. How much sugar is needed for <b>${n} batches</b>?`, ph: "like 2 1/2",
+        check: fracCheck(n * a, b), ans: `${M(n * a, b)} cups`, ansPlain: T(n * a, b), hint: `Multiply ${n} × ${F(a, b)}: multiply ${n} by the top number.`,
+        steps: [`${n} × ${F(a, b)} = ${F(`${n} × ${a}`, b)} = ${F(n * a, b)}.`, `Change to a mixed number: ${M(n * a, b)}.`] };
+    }
+    if (t === 1) {
+      const b = pick([2, 3, 4, 5, 6]), a = rnd(1, b - 1), k = rnd(2, 6), N = b * k;
+      const thing = pick(["stickers", "marbles", "cupcakes", "pages"]);
+      return { q: `Aminah has <b>${N} ${thing}</b>. She gives away ${F(a, b)} of them. How many ${thing} does she give away?`, ph: "a number",
+        check: numCheck(a * k), ans: `${a * k} ${thing}`, ansPlain: String(a * k), hint: `Split ${N} into ${b} equal groups. Then take ${a} of the groups.`,
+        steps: [`${N} ÷ ${b} = ${k} in each group.`, `${a} groups × ${k} = ${a * k}.`, `So ${F(a, b)} of ${N} = ${a * k}.`] };
+    }
+    if (t === 2) {
+      const b = pick([2, 3, 4, 5]), d = pick([2, 3, 4, 5, 6]), a = rnd(1, b - 1), c = rnd(1, d - 1);
+      return { q: `<span style="font-size:26px">${F(a, b)} × ${F(c, d)} = ?</span>`, ph: "like 3/8",
+        check: fracCheck(a * c, b * d), ans: M(a * c, b * d), ansPlain: T(a * c, b * d), hint: `Multiply the tops together. Multiply the bottoms together.`,
+        steps: [`Tops: ${a} × ${c} = ${a * c}. Bottoms: ${b} × ${d} = ${b * d}.`, `${F(a * c, b * d)}${gcd(a * c, b * d) > 1 ? " = " + M(a * c, b * d) + " (simplified)" : ""}.`] };
+    }
+    const n = rnd(3, 12), kind = pick(["less", "less", "more", "equal"]);
+    const [p, r] = kind === "less" ? pick([[3, 4], [2, 5], [5, 6], [1, 3], [7, 8]]) : kind === "more" ? pick([[5, 4], [3, 2], [7, 6], [4, 3]]) : pick([[4, 4], [3, 3], [6, 6]]);
+    const ans = kind === "less" ? `Less than ${n}` : kind === "more" ? `Greater than ${n}` : `Equal to ${n}`;
+    return { q: `Without multiplying, is <b>${n} × ${F(p, r)}</b> greater than, less than, or equal to ${n}?`,
+      choices: [`Greater than ${n}`, `Less than ${n}`, `Equal to ${n}`], check: v => v === ans, ans, ansPlain: ans,
+      hint: `Is ${F(p, r)} less than 1, equal to 1, or more than 1?`,
+      steps: [`${F(p, r)} is ${kind === "less" ? "less than 1" : kind === "more" ? "more than 1" : "equal to 1"}.`, kind === "less" ? `Multiplying by less than 1 makes the number smaller.` : kind === "more" ? `Multiplying by more than 1 makes the number bigger.` : `Multiplying by 1 keeps the number the same.`] };
+  }
+});
+
+/* ---------------- F5: Fractions as division ---------------- */
+const FRIEND_COLORS = ["#2563eb", "#ea6a1a", "#0f9d58", "#8b3fc7", "#e8505b", "#0ea5b7"];
+TOPICS.push({
+  id: "f5", area: "frac", icon: "🍪", title: "Sharing = Dividing", sub: "Fractions as division",
+  key: `<ul><li>A fraction <b>is</b> a division: ${F(3, 4)} = 3 ÷ 4.</li><li>When <b>4 friends</b> share <b>3 pizzas</b>, each gets ${F(3, 4)} of a pizza.</li><li><b>Top</b> = how much is being shared. <b>Bottom</b> = how many people share it.</li><li>${F(4, 3)} pounds each means <b>3 friends</b> share <b>4 pounds</b>.</li></ul>`,
+  learn: `<div class="ctl-row">
+      <label class="ctl">Friends <output id="f5fo"></output><input type="range" id="f5f" min="2" max="6" value="4"></label>
+      <label class="ctl">Pizzas to share <output id="f5po"></output><input type="range" id="f5p" min="1" max="8" value="3"></label>
+    </div><svg class="viz" id="f5svg"></svg><div class="explain" id="f5x"></div>`,
+  init() {
+    const draw = () => {
+      const N = +$("f5f").value, P = +$("f5p").value;
+      $("f5fo").textContent = N; $("f5po").textContent = P;
+      const svg = $("f5svg"); svg.innerHTML = "";
+      const perRow = 4, R = 52, rows = Math.ceil(P / perRow), H = rows * 128 + 60;
+      svg.setAttribute("viewBox", `0 0 640 ${H}`);
+      for (let k = 0; k < P; k++) {
+        const cx = 80 + (k % perRow) * 145, cy = 70 + Math.floor(k / perRow) * 128;
+        for (let i = 0; i < N; i++) {
+          const a0 = -Math.PI / 2 + i * 2 * Math.PI / N, a1 = a0 + 2 * Math.PI / N;
+          const p = (a) => `${cx + R * Math.cos(a)} ${cy + R * Math.sin(a)}`;
+          el("path", { d: `M${cx} ${cy} L${p(a0)} A${R} ${R} 0 ${N === 1 ? 1 : 0} 1 ${p(a1)} Z`, fill: FRIEND_COLORS[i], "fill-opacity": .8, stroke: "#fff", "stroke-width": 2.5 }, svg);
+        }
+        el("circle", { cx, cy, r: R, fill: "none", stroke: "#7c5a2b", "stroke-width": 4 }, svg);
+        txt(svg, cx, cy + R + 20, `pizza ${k + 1}`, { "font-size": 13, fill: "#5b6b7c", "text-anchor": "middle" });
+      }
+      for (let i = 0; i < N; i++) {
+        const x = 20 + i * 102, y = H - 22;
+        el("circle", { cx: x + 9, cy: y - 5, r: 9, fill: FRIEND_COLORS[i] }, svg);
+        txt(svg, x + 24, y, `Friend ${i + 1}`, { "font-size": 14, fill: "#1f2a37" });
+      }
+      $("f5x").innerHTML = `Each pizza is cut into <b>${N}</b> slices (one for each friend). Each friend gets <b>1 slice from every pizza</b>, so that's <b>${P}</b> slices of size ${F(1, N)}.
+        <div class="big" style="margin-top:6px">${P} ÷ ${N} = ${F(P, N)}${P >= N || gcd(P, N) > 1 ? " = " + M(P, N) : ""} pizza each</div>`;
+    };
+    ["f5f", "f5p"].forEach(id => $(id).oninput = draw); draw();
+  },
+  gen() {
+    const t = rnd(0, 2);
+    if (t === 0) {
+      const N = rnd(2, 8), P = rnd(1, 9);
+      const thing = pick([["pizzas", "pizza"], ["pounds of trail mix", "pound"], ["sandwiches", "sandwich"], ["yards of ribbon", "yard"]]);
+      return { q: `<b>${N} friends</b> share <b>${P} ${thing[0]}</b> equally. How much does each friend get?`, ph: "like 3/4",
+        check: fracCheck(P, N), ans: `${M(P, N)} ${thing[1]}`, ansPlain: T(P, N), hint: `Sharing means dividing: ${P} ÷ ${N}. Write it as a fraction.`,
+        steps: [`Share ${P} among ${N}: ${P} ÷ ${N}.`, `${P} ÷ ${N} = ${F(P, N)}.`, P > N ? `As a mixed number: ${M(P, N)}.` : `Each friend gets ${M(P, N)}.`] };
+    }
+    if (t === 1) {
+      const N = rnd(2, 9), P = rnd(N + 1, 4 * N);
+      if (P % N === 0) return this.gen();
+      return { q: `Write <b>${P} ÷ ${N}</b> as a fraction or a mixed number.`, ph: "like 2 1/3",
+        check: fracCheck(P, N), ans: `${F(P, N)} = ${M(P, N)}`, ansPlain: T(P, N), hint: `The first number goes on top, the second on the bottom.`,
+        steps: [`${P} ÷ ${N} = ${F(P, N)}.`, `${N} goes into ${P} ${Math.floor(P / N)} times with ${P % N} left over.`, `So ${F(P, N)} = ${M(P, N)}.`] };
+    }
+    let [a, b] = pick([[4, 3], [3, 4], [5, 2], [2, 5], [5, 3], [3, 5], [7, 4], [6, 5]]);
+    const right = `${b} friends share ${a} pounds`, opts = shuffle([right, `${a} friends share ${b} pounds`, `${a} friends share 1/${b} pound`]);
+    return { q: `Some friends share a bag of trail mix. Each friend gets ${F(a, b)} pounds. Which sentence matches?`, choices: opts,
+      check: v => v === right, ans: right, ansPlain: right, hint: `${F(a, b)} means ${a} ÷ ${b}. Which number is being shared, and how many people share it?`,
+      steps: [`${F(a, b)} = ${a} ÷ ${b}.`, `${a} pounds are shared by ${b} friends.`] };
+  }
+});
+
+/* ---------------- M1: Converting units ---------------- */
+const UNITS = [
+  { cat: "Liquid volume", big: "liters (L)", small: "milliliters (mL)", b: "L", s: "mL", f: 1000 },
+  { cat: "Mass", big: "kilograms (kg)", small: "grams (g)", b: "kg", s: "g", f: 1000 },
+  { cat: "Weight", big: "pounds (lb)", small: "ounces (oz)", b: "lb", s: "oz", f: 16 },
+  { cat: "Length", big: "feet (ft)", small: "inches (in)", b: "ft", s: "in", f: 12 },
+  { cat: "Length", big: "yards (yd)", small: "feet (ft)", b: "yd", s: "ft", f: 3 },
+  { cat: "Length", big: "meters (m)", small: "centimeters (cm)", b: "m", s: "cm", f: 100 },
+  { cat: "Length", big: "kilometers (km)", small: "meters (m)", b: "km", s: "m", f: 1000 },
+  { cat: "Liquid volume", big: "gallons (gal)", small: "quarts (qt)", b: "gal", s: "qt", f: 4 },
+  { cat: "Time", big: "hours (hr)", small: "minutes (min)", b: "hr", s: "min", f: 60 }
+];
+TOPICS.push({
+  id: "m1", area: "meas", icon: "💧", title: "Converting Units", sub: "mL ↔ L, oz ↔ lb and more",
+  key: `<ul><li><b>Big unit → small unit:</b> you need <b>more</b> of them, so <b>multiply</b>.</li><li><b>Small unit → big unit:</b> you need <b>fewer</b>, so <b>divide</b>.</li><li>Facts to know: 1 L = 1,000 mL · 1 kg = 1,000 g · 1 lb = 16 oz · 1 ft = 12 in · 1 yd = 3 ft · 1 m = 100 cm.</li></ul>`,
+  learn: `<div class="ctl-row"><select id="m1u"></select><select id="m1dir"></select></div>
+    <div class="ctl-row">Amount: <input class="inp" id="m1v" value="3"> <span class="chips"><button class="chip" id="m1keenan">Keenan's water 💧</button></span></div>
+    <svg class="viz" id="m1svg"></svg><div class="explain" id="m1x"></div>`,
+  init() {
+    $("m1u").innerHTML = UNITS.map((u, i) => `<option value="${i}">${u.b} ↔ ${u.s}  (1 ${u.b} = ${u.f.toLocaleString()} ${u.s})</option>`).join("");
+    const setDir = () => { const u = UNITS[+$("m1u").value]; $("m1dir").innerHTML = `<option value="down">${u.b} → ${u.s}</option><option value="up">${u.s} → ${u.b}</option>`; };
+    const draw = () => {
+      const u = UNITS[+$("m1u").value], down = $("m1dir").value === "down", v = parseNum($("m1v").value);
+      const svg = $("m1svg"); svg.setAttribute("viewBox", "0 0 640 150"); svg.innerHTML = "";
+      if (!Number.isFinite(v) || v < 0) { $("m1x").innerHTML = "Type an amount."; return; }
+      const res = down ? v * u.f : v / u.f;
+      const box = (x, label, val, unit, col) => {
+        el("rect", { x, y: 30, width: 200, height: 84, rx: 16, fill: col, "fill-opacity": .15, stroke: col, "stroke-width": 3 }, svg);
+        txt(svg, x + 100, 22, label, { "font-size": 14, fill: "#5b6b7c", "text-anchor": "middle", "font-weight": 700 });
+        txt(svg, x + 100, 80, `${fmt(val)} ${unit}`, { "font-size": 26, "font-weight": 800, fill: "#1f2a37", "text-anchor": "middle" });
+      };
+      box(10, "You have", v, down ? u.b : u.s, "#2563eb");
+      box(430, "That equals", res, down ? u.s : u.b, "#0f9d58");
+      el("path", { d: "M222 72 H405 M393 60 L408 72 L393 84", stroke: "#ea6a1a", "stroke-width": 5, fill: "none", "stroke-linecap": "round", "stroke-linejoin": "round" }, svg);
+      txt(svg, 315, 58, `${down ? "×" : "÷"} ${u.f.toLocaleString()}`, { "font-size": 24, "font-weight": 800, fill: "#ea6a1a", "text-anchor": "middle" });
+      txt(svg, 315, 104, down ? "big → small: multiply" : "small → big: divide", { "font-size": 14, fill: "#5b6b7c", "text-anchor": "middle" });
+      $("m1x").innerHTML = `1 ${u.b} = ${u.f.toLocaleString()} ${u.s}. ${down ? `Going from the <b>bigger</b> unit to the <b>smaller</b> unit, you need <b>more</b>, so multiply.` : `Going from the <b>smaller</b> unit to the <b>bigger</b> unit, you need <b>fewer</b>, so divide.`}
+        <div class="big">${fmt(v)} ${down ? "×" : "÷"} ${u.f.toLocaleString()} = ${fmt(res)} ${down ? u.s : u.b}</div>`;
+    };
+    $("m1u").onchange = () => { setDir(); draw(); };
+    $("m1dir").onchange = draw; $("m1v").oninput = draw;
+    $("m1keenan").onclick = () => { $("m1u").value = 0; setDir(); $("m1dir").value = "up"; $("m1v").value = "1200"; draw();
+      $("m1x").innerHTML += `<div style="margin-top:6px">💧 Keenan drinks 6 glasses × 200 mL = <b>1,200 mL</b>. Then 1,200 ÷ 1,000 = <b>1.2 L</b> each day.</div>`; };
+    setDir(); draw();
+  },
+  gen() {
+    const t = rnd(0, 3), u = pick(UNITS);
+    if (t === 0) {
+      const v = u.f === 1000 || u.f === 100 ? pick([2, 3, 4, 5, 1.5, 2.5, 7]) : rnd(2, 9);
+      return { q: `<span style="font-size:24px">${v} ${u.b} = ? ${u.s}</span>`, ph: "a number", check: numCheck(v * u.f), ans: `${fmt(v * u.f)} ${u.s}`, ansPlain: String(v * u.f),
+        hint: `1 ${u.b} = ${u.f} ${u.s}. Going from big to small units, you <b>multiply</b>.`, steps: [`1 ${u.b} = ${u.f} ${u.s}.`, `Big → small: multiply. ${v} × ${u.f} = ${fmt(v * u.f)}.`] };
+    }
+    if (t === 1) {
+      const n = u.f >= 100 ? pick([2, 3, 4, 5, 1.5, 2.5, 6]) : rnd(2, 8), v = n * u.f;
+      return { q: `<span style="font-size:24px">${fmt(v)} ${u.s} = ? ${u.b}</span>`, ph: "a number", check: numCheck(n), ans: `${fmt(n)} ${u.b}`, ansPlain: String(n),
+        hint: `1 ${u.b} = ${u.f} ${u.s}. Going from small to big units, you <b>divide</b>.`, steps: [`1 ${u.b} = ${u.f} ${u.s}.`, `Small → big: divide. ${fmt(v)} ÷ ${u.f} = ${fmt(n)}.`] };
+    }
+    if (t === 2) {
+      const g = rnd(3, 8), ml = pick([150, 200, 250, 300, 500]), tot = g * ml;
+      const who = pick(["Keenan", "Aminah", "Omar", "Lina"]);
+      return { q: `${who} drinks <b>${g} glasses</b> of water each day. Each glass holds <b>${ml} mL</b>. How many <b>liters</b> does ${who} drink each day?`, ph: "liters, like 1.2",
+        check: numCheck(tot / 1000), ans: `${fmt(tot / 1000)} L`, ansPlain: String(tot / 1000), hint: `First find the total mL (multiply). Then change mL to L (divide by 1,000).`,
+        steps: [`Total: ${g} × ${ml} = ${tot.toLocaleString()} mL.`, `mL → L: divide by 1,000.`, `${tot.toLocaleString()} ÷ 1,000 = ${fmt(tot / 1000)} L.`] };
+    }
+    const a = rnd(2, 6), bigInSmall = a * u.f, other = bigInSmall + pick([-1, 1]) * rnd(1, Math.max(1, Math.round(u.f / 2)));
+    const ans = bigInSmall > other ? `${a} ${u.b}` : `${other} ${u.s}`;
+    return { q: `Which is more: <b>${a} ${u.b}</b> or <b>${other.toLocaleString()} ${u.s}</b>?`, choices: shuffle([`${a} ${u.b}`, `${other} ${u.s}`]),
+      check: v => v === ans, ans, ansPlain: ans, hint: `Change ${a} ${u.b} into ${u.s} so both use the same unit.`,
+      steps: [`${a} ${u.b} = ${a} × ${u.f} = ${bigInSmall.toLocaleString()} ${u.s}.`, `Compare ${bigInSmall.toLocaleString()} ${u.s} with ${other.toLocaleString()} ${u.s}.`] };
+  }
+});
+
+/* ---------------- M2: Line plots with fractions ---------------- */
+function drawLinePlot(svg, lo, counts, title) {
+  svg.setAttribute("viewBox", "0 0 600 250"); svg.innerHTML = "";
+  const x0 = 40, W = 520, base = 190, X = j => x0 + j * W / 8;
+  if (title) txt(svg, 300, 20, title, { "font-size": 15, "font-weight": 800, fill: "#1f2a37", "text-anchor": "middle" });
+  el("line", { x1: x0 - 15, x2: x0 + W + 15, y1: base, y2: base, stroke: "#1f2a37", "stroke-width": 2.5 }, svg);
+  for (let j = 0; j <= 8; j++) {
+    const major = j % 4 === 0;
+    el("line", { x1: X(j), x2: X(j), y1: base - (major ? 9 : 6), y2: base + (major ? 9 : 6), stroke: "#1f2a37", "stroke-width": major ? 2.2 : 1.5 }, svg);
+    const lab = j === 0 ? `${lo}` : j === 8 ? `${lo + 1}` : `${lo} ${j}/8`;
+    txt(svg, X(j), base + 28, lab, { "font-size": j % 8 === 0 ? 17 : 13.5, "font-weight": j % 8 === 0 ? 800 : 600, fill: "#1f2a37", "text-anchor": "middle" });
+    for (let k = 0; k < (counts[j] || 0); k++) txt(svg, X(j), base - 16 - k * 22, "✕", { "font-size": 20, "font-weight": 800, fill: "#ea6a1a", "text-anchor": "middle" });
+    el("rect", { x: X(j) - W / 16, y: 30, width: W / 8, height: base - 20, fill: "transparent", "data-j": j, style: "cursor:pointer" }, svg);
+  }
+  txt(svg, 300, 245, "Length (feet)", { "font-size": 14, fill: "#5b6b7c", "text-anchor": "middle" });
+}
+TOPICS.push({
+  id: "m2", area: "meas", icon: "🥕", title: "Line Plots with Fractions", sub: "Garden carrots in eighths",
+  key: `<ul><li>Each <b>✕</b> is one measurement.</li><li>The <b>difference</b> between the longest and shortest = longest − shortest.</li><li>The tick marks are <b>eighths</b>: 1 ${F(4, 8)} is the same as 1 ${F(1, 2)}.</li><li>To find a <b>total</b>, add all the lengths together (count the ✕ marks carefully!).</li></ul>`,
+  learn: `<p style="margin-top:0">Click above a tick mark to add a carrot ✕. Tick <b>Remove</b> to take one away.</p>
+    <div class="ctl-row"><label class="ctl" style="flex-direction:row;align-items:center;gap:6px;color:var(--ink)"><input type="checkbox" id="m2rm"> Remove mode</label>
+      <button class="btn small" id="m2clear">Clear</button><button class="btn small" id="m2demo">Garden example</button></div>
+    <svg class="viz" id="m2svg"></svg><div class="explain" id="m2x"></div>`,
+  init() {
+    let counts = [0, 1, 0, 2, 3, 1, 0, 2, 0];
+    const draw = () => {
+      drawLinePlot($("m2svg"), 1, counts, "Carrots pulled from the school garden");
+      $("m2svg").querySelectorAll("[data-j]").forEach(r => r.onclick = () => {
+        const j = +r.getAttribute("data-j");
+        if ($("m2rm").checked) counts[j] = Math.max(0, counts[j] - 1); else if (counts[j] < 7) counts[j]++;
+        draw();
+      });
+      const n = counts.reduce((a, b) => a + b, 0);
+      if (!n) { $("m2x").innerHTML = "Add some carrots!"; return; }
+      const js = counts.map((c, j) => c ? j : -1).filter(j => j >= 0), mn = Math.min(...js), mx = Math.max(...js);
+      const sumE = counts.reduce((s, c, j) => s + c * (8 + j), 0);
+      $("m2x").innerHTML = `<b>${n}</b> carrots. Shortest: <b>${M(8 + mn, 8)} ft</b>. Longest: <b>${M(8 + mx, 8)} ft</b>.
+        <div class="step"><span class="n">−</span><span>Difference: ${M(8 + mx, 8)} − ${M(8 + mn, 8)} = ${F(mx - mn, 8)} = <b>${M(mx - mn, 8) || 0} ft</b></span></div>
+        <div class="step"><span class="n">+</span><span>All carrots end to end: <b>${M(sumE, 8)} ft</b></span></div>`;
+    };
+    $("m2clear").onclick = () => { counts = Array(9).fill(0); draw(); };
+    $("m2demo").onclick = () => { counts = [0, 1, 0, 2, 3, 1, 0, 2, 0]; draw(); };
+    draw();
+  },
+  gen() {
+    const lo = rnd(1, 2), counts = Array(9).fill(0), n = rnd(7, 11);
+    for (let i = 0; i < n; i++) counts[rnd(0, 8)]++;
+    const js = counts.map((c, j) => c ? j : -1).filter(j => j >= 0), mn = Math.min(...js), mx = Math.max(...js);
+    if (mx === mn) return this.gen();
+    const after = qel => drawLinePlot(qel.querySelector("svg"), lo, counts, "Carrot lengths (feet)");
+    const t = rnd(0, 2);
+    if (t === 0) return { q: `What is the difference between the <b>longest</b> and <b>shortest</b> carrot?<svg></svg>`, after, ph: "like 5/8",
+      check: fracCheck(mx - mn, 8), ans: `${M(mx - mn, 8)} ft`, ansPlain: T(mx - mn, 8), hint: `Find the ✕ farthest left and farthest right. Subtract.`,
+      steps: [`Shortest: ${M(lo * 8 + mn, 8)} ft. Longest: ${M(lo * 8 + mx, 8)} ft.`, `${F(lo * 8 + mx, 8)} − ${F(lo * 8 + mn, 8)} = ${F(mx - mn, 8)} = ${M(mx - mn, 8)} ft.`] };
+    if (t === 1) {
+      const j = rnd(1, 7), cnt = counts.slice(j + 1).reduce((a, b) => a + b, 0);
+      return { q: `How many carrots are <b>longer than ${T(lo * 8 + j, 8)} ft</b>?<svg></svg>`, after, ph: "a number",
+        check: numCheck(cnt), ans: `${cnt} carrots`, ansPlain: String(cnt), hint: `Find ${T(lo * 8 + j, 8)} on the line. Count every ✕ to the <b>right</b> of it (not on it!).`,
+        steps: [`Find ${T(lo * 8 + j, 8)} on the number line.`, `Count the ✕ marks to the right: ${cnt}.`] };
+    }
+    const j = js[rnd(0, js.length - 1)], c = counts[j], tot = c * (lo * 8 + j);
+    return { q: `All the carrots that are exactly <b>${T(lo * 8 + j, 8)} ft</b> long are laid end to end. How long is the line of carrots?<svg></svg>`, after, ph: "like 3 3/4",
+      check: fracCheck(tot, 8), ans: `${M(tot, 8)} ft`, ansPlain: T(tot, 8), hint: `Count the ✕ marks above ${T(lo * 8 + j, 8)}. Multiply that length by the count.`,
+      steps: [`There ${c === 1 ? "is 1 carrot" : `are ${c} carrots`} at ${T(lo * 8 + j, 8)} ft.`, `${c} × ${F(lo * 8 + j, 8)} = ${F(tot, 8)} = ${M(tot, 8)} ft.`] };
+  }
+});
+
+/* ---------------- M3: Volume ---------------- */
+const PAL = {
+  blue:   { t: "#bfdbfe", r: "#3b82f6", l: "#60a5fa", s: "#1e3a8a", x: "#1d4ed8" },
+  orange: { t: "#fed7aa", r: "#ea580c", l: "#fb923c", s: "#7c2d12", x: "#c2410c" },
+  green:  { t: "#bbf7d0", r: "#16a34a", l: "#4ade80", s: "#14532d", x: "#15803d" },
+  gray:   { t: "#e2e8f0", r: "#64748b", l: "#94a3b8", s: "#1e293b", x: "#334155" }
+};
+/* boxes: [{x,y,z,l,w,h,col,grid,labels:{l,w,h,lTop,name},labelColor}] */
+function drawScene(svg, boxes, o) {
+  o = o || {};
+  const a = 26, c = a * 0.866, s = a * 0.5, P = (x, y, z) => [(x - y) * c, (x + y) * s - z * a];
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  boxes.forEach(b => { for (const dx of [0, b.l]) for (const dy of [0, b.w]) for (const dz of [0, b.h]) { const [px, py] = P(b.x + dx, b.y + dy, b.z + dz); x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); } });
+  const pad = o.pad || 42, VW = x1 - x0 + 2 * pad, VH = y1 - y0 + 2 * pad;
+  svg.setAttribute("viewBox", `${x0 - pad} ${y0 - pad} ${VW} ${VH}`); svg.innerHTML = "";
+  const fs = o.fs || Math.max(16, Math.max(VW, VH * 1.3) / 26);
+  const poly = (pts, fill, C, sw) => el("polygon", { points: pts.map(p => P(...p).join(",")).join(" "), fill, stroke: C.s, "stroke-width": sw, "stroke-linejoin": "round" }, svg);
+  const faces = (x, y, z, l, w, h, C, sw) => {
+    poly([[x, y, z + h], [x + l, y, z + h], [x + l, y + w, z + h], [x, y + w, z + h]], C.t, C, sw);
+    poly([[x + l, y, z], [x + l, y + w, z], [x + l, y + w, z + h], [x + l, y, z + h]], C.r, C, sw);
+    poly([[x, y + w, z], [x + l, y + w, z], [x + l, y + w, z + h], [x, y + w, z + h]], C.l, C, sw);
+  };
+  const items = [];
+  boxes.forEach(b => {
+    const C = PAL[b.col || "blue"];
+    if (b.grid === false) items.push({ k: b.x + b.l / 2 + b.y + b.w / 2 + b.z + b.h / 2, d: () => faces(b.x, b.y, b.z, b.l, b.w, b.h, C, 2.2) });
+    else for (let i = 0; i < b.l; i++) for (let j = 0; j < b.w; j++) for (let k = 0; k < b.h; k++)
+      items.push({ k: b.x + i + b.y + j + b.z + k + 1.5, d: () => faces(b.x + i, b.y + j, b.z + k, 1, 1, 1, C, 1.3) });
+  });
+  items.sort((A, B) => A.k - B.k).forEach(it => it.d());
+  const mid = (A, B) => { const p = P(...A), q = P(...B); return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; };
+  boxes.forEach(b => {
+    const L = b.labels; if (!L) return;
+    const col = b.labelColor || PAL[b.col || "blue"].x;
+    const lab = (pt, t, dx, dy, size) => txt(svg, pt[0] + dx, pt[1] + dy, t, { "font-size": size || fs, "font-weight": 800, fill: col, "text-anchor": "middle", "paint-order": "stroke", stroke: "#fff", "stroke-width": fs / 4, "stroke-linejoin": "round" });
+    if (L.l != null) L.lTop ? lab(mid([b.x, b.y + b.w, b.z + b.h], [b.x + b.l, b.y + b.w, b.z + b.h]), L.l, -fs * .75, -fs * .3)
+                            : lab(mid([b.x, b.y + b.w, b.z], [b.x + b.l, b.y + b.w, b.z]), L.l, -fs * .7, fs * 1.25);
+    if (L.w != null) L.wTop ? lab(mid([b.x + b.l, b.y, b.z + b.h], [b.x + b.l, b.y + b.w, b.z + b.h]), L.w, fs * .8, -fs * .35)
+                            : lab(mid([b.x + b.l, b.y, b.z], [b.x + b.l, b.y + b.w, b.z]), L.w, fs * .7, fs * 1.25);
+    if (L.h != null) lab(mid([b.x + b.l, b.y, b.z], [b.x + b.l, b.y, b.z + b.h]), L.h, fs * .95, fs * .35);
+    if (L.name) { const p = P(b.x + b.l / 2, b.y + b.w, b.z + b.h / 2); lab(p, L.name, 0, fs * .45, fs * 1.15); }
+  });
+}
+function drawPrism(svg, l, w, h) {
+  drawScene(svg, [{ x: 0, y: 0, z: 0, l, w, h, col: "blue", labels: { l, w, h }, labelColor: "#ea6a1a" }], { pad: 34, fs: 17 });
+}
+TOPICS.push({
+  id: "m3", area: "meas", icon: "📦", title: "Volume with Cubes", sub: "Length × width × height",
+  key: `<ul><li><b>Volume</b> = how many unit cubes fill a box.</li><li>One <b>layer</b> has length × width cubes. Then multiply by how many layers (the height).</li><li><b>V = l × w × h</b>. Units are <b>cubic</b> units (like cm³).</li></ul>`,
+  learn: `<div class="ctl-row">
+      <label class="ctl">Length <output id="m3lo"></output><input type="range" id="m3l" min="1" max="6" value="4"></label>
+      <label class="ctl">Width <output id="m3wo"></output><input type="range" id="m3w" min="1" max="5" value="3"></label>
+      <label class="ctl">Height <output id="m3ho"></output><input type="range" id="m3h" min="1" max="5" value="2"></label>
+    </div><svg class="viz" id="m3svg" style="max-height:360px"></svg><div class="explain" id="m3x"></div>`,
+  init() {
+    const draw = () => {
+      const l = +$("m3l").value, w = +$("m3w").value, h = +$("m3h").value;
+      $("m3lo").textContent = l; $("m3wo").textContent = w; $("m3ho").textContent = h;
+      drawPrism($("m3svg"), l, w, h);
+      $("m3x").innerHTML = `<div class="step"><span class="n">1</span><span>One layer: ${l} × ${w} = <b>${l * w}</b> cubes</span></div>
+        <div class="step"><span class="n">2</span><span>${h} layer${h > 1 ? "s" : ""}: ${l * w} × ${h} = <b>${l * w * h}</b> cubes</span></div>
+        <div class="big">V = ${l} × ${w} × ${h} = ${l * w * h} cubic units</div>`;
+    };
+    ["m3l", "m3w", "m3h"].forEach(id => $(id).oninput = draw); draw();
+  },
+  gen() {
+    const t = rnd(0, 3), l = rnd(2, 5), w = rnd(2, 4), h = rnd(2, 4), V = l * w * h;
+    if (t === 0) return { q: `What is the volume of this box made of unit cubes?<svg style="max-width:340px"></svg>`, after: q => drawPrism(q.querySelector("svg"), l, w, h, 24), ph: "cubic units",
+      check: numCheck(V), ans: `${V} cubic units`, ansPlain: String(V), hint: `Count one layer (length × width), then multiply by the number of layers.`,
+      steps: [`One layer: ${l} × ${w} = ${l * w}.`, `${h} layers: ${l * w} × ${h} = ${V}.`] };
+    if (t === 1) {
+      const L = rnd(3, 12), W = rnd(2, 8), H = rnd(2, 10);
+      return { q: `A fish tank is <b>${L} in</b> long, <b>${W} in</b> wide and <b>${H} in</b> tall. What is its volume in cubic inches?`, ph: "cubic inches",
+        check: numCheck(L * W * H), ans: `${L * W * H} in³`, ansPlain: String(L * W * H), hint: `V = length × width × height.`, steps: [`V = ${L} × ${W} × ${H}.`, `${L} × ${W} = ${L * W}, and ${L * W} × ${H} = ${L * W * H}.`] };
+    }
+    if (t === 2) return { q: `A box has a volume of <b>${V} cubic cm</b>. It is <b>${l} cm</b> long and <b>${w} cm</b> wide. How tall is it?`, ph: "cm",
+      check: numCheck(h), ans: `${h} cm`, ansPlain: String(h), hint: `First find the area of the bottom layer (${l} × ${w}). How many layers make ${V}?`,
+      steps: [`Bottom layer: ${l} × ${w} = ${l * w}.`, `${V} ÷ ${l * w} = ${h}.`] };
+    const l2 = rnd(2, 4), w2 = rnd(2, 3), h2 = rnd(1, 3);
+    return { q: `A toy is made of two boxes stuck together. Box A is ${l} × ${w} × ${h}. Box B is ${l2} × ${w2} × ${h2}. What is the <b>total volume</b>?`, ph: "cubic units",
+      check: numCheck(V + l2 * w2 * h2), ans: `${V + l2 * w2 * h2} cubic units`, ansPlain: String(V + l2 * w2 * h2), hint: `Find each box's volume, then add them.`,
+      steps: [`Box A: ${l} × ${w} × ${h} = ${V}.`, `Box B: ${l2} × ${w2} × ${h2} = ${l2 * w2 * h2}.`, `Total: ${V} + ${l2 * w2 * h2} = ${V + l2 * w2 * h2}.`] };
+  }
+});
+
+/* ---------------- M4: Combining volumes (decomposition) ---------------- */
+const sl = (id, label, min, max, val) => `<label class="ctl">${label} <output id="${id}o">${val}</output><input type="range" id="${id}" min="${min}" max="${max}" value="${val}"></label>`;
+function m4Boxes(d, apart, withLabels) {
+  const gap = apart ? (d.place === "top" ? 1.7 : 2.2) : 0, out = [];
+  const A = { x: 0, y: 0, z: 0, l: d.A[0], w: d.A[1], h: d.A[2], col: "blue" };
+  const B = d.place === "top" ? { x: 0, y: 0, z: A.h + gap, l: d.B[0], w: d.B[1], h: d.B[2], col: "orange" }
+                              : { x: A.l + gap, y: 0, z: 0, l: d.B[0], w: d.B[1], h: d.B[2], col: "orange" };
+  out.push(A, B);
+  if (d.C) out.push(d.place === "top" ? { x: 0, y: 0, z: B.z + B.h + gap, l: d.C[0], w: d.C[1], h: d.C[2], col: "green" }
+                                      : { x: B.x + B.l + gap, y: 0, z: 0, l: d.C[0], w: d.C[1], h: d.C[2], col: "green" });
+  if (withLabels) out.forEach((bx, i) => bx.labels = apart ? { l: bx.l, w: bx.w, h: bx.h, name: "ABC"[i], wTop: d.place === "side" } : { name: "ABC"[i] });
+  return out;
+}
+TOPICS.push({
+  id: "m4", area: "meas", icon: "🧱", title: "Combining Volumes", sub: "Break apart, then add",
+  key: `<ul><li>A shape made of boxes stuck together can be <b>broken apart</b> (decomposed) into simple boxes.</li><li>Find each box's volume with <b>l × w × h</b>.</li><li><b>Add</b> the volumes to get the total: V = V<sub>A</sub> + V<sub>B</sub> (+ V<sub>C</sub>).</li><li>Careful: use the right length, width and height for <b>each</b> box. Some measurements may be hidden!</li></ul>`,
+  learn: `<div class="ctl-row"><b style="color:#1d4ed8;width:70px">Box A</b>${sl("m4al", "length", 2, 7, 5)}${sl("m4aw", "width", 1, 5, 3)}${sl("m4ah", "height", 1, 4, 2)}</div>
+    <div class="ctl-row"><b style="color:#c2410c;width:70px">Box B</b>${sl("m4bl", "length", 1, 6, 3)}${sl("m4bw", "width", 1, 5, 3)}${sl("m4bh", "height", 1, 4, 2)}</div>
+    <div class="ctl-row"><label style="width:70px;white-space:nowrap;display:flex;gap:5px;align-items:center;font-weight:800;color:#15803d"><input type="checkbox" id="m4c"> Box C</label>
+      <span id="m4cw" style="display:none;gap:14px;flex-wrap:wrap">${sl("m4cl", "length", 1, 5, 2)}${sl("m4cwd", "width", 1, 5, 2)}${sl("m4ch", "height", 1, 4, 1)}</span></div>
+    <div class="ctl-row"><select id="m4place"><option value="top">Stack: on top</option><option value="side">Line up: beside</option></select>
+      <button class="btn primary" id="m4split">✂️ Pull apart</button></div>
+    <div class="chips" style="margin-bottom:6px"><button class="chip" data-p="step">Step shape</button><button class="chip" data-p="couch">Couch</button><button class="chip" data-p="tower">Tower (3 boxes)</button><button class="chip" data-p="stairs">Staircase (3 boxes)</button></div>
+    <svg class="viz" id="m4svg" style="max-height:380px"></svg><div class="explain" id="m4x"></div>`,
+  init() {
+    let apart = false;
+    const val = id => +$(id).value;
+    const PRESETS = {
+      step:   { place: "top", A: [6, 3, 2], B: [3, 3, 2], C: null },
+      couch:  { place: "top", A: [6, 3, 1], B: [6, 1, 2], C: null },
+      tower:  { place: "top", A: [4, 4, 2], B: [3, 3, 2], C: [2, 2, 2] },
+      stairs: { place: "side", A: [2, 3, 3], B: [2, 3, 2], C: [2, 3, 1] }
+    };
+    const draw = () => {
+      const top = $("m4place").value === "top", useC = $("m4c").checked;
+      // when stacking, an upper box can't hang over the box below it
+      if (top) {
+        $("m4bl").max = val("m4al"); $("m4bw").max = val("m4aw");
+        if (val("m4bl") > val("m4al")) $("m4bl").value = val("m4al");
+        if (val("m4bw") > val("m4aw")) $("m4bw").value = val("m4aw");
+        $("m4cl").max = val("m4bl"); $("m4cwd").max = val("m4bw");
+        if (val("m4cl") > val("m4bl")) $("m4cl").value = val("m4bl");
+        if (val("m4cwd") > val("m4bw")) $("m4cwd").value = val("m4bw");
+      } else { $("m4bl").max = 6; $("m4bw").max = 5; $("m4cl").max = 5; $("m4cwd").max = 5; }
+      ["m4al", "m4aw", "m4ah", "m4bl", "m4bw", "m4bh", "m4cl", "m4cwd", "m4ch"].forEach(id => $(id + "o").textContent = $(id).value);
+      $("m4cw").style.display = useC ? "inline-flex" : "none";
+      const d = { place: top ? "top" : "side", A: [val("m4al"), val("m4aw"), val("m4ah")], B: [val("m4bl"), val("m4bw"), val("m4bh")], C: useC ? [val("m4cl"), val("m4cwd"), val("m4ch")] : null };
+      drawScene($("m4svg"), m4Boxes(d, apart, true));
+      const vol = v => v[0] * v[1] * v[2], parts = [["A", d.A, "#1d4ed8"], ["B", d.B, "#c2410c"]].concat(d.C ? [["C", d.C, "#15803d"]] : []);
+      const total = parts.reduce((t, p) => t + vol(p[1]), 0);
+      $("m4x").innerHTML =
+        `<div class="step"><span class="n">1</span><span>${apart ? "The shape is broken into" : "Break the shape into"} <b>${parts.length} boxes</b>: ${parts.map(p => `<b style="color:${p[2]}">Box ${p[0]}</b>`).join(", ")}.</span></div>` +
+        parts.map((p, i) => `<div class="step"><span class="n">${i + 2}</span><span><b style="color:${p[2]}">Box ${p[0]}:</b> ${p[1][0]} × ${p[1][1]} × ${p[1][2]} = <b>${vol(p[1])}</b> cubic units</span></div>`).join("") +
+        `<div class="step"><span class="n">${parts.length + 2}</span><span>Add them: ${parts.map(p => `<b style="color:${p[2]}">${vol(p[1])}</b>`).join(" + ")} = <b>${total}</b></span></div>
+         <div class="big">Total volume = ${total} cubic units</div>
+         <div class="hint-txt">${apart ? "Pulling the boxes apart doesn't change how many cubes there are. Press 🧲 to stick them back together." : "Press ✂️ Pull apart to see each box on its own, with its length, width and height."}</div>`;
+    };
+    $("m4split").onclick = () => { apart = !apart; $("m4split").textContent = apart ? "🧲 Stick together" : "✂️ Pull apart"; draw(); };
+    ["m4al", "m4aw", "m4ah", "m4bl", "m4bw", "m4bh", "m4cl", "m4cwd", "m4ch"].forEach(id => $(id).oninput = draw);
+    $("m4c").onchange = draw; $("m4place").onchange = draw;
+    document.querySelectorAll("#learn [data-p]").forEach(ch => ch.onclick = () => {
+      const P = PRESETS[ch.dataset.p];
+      $("m4place").value = P.place; $("m4c").checked = !!P.C;
+      ["m4bl", "m4bw", "m4cl", "m4cwd"].forEach(id => $(id).max = 6);
+      [["m4al", "m4aw", "m4ah", P.A], ["m4bl", "m4bw", "m4bh", P.B], ["m4cl", "m4cwd", "m4ch", P.C || [2, 2, 1]]].forEach(([l, w, h, v]) => { $(l).value = v[0]; $(w).value = v[1]; $(h).value = v[2]; });
+      draw();
+    });
+    draw();
+  },
+  gen() {
+    const t = rnd(0, 4);
+    const V = d => d[0] * d[1] * d[2];
+    if (t === 0) {
+      const top = Math.random() < .5, A = [rnd(3, 5), rnd(2, 4), rnd(1, 3)];
+      const B = top ? [rnd(1, A[0] - 1), rnd(1, A[1]), rnd(1, 3)] : [rnd(1, 3), rnd(1, A[1]), rnd(1, A[2] + 1)];
+      const d = { place: top ? "top" : "side", A, B, C: null };
+      return { q: `These two boxes get stuck together into one shape. What is the <b>total volume</b> of the shape?<svg style="max-width:420px"></svg>`, ph: "cubic units",
+        after: q => drawScene(q.querySelector("svg"), m4Boxes(d, true, true)),
+        check: numCheck(V(A) + V(B)), ans: `${V(A) + V(B)} cubic units`, ansPlain: String(V(A) + V(B)),
+        hint: `Find the volume of the <b style="color:#1d4ed8">blue box</b> and the <b style="color:#c2410c">orange box</b> separately. Then add.`,
+        steps: [`Blue box A: ${A.join(" × ")} = ${V(A)}.`, `Orange box B: ${B.join(" × ")} = ${V(B)}.`, `Total: ${V(A)} + ${V(B)} = ${V(A) + V(B)}.`] };
+    }
+    if (t === 1) {
+      const L1 = rnd(4, 8), W = rnd(2, 5), H1 = rnd(2, 4), L2 = rnd(2, L1 - 1), H2 = rnd(2, 4);
+      const boxes = [{ x: 0, y: 0, z: 0, l: L1, w: W, h: H1, col: "blue", grid: false, labels: { l: `${L1} cm`, w: `${W} cm`, h: `${H1} cm` } },
+                     { x: 0, y: 0, z: H1, l: L2, w: W, h: H2, col: "blue", grid: false, labels: { l: `${L2} cm`, h: `${H2} cm`, lTop: true } }];
+      const VA = L1 * W * H1, VB = L2 * W * H2;
+      return { q: `This step-shaped block is made of two rectangular prisms. What is its <b>total volume</b> in cubic centimeters?<svg style="max-width:420px"></svg>`, ph: "cm³",
+        after: q => drawScene(q.querySelector("svg"), boxes),
+        check: numCheck(VA + VB), ans: `${VA + VB} cm³`, ansPlain: String(VA + VB),
+        hint: `Draw a line to split it into a <b>bottom box</b> and a <b>top box</b>. Both are ${W} cm wide.`,
+        steps: [`Split it into a bottom box and a top box.`, `Bottom box: ${L1} × ${W} × ${H1} = ${VA} cm³.`, `Top box: ${L2} × ${W} × ${H2} = ${VB} cm³ (the width is still ${W} cm).`, `Total: ${VA} + ${VB} = ${VA + VB} cm³.`] };
+    }
+    if (t === 2) {
+      const ctx = pick([
+        ["A toy chest has a big bottom drawer and a small top drawer.", "bottom drawer", "top drawer", "in"],
+        ["A fish tank sits next to a smaller filter tank.", "fish tank", "filter tank", "in"],
+        ["A sandbox has a deep part and a shallow part, both rectangular.", "deep part", "shallow part", "ft"]
+      ]);
+      const A = [rnd(8, 15), rnd(4, 8), rnd(3, 6)], B = [rnd(3, 7), rnd(2, 5), rnd(2, 4)];
+      return { q: `${ctx[0]} The ${ctx[1]} is <b>${A.join(` ${ctx[3]} × `)} ${ctx[3]}</b>. The ${ctx[2]} is <b>${B.join(` ${ctx[3]} × `)} ${ctx[3]}</b>. What is the total volume in cubic ${ctx[3] === "in" ? "inches" : "feet"}?`, ph: "a number",
+        check: numCheck(V(A) + V(B)), ans: `${V(A) + V(B)} cubic ${ctx[3] === "in" ? "inches" : "feet"}`, ansPlain: String(V(A) + V(B)),
+        hint: `Find each part's volume (l × w × h), then add the two volumes.`,
+        steps: [`${cap(ctx[1])}: ${A.join(" × ")} = ${V(A)}.`, `${cap(ctx[2])}: ${B.join(" × ")} = ${V(B)}.`, `Total: ${V(A)} + ${V(B)} = ${V(A) + V(B)}.`] };
+    }
+    if (t === 3) {
+      const A = [rnd(3, 5), rnd(2, 4), rnd(2, 3)], B = [rnd(1, A[0] - 1), rnd(1, A[1]), rnd(1, 3)], tot = V(A) + V(B);
+      const d = { place: "top", A, B, C: null };
+      return { q: `The whole shape has a volume of <b>${tot} cubic units</b>. The <b style="color:#1d4ed8">blue box</b> is ${A.join(" × ")}. What is the volume of the <b style="color:#c2410c">orange box</b>?<svg style="max-width:380px"></svg>`, ph: "cubic units",
+        after: q => { const bx = m4Boxes(d, false, false); bx[0].labels = { l: A[0], w: A[1], h: A[2] }; drawScene(q.querySelector("svg"), bx); },
+        check: numCheck(V(B)), ans: `${V(B)} cubic units`, ansPlain: String(V(B)),
+        hint: `Total = blue + orange. Find the blue volume, then subtract it from the total.`,
+        steps: [`Blue box: ${A.join(" × ")} = ${V(A)}.`, `Orange = total − blue = ${tot} − ${V(A)} = ${V(B)}.`] };
+    }
+    const w = rnd(2, 3), l = rnd(1, 2), h1 = rnd(3, 4);
+    const d = { place: "side", A: [l, w, h1], B: [l, w, h1 - 1], C: [l, w, h1 - 2] };
+    const vs = [d.A, d.B, d.C].map(V), tot = vs[0] + vs[1] + vs[2];
+    return { q: `This staircase is made of three boxes:<br><b style="color:#1d4ed8">A: ${d.A.join(" × ")}</b> &nbsp; <b style="color:#c2410c">B: ${d.B.join(" × ")}</b> &nbsp; <b style="color:#15803d">C: ${d.C.join(" × ")}</b><br>What is the <b>total volume</b>?<svg style="max-width:420px"></svg>`, ph: "cubic units",
+      after: q => drawScene(q.querySelector("svg"), m4Boxes(d, false, true)),
+      check: numCheck(tot), ans: `${tot} cubic units`, ansPlain: String(tot),
+      hint: `Find the volume of each colored box, then add all three.`,
+      steps: [`A: ${d.A.join(" × ")} = ${vs[0]}.`, `B: ${d.B.join(" × ")} = ${vs[1]}.`, `C: ${d.C.join(" × ")} = ${vs[2]}.`, `Total: ${vs.join(" + ")} = ${tot}.`] };
+  }
+});
+
+/* ---------------- A1: Expressions & order of operations ---------------- */
+const OPEN = "([{", CLOSE = ")]}";
+function tokExpr(s) {
+  s = s.replace(/\s+/g, "").replace(/[x*]/gi, "×").replace(/\//g, "÷").replace(/[-–]/g, "−");
+  const toks = s.match(/\d+(\.\d+)?|[+−×÷()[\]{}]/g) || [];
+  if (toks.join("") !== s) throw new Error("bad");
+  return toks.map(t => /\d/.test(t) ? +t : t);
+}
+const showTok = (toks, hi) => toks.map((t, i) => {
+  const s = typeof t === "number" ? fmt(t) : t;
+  if (hi && i === hi[0]) return `<span class="mark">${s}`;
+  if (hi && i === hi[1]) return `${s}</span>`;
+  return s;
+}).join(" ").replace(/<span class="mark">([^<]*?)<\/span>/g, m => m);
+function stepsOf(expr) {
+  let toks = tokExpr(expr); const out = [];
+  const tidy = () => { let ch = true; while (ch) { ch = false; for (let i = 0; i + 2 < toks.length; i++) if (OPEN.includes(toks[i]) && typeof toks[i + 1] === "number" && CLOSE.includes(toks[i + 2])) { toks.splice(i, 3, toks[i + 1]); ch = true; break; } } };
+  tidy();
+  for (let guard = 0; guard < 60 && toks.length > 1; guard++) {
+    let i = -1, j = toks.findIndex(t => CLOSE.includes(t));
+    if (j >= 0) { for (let k = j - 1; k >= 0; k--) if (OPEN.includes(toks[k])) { i = k; break; } if (i < 0) throw new Error("bracket"); }
+    else { i = -1; j = toks.length; }
+    const seg = toks.slice(i + 1, j);
+    let k = seg.findIndex(t => t === "×" || t === "÷"); if (k < 0) k = seg.findIndex(t => t === "+" || t === "−");
+    if (k < 1) throw new Error("syntax");
+    const K = i + 1 + k, A = toks[K - 1], op = toks[K], B = toks[K + 1];
+    if (typeof A !== "number" || typeof B !== "number") throw new Error("syntax");
+    const r = op === "×" ? A * B : op === "÷" ? A / B : op === "+" ? A + B : A - B;
+    const why = i >= 0 ? "Inside the grouping symbols first" : (op === "×" || op === "÷") ? "Multiply or divide (left to right)" : "Add or subtract (left to right)";
+    out.push({ before: showTok(toks, [K - 1, K + 1]), calc: `${fmt(A)} ${op} ${fmt(B)} = ${fmt(r)}`, why });
+    toks.splice(K - 1, 3, r); tidy();
+  }
+  if (toks.length !== 1 || typeof toks[0] !== "number") throw new Error("syntax");
+  return { steps: out, value: toks[0] };
+}
+TOPICS.push({
+  id: "a1", area: "alg", icon: "🔢", title: "Expressions & Order", sub: "Parentheses, brackets, braces",
+  key: `<ul><li>Work from the <b>inside out</b>: ( ) first, then [ ], then { }.</li><li>Next, <b>× and ÷</b> from left to right.</li><li>Last, <b>+ and −</b> from left to right.</li><li>To <b>write</b> an expression, use ( ) around the part you must do first.</li></ul>`,
+  learn: `<div class="ctl-row"><input class="inp" id="a1in" style="width:260px" value="5 × (8 − 6)"><button class="btn primary" id="a1go">Solve step by step</button></div>
+    <div class="chips" style="margin-bottom:10px"><button class="chip">5 × (8 − 6)</button><button class="chip">26 × 85 + 250</button><button class="chip">[3 + (12 ÷ 4)] × 2</button><button class="chip">{20 − [3 × (2 + 1)]} ÷ 11</button><button class="chip">4 + 6 × 2</button><button class="chip">(4 + 6) × 2</button></div>
+    <div class="explain" id="a1x"></div><p class="hint-txt">Type × as x or *, and ÷ as /.</p>`,
+  init() {
+    const go = () => {
+      try {
+        const r = stepsOf($("a1in").value);
+        $("a1x").innerHTML = (r.steps.length ? r.steps.map((s, i) => `<div class="step"><span class="n">${i + 1}</span><span style="font-size:20px">${s.before}<br><span class="hint-txt">${s.why}: </span><b>${s.calc}</b></span></div>`).join("") : "") +
+          `<div class="big">Answer: ${fmt(r.value)}</div>`;
+      } catch (e) { $("a1x").innerHTML = "Hmm, I can't read that. Use numbers, + − × ÷ and ( ) [ ] { }."; }
+    };
+    $("a1go").onclick = go; $("a1in").onkeydown = e => { if (e.key === "Enter") go(); };
+    document.querySelectorAll("#learn .chip").forEach(c => c.onclick = () => { $("a1in").value = c.textContent; go(); });
+    go();
+  },
+  gen() {
+    const t = rnd(0, 2);
+    if (t === 0) {
+      let e;
+      const v = rnd(0, 4);
+      if (v === 0) { const b = rnd(6, 15), c = rnd(1, b - 1); e = `${rnd(2, 9)} × (${b} − ${c})`; }
+      else if (v === 1) { const a = rnd(2, 9), b = rnd(2, 9), c = rnd(2, 6); e = `(${a} + ${b}) × ${c} − ${rnd(1, (a + b) * c - 1)}`; }
+      else if (v === 2) e = `${rnd(2, 20)} + ${rnd(2, 9)} × ${rnd(2, 9)}`;
+      else if (v === 3) { const d = rnd(2, 5), inner = d * rnd(2, 6), b = rnd(2, 4), c = rnd(1, Math.floor((inner - 1) / b) || 1), a = inner - b * c; e = `[${a} + (${b} × ${c})] ÷ ${d}`; if (a < 1) return this.gen(); }
+      else { const c = rnd(5, 12), d = rnd(1, c - 1); e = `${rnd(2, 6)} × [${rnd(2, 9)} + (${c} − ${d})]`; }
+      const r = stepsOf(e);
+      return { q: `Evaluate: <span style="font-size:26px;white-space:nowrap">${e}</span>`, ph: "a number", check: numCheck(r.value), ans: fmt(r.value), ansPlain: String(r.value),
+        hint: `Start inside the innermost ( ). Then × ÷, then + −.`, steps: r.steps.map(s => `${s.before} → <b>${s.calc}</b>`) };
+    }
+    if (t === 1) {
+      const P = pick([
+        () => { const n = rnd(20, 30), c = pick([65, 75, 85, 95]), b = pick([150, 200, 250, 300]); return [`There are ${n} students. A trip costs $${c} per student, plus $${b} for the bus. Which expression shows the total cost?`, `${n} × ${c} + ${b}`, [`(${n} + ${c}) × ${b}`, `${n} + ${c} × ${b}`, `${n} × (${c} + ${b})`]]; },
+        () => { const a = rnd(3, 8), b = rnd(10, 24), c = rnd(2, 9); return [`Aminah buys ${a} packs of ${b} stickers, then gives away ${c} stickers. Which expression shows how many she has left?`, `${a} × ${b} − ${c}`, [`${a} × (${b} − ${c})`, `${a} + ${b} − ${c}`, `(${a} + ${b}) × ${c}`]]; },
+        () => { const a = rnd(5, 12), b = rnd(2, 9), c = rnd(2, 6); return [`Add ${a} and ${b}, then multiply by ${c}. Which expression matches?`, `(${a} + ${b}) × ${c}`, [`${a} + ${b} × ${c}`, `${a} × ${b} + ${c}`, `${c} × ${a} + ${b}`]]; },
+        () => { const a = rnd(15, 40), b = rnd(2, 10), c = pick([2, 3, 4]); return [`Subtract ${b} from ${a}, then divide by ${c}. Which expression matches?`, `(${a} − ${b}) ÷ ${c}`, [`${a} − ${b} ÷ ${c}`, `${b} − ${a} ÷ ${c}`, `${c} ÷ (${a} − ${b})`]]; }
+      ])();
+      return { q: P[0], choices: shuffle([P[1], ...P[2]]), check: v => v === P[1], ans: P[1], ansPlain: P[1],
+        hint: `Which part happens <b>first</b> in the story? If it's adding or subtracting, it needs ( ).`, steps: [`Read the story in order.`, `The expression that matches is <b>${P[1]}</b>.`] };
+    }
+    const sa = rnd(2, 5), mult = rnd(2, 4), sb = sa * mult;
+    const A = [0, 1, 2, 3, 4].map(i => i * sa), B = [0, 1, 2, 3, 4].map(i => i * sb);
+    return { q: `Pattern A: start at 0, add ${sa}. &nbsp;<b>${A.join(", ")}</b><br>Pattern B: start at 0, add ${sb}. &nbsp;<b>${B.join(", ")}</b><br>Each number in Pattern B is <b>how many times</b> the matching number in Pattern A?`, ph: "a number",
+      check: numCheck(mult), ans: `${mult} times`, ansPlain: String(mult), hint: `Compare matching terms: ${A[2]} and ${B[2]}. What do you multiply ${A[2]} by to get ${B[2]}?`,
+      steps: [`Matching terms: (${A[1]}, ${B[1]}), (${A[2]}, ${B[2]}), (${A[3]}, ${B[3]}).`, `${B[1]} ÷ ${A[1]} = ${mult}, ${B[2]} ÷ ${A[2]} = ${mult}.`, `So B is always ${mult} times A.`] };
+  }
+});
+
+/* ---------------- G1: Coordinate plane ---------------- */
+function drawPlane(svg, opts) {
+  const N = 10, S = 34, x0 = 40, y0 = 20, X = x => x0 + x * S, Y = y => y0 + (N - y) * S;
+  svg.setAttribute("viewBox", `0 0 ${x0 + N * S + 30} ${y0 + N * S + 46}`); svg.innerHTML = "";
+  el("rect", { x: X(0), y: Y(N), width: N * S, height: N * S, fill: opts.map ? "#f3f8ec" : "#fff" }, svg);
+  for (let i = 0; i <= N; i++) {
+    el("line", { x1: X(i), x2: X(i), y1: Y(0), y2: Y(N), stroke: "#d2dbe6" }, svg);
+    el("line", { x1: X(0), x2: X(N), y1: Y(i), y2: Y(i), stroke: "#d2dbe6" }, svg);
+    txt(svg, X(i), Y(0) + 20, i, { "font-size": 13, "text-anchor": "middle", fill: "#1f2a37", "font-weight": 700 });
+    if (i) txt(svg, X(0) - 10, Y(i) + 5, i, { "font-size": 13, "text-anchor": "end", fill: "#1f2a37", "font-weight": 700 });
+  }
+  el("line", { x1: X(0), x2: X(N) + 14, y1: Y(0), y2: Y(0), stroke: "#1f2a37", "stroke-width": 2.5 }, svg);
+  el("line", { x1: X(0), x2: X(0), y1: Y(0), y2: Y(N) - 14, stroke: "#1f2a37", "stroke-width": 2.5 }, svg);
+  txt(svg, X(N) + 16, Y(0) + 5, "x", { "font-size": 15, "font-weight": 800, "font-style": "italic" });
+  txt(svg, X(0) - 4, Y(N) - 18, "y", { "font-size": 15, "font-weight": 800, "font-style": "italic" });
+  txt(svg, X(N / 2), Y(0) + 40, opts.map ? "School yard map" : "", { "font-size": 13, fill: "#5b6b7c", "text-anchor": "middle" });
+  return { X, Y, S, N };
+}
+TOPICS.push({
+  id: "g1", area: "geo", icon: "🗺️", title: "Coordinate Treasure Map", sub: "Ordered pairs (x, y)",
+  key: `<ul><li>An ordered pair (x, y) tells you where a point is.</li><li><b>x first:</b> walk <b>across</b> from 0.<br><b>y second:</b> then climb <b>up</b>.</li><li>Trick: “Walk to the elevator, then go up.”</li><li>(3, 5) and (5, 3) are <b>different</b> points!</li></ul>`,
+  learn: `<p style="margin-top:0" id="g1msg">Click anywhere on the map to see its coordinates.</p>
+    <div class="ctl-row"><button class="btn primary" id="g1hunt">🏴‍☠️ Start a treasure hunt</button><button class="btn" id="g1free">Free explore</button></div>
+    <svg class="viz" id="g1svg" style="max-width:440px;cursor:crosshair"></svg>`,
+  init() {
+    let target = null, clicked = null;
+    const draw = () => {
+      const svg = $("g1svg"), G = drawPlane(svg, { map: true });
+      ["🌳", "🌳", "🏫", "⛲"].forEach((e, i) => txt(svg, G.X([1, 8, 5, 2][i]) , G.Y([9, 2, 9, 3][i]) + 6, e, { "font-size": 20, "text-anchor": "middle", opacity: .5 }));
+      if (clicked) {
+        const [x, y] = clicked;
+        el("path", { d: `M${G.X(0)} ${G.Y(0)} H${G.X(x)}`, stroke: "#ea6a1a", "stroke-width": 5, "stroke-linecap": "round" }, svg);
+        el("path", { d: `M${G.X(x)} ${G.Y(0)} V${G.Y(y)}`, stroke: "#2563eb", "stroke-width": 5, "stroke-linecap": "round" }, svg);
+        el("circle", { cx: G.X(x), cy: G.Y(y), r: 8, fill: "#e8505b", stroke: "#fff", "stroke-width": 2 }, svg);
+        const t = txt(svg, G.X(x) + 12, G.Y(y) - 10, `(${x}, ${y})`, { "font-size": 18, "font-weight": 800, fill: "#1f2a37", "paint-order": "stroke", stroke: "#fff", "stroke-width": 4 });
+        if (x > 7) { t.setAttribute("x", G.X(x) - 12); t.setAttribute("text-anchor", "end"); }
+      }
+      el("rect", { x: G.X(0) - G.S / 2, y: G.Y(G.N) - G.S / 2, width: (G.N + 1) * G.S, height: (G.N + 1) * G.S, fill: "transparent", id: "g1hit" }, svg);
+      $("g1hit").onclick = e => {
+        const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const q = p.matrixTransform(svg.getScreenCTM().inverse());
+        const x = Math.max(0, Math.min(10, Math.round((q.x - G.X(0)) / G.S))), y = Math.max(0, Math.min(10, Math.round((G.Y(0) - q.y) / G.S)));
+        clicked = [x, y];
+        if (target) {
+          if (x === target[0] && y === target[1]) { $("g1msg").innerHTML = `🎉 <b>You found the treasure at (${x}, ${y})!</b> Press the button for a new hunt.`; target = null; }
+          else if (x === target[1] && y === target[0]) $("g1msg").innerHTML = `So close! You clicked (${x}, ${y}). You swapped x and y. Walk <b>across ${target[0]}</b> first, then <b>up ${target[1]}</b>.`;
+          else $("g1msg").innerHTML = `You clicked (${x}, ${y}). The treasure is at <b>(${target[0]}, ${target[1]})</b>. Across ${target[0]}, then up ${target[1]}. Try again!`;
+        } else $("g1msg").innerHTML = `That point is <b>(${x}, ${y})</b>: across <b style="color:#ea6a1a">${x}</b>, then up <b style="color:#2563eb">${y}</b>.`;
+        draw();
+      };
+    };
+    $("g1hunt").onclick = () => { let a = rnd(1, 9), b = rnd(1, 9); if (a === b) b = (b % 9) + 1; target = [a, b]; clicked = null; $("g1msg").innerHTML = `🏴‍☠️ The treasure is buried at <b>(${a}, ${b})</b>. Click that spot!`; draw(); };
+    $("g1free").onclick = () => { target = null; clicked = null; $("g1msg").textContent = "Click anywhere on the map to see its coordinates."; draw(); };
+    draw();
+  },
+  gen() {
+    const t = rnd(0, 2);
+    const coordCheck = (x, y) => v => {
+      const m = String(v).match(/-?\d+/g);
+      if (!m || m.length !== 2) return { ok: false, msg: "Type two numbers like <b>(3, 7)</b>." };
+      if (+m[0] === x && +m[1] === y) return true;
+      if (+m[0] === y && +m[1] === x) return { ok: false, msg: "You swapped them! x (across) comes first, then y (up)." };
+      return { ok: false };
+    };
+    if (t === 0) {
+      const x = rnd(1, 9), y = rnd(1, 9);
+      return { q: `A class buried a time capsule at the ✕. What are its coordinates?<svg style="max-width:360px"></svg>`, ph: "(x, y)",
+        after: q => { const s = q.querySelector("svg"), G = drawPlane(s, { map: true }); txt(s, G.X(x), G.Y(y) + 9, "✕", { "font-size": 26, "font-weight": 900, fill: "#d93025", "text-anchor": "middle" }); },
+        check: coordCheck(x, y), ans: `(${x}, ${y})`, ansPlain: `(${x}, ${y})`, hint: `Look straight down from the ✕ to read x. Then look across to read y.`,
+        steps: [`Go straight down from the ✕ to the x-axis: x = ${x}.`, `Go straight across to the y-axis: y = ${y}.`, `Write x first: (${x}, ${y}).`] };
+    }
+    if (t === 1) {
+      let x = rnd(1, 9), y = rnd(1, 9); if (x === y) y = (y % 9) + 1;
+      const pts = shuffle([[x, y], [y, x], [x, Math.max(1, (y + 3) % 10 || 1)], [Math.max(1, (x + 4) % 10 || 2), y]]).filter((p, i, arr) => arr.findIndex(q => q[0] === p[0] && q[1] === p[1]) === i);
+      const letters = "ABCD", right = letters[pts.findIndex(p => p[0] === x && p[1] === y)];
+      return { q: `Which point is at <b>(${x}, ${y})</b>?<svg style="max-width:360px"></svg>`, choices: letters.slice(0, pts.length).split(""),
+        after: q => { const s = q.querySelector("svg"), G = drawPlane(s, {}); pts.forEach((p, i) => { el("circle", { cx: G.X(p[0]), cy: G.Y(p[1]), r: 6, fill: "#2563eb" }, s); txt(s, G.X(p[0]) + 8, G.Y(p[1]) - 8, letters[i], { "font-size": 17, "font-weight": 800, fill: "#1f2a37" }); }); },
+        check: v => v === right, ans: `Point ${right}`, ansPlain: right, hint: `Start at 0. Walk across ${x}, then up ${y}.`, steps: [`Across ${x} on the x-axis.`, `Up ${y}.`, `That's point ${right}.`] };
+    }
+    const x = rnd(0, 6), y = rnd(0, 6), dx = rnd(1, 4), dy = rnd(1, 4);
+    return { q: `Aminah starts at <b>(${x}, ${y})</b>. She moves <b>${dx} right</b> and <b>${dy} up</b>. Where is she now?`, ph: "(x, y)",
+      check: coordCheck(x + dx, y + dy), ans: `(${x + dx}, ${y + dy})`, ansPlain: `(${x + dx}, ${y + dy})`, hint: `Moving right changes x. Moving up changes y.`,
+      steps: [`Right ${dx}: x = ${x} + ${dx} = ${x + dx}.`, `Up ${dy}: y = ${y} + ${dy} = ${y + dy}.`, `New point: (${x + dx}, ${y + dy}).`] };
+  }
+});
+
+/* ---------------- G2: Classifying shapes ---------------- */
+const SHAPE_FACTS = [
+  ["A rectangle has 4 equal sides.", "Sometimes", "Only when the rectangle is a square."],
+  ["A rhombus has 2 sets of parallel sides.", "Always", "Every rhombus is a parallelogram."],
+  ["A triangle has 2 right angles.", "Never", "Two right angles already add to 180°, leaving nothing for the third angle."],
+  ["A square is a rectangle.", "Always", "A square has 4 right angles, so it fits the rectangle rule."],
+  ["A rectangle is a square.", "Sometimes", "Only if all 4 sides are equal."],
+  ["A parallelogram has 4 right angles.", "Sometimes", "Rectangles and squares do; slanted parallelograms don't."],
+  ["A square has 4 equal sides.", "Always", "That's part of being a square."],
+  ["A rhombus is a square.", "Sometimes", "Only if it also has 4 right angles."],
+  ["A quadrilateral has 5 angles.", "Never", "“Quad” means 4: 4 sides and 4 angles."],
+  ["An equilateral triangle has 3 equal sides.", "Always", "“Equilateral” means equal sides."],
+  ["A right triangle has an obtuse angle.", "Never", "It already has a 90° angle; an obtuse angle would make more than 180°."],
+  ["An isosceles triangle is equilateral.", "Sometimes", "Isosceles means at least 2 equal sides, and it could have all 3."],
+  ["A square is a rhombus.", "Always", "A square has 4 equal sides."],
+  ["A rectangle has opposite sides that are parallel.", "Always", "Every rectangle is a parallelogram."]
+];
+TOPICS.push({
+  id: "g2", area: "geo", icon: "🔷", title: "Shape Families", sub: "Always, sometimes, never",
+  key: `<ul><li>A <b>square</b> is a special <b>rectangle</b> <i>and</i> a special <b>rhombus</b>.</li><li>Shapes lower in the family tree have <b>all</b> the properties of the shapes above them.</li><li><b>Always</b> = every time. <b>Sometimes</b> = some yes, some no. <b>Never</b> = not possible.</li></ul>`,
+  learn: `<svg class="viz" id="g2svg"></svg><div class="explain">Follow the arrows down: each shape gets <b>one more special rule</b>. A square has every rule, so it belongs to every family above it!</div>`,
+  init() {
+    const svg = $("g2svg"); svg.setAttribute("viewBox", "0 0 640 400"); svg.innerHTML = "";
+    const node = (x, y, title, rule, shape, color) => {
+      el("rect", { x: x - 105, y, width: 210, height: 82, rx: 14, fill: "#fff", stroke: color, "stroke-width": 3 }, svg);
+      el("path", { d: shape(x - 82, y + 18), fill: color, "fill-opacity": .25, stroke: color, "stroke-width": 2.5, "stroke-linejoin": "round" }, svg);
+      txt(svg, x - 36, y + 34, title, { "font-size": 17, "font-weight": 800, fill: "#1f2a37" });
+      txt(svg, x - 36, y + 55, rule[0], { "font-size": 12.5, fill: "#5b6b7c" });
+      if (rule[1]) txt(svg, x - 36, y + 70, rule[1], { "font-size": 12.5, fill: "#5b6b7c" });
+    };
+    const arrow = (x1, y1, x2, y2) => el("path", { d: `M${x1} ${y1} L${x2} ${y2}`, stroke: "#94a3b8", "stroke-width": 3, "marker-end": "url(#g2a)" }, svg);
+    const mk = el("marker", { id: "g2a", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto" }, el("defs", {}, svg));
+    el("path", { d: "M0 0 L10 5 L0 10z", fill: "#94a3b8" }, mk);
+    node(320, 6, "Quadrilateral", ["4 sides, 4 angles"], (x, y) => `M${x} ${y + 40} L${x + 8} ${y + 4} L${x + 40} ${y} L${x + 32} ${y + 44}Z`, "#64748b");
+    node(320, 112, "Parallelogram", ["2 pairs of parallel sides"], (x, y) => `M${x} ${y + 42} L${x + 12} ${y + 2} L${x + 44} ${y + 2} L${x + 32} ${y + 42}Z`, "#2563eb");
+    node(150, 218, "Rectangle", ["+ 4 right angles"], (x, y) => `M${x} ${y + 8} H${x + 44} V${y + 38} H${x}Z`, "#0f9d58");
+    node(490, 218, "Rhombus", ["+ 4 equal sides"], (x, y) => `M${x + 22} ${y} L${x + 44} ${y + 22} L${x + 22} ${y + 44} L${x} ${y + 22}Z`, "#ea6a1a");
+    node(320, 312, "Square", ["right angles AND", "equal sides"], (x, y) => `M${x + 4} ${y + 4} H${x + 40} V${y + 40} H${x + 4}Z`, "#8b3fc7");
+    arrow(320, 88, 320, 110); arrow(270, 194, 190, 216); arrow(370, 194, 450, 216); arrow(190, 300, 270, 314); arrow(450, 300, 370, 314);
+  },
+  gen() {
+    const [s, a, why] = pick(SHAPE_FACTS);
+    return { q: `Is this <b>always</b>, <b>sometimes</b>, or <b>never</b> true?<div style="font-size:21px;margin-top:6px">“${s}”</div>`, choices: ["Always", "Sometimes", "Never"],
+      check: v => v === a, ans: a, ansPlain: a, why, hint: `Picture the shape family tree. Can you draw one where it's true? One where it's false?`, steps: [why, `So the answer is <b>${a}</b>.`] };
+  }
+});
+
+/* =========================================================
+   Navigation
+   ========================================================= */
+function renderHome() {
+  $("areas").innerHTML = Object.entries(AREAS).map(([k, A]) => `
+    <div class="area"><div class="area-head" style="background:${A.color}"><span class="ic">${A.icon}</span><h3>${A.name}</h3><span class="tag" style="color:${A.color}">${A.tag}</span></div>
+      ${TOPICS.filter(t => t.area === k).map((t, i) => `<button class="topic-btn" data-id="${t.id}"><span class="ti">${t.icon}</span><span class="tt"><b>${t.title}${t.id === "f1" ? '<span class="start-here">START</span>' : ""}</b><span>${t.sub}</span></span><span class="ts">⭐ ${STARS[t.id] || 0}</span></button>`).join("")}
+    </div>`).join("");
+  document.querySelectorAll(".topic-btn").forEach(b => b.onclick = () => openTopic(b.dataset.id));
+}
+function openTopic(id) {
+  const t = TOPICS.find(x => x.id === id), A = AREAS[t.area];
+  current = t;
+  $("tBadge").style.background = A.color; $("tBadge").textContent = t.icon;
+  $("tCrumb").textContent = A.name; $("tCrumb").style.color = A.color;
+  $("tTitle").textContent = t.title;
+  $("keyIdea").innerHTML = t.key;
+  $("learn").innerHTML = t.learn; t.init();
+  practice($("practice"), t);
+  refreshStars();
+  $("home").classList.remove("on"); $("topic").classList.add("on");
+  const i = TOPICS.indexOf(t);
+  $("nextT").style.visibility = i < TOPICS.length - 1 ? "visible" : "hidden";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  try { history.replaceState(null, "", "#" + id); } catch (e) {}
+}
+function goHome() { current = null; renderHome(); refreshStars(); $("topic").classList.remove("on"); $("home").classList.add("on"); try { history.replaceState(null, "", "#"); } catch (e) {} window.scrollTo({ top: 0 }); }
+$("homeBtn").onclick = goHome; $("prevT").onclick = goHome;
+$("nextT").onclick = () => { const i = TOPICS.indexOf(current); if (i < TOPICS.length - 1) openTopic(TOPICS[i + 1].id); };
+function checkBadges(id) {
+  if (!AM) return;
+  const t = TOPICS.find(x => x.id === id);
+  if (t && STARS[id] >= 5) AM.award(`topic-${id}`, `5 stars: ${t.title}`, t.icon);
+  [[10, "⭐"], [25, "🌟"], [50, "🏅"], [100, "🏆"]].forEach(([n, ic]) => { if (totalStars() >= n) AM.award(`stars-${n}`, `${n} math stars`, ic); });
+}
+if (AM) {
+  if (KID) {
+    $("appTitle").textContent = `${KID}'s Math Adventure`; document.title = $("appTitle").textContent;
+    $("hello").textContent = `Hi ${KID}! 👋`;
+    $("logo").textContent = AM.student.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  }
+  if (AM.student && AM.student.grade) document.querySelector("header .sub").textContent = `Afro-Merica Tutor · Grade ${AM.student.grade}`;
+  if (!AM.isAdult) $("guide").remove();
+  // tutor's focus areas move to the top and get a "📌" tag
+  if (Array.isArray(PLAN.focus) && PLAN.focus.length) {
+    const keep = Object.entries(AREAS);
+    const ordered = [...PLAN.focus.filter(k => AREAS[k]).map(k => [k, AREAS[k]]), ...keep.filter(([k]) => !PLAN.focus.includes(k))];
+    for (const k of Object.keys(AREAS)) delete AREAS[k];
+    ordered.forEach(([k, A]) => { AREAS[k] = { ...A, tag: PLAN.focus.includes(k) ? "📌 Your tutor's focus" : "Review" }; });
+  }
+  if (PLAN.note || (PLAN.focus && PLAN.focus.length)) {
+    $("tutorPlan").innerHTML = `<b>📌 ${PLAN._by ? escT(PLAN._by.split(" ")[0]) + "’s" : "Your tutor’s"} plan:</b> ` +
+      (PLAN.focus && PLAN.focus.length ? `start with <b>${PLAN.focus.filter(k => AREAS[k]).map(k => AREAS[k].name).join(", ")}</b>. ` : "") + (PLAN.note ? escT(PLAN.note) : "");
+    $("tutorPlan").style.display = "block";
+  }
+}
+renderHome(); refreshStars();
+const h = location.hash.slice(1); if (TOPICS.some(t => t.id === h)) openTopic(h);
+</script>
+</body>
+</html>

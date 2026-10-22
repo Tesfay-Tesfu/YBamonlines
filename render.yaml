@@ -1,0 +1,42 @@
+# Render Blueprint for AMtutorTools
+# In Render: New + -> Blueprint -> pick this repository. Render reads this file,
+# creates the web service and the Postgres database, and wires them together.
+
+services:
+  - type: web
+    name: amtutortools
+    runtime: node
+    region: virginia            # closest to Maryland; cannot be changed later
+    plan: free                  # free spins down after 15 min idle. Use 0.5c-512mb for always-on.
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amtutortools-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: APP_URL              # e.g. https://amtutortools.onrender.com (used in emails)
+        sync: false
+      - key: ADMIN_EMAIL          # first admin account, created on first start
+        sync: false
+      - key: ADMIN_PASSWORD       # change it after first login
+        sync: false
+      - key: RESEND_API_KEY       # optional: email via resend.com (or set BREVO_API_KEY instead)
+        sync: false
+      - key: MAIL_FROM            # optional, e.g. "AMtutorTools <no-reply@yourdomain.com>"
+        sync: false
+
+databases:
+  - name: amtutortools-db
+    region: virginia
+    # 0.1c-256mb is Render's smallest paid Postgres plan.
+    # "free" also works for testing, but free databases expire 30 days after creation,
+    # so do not keep real student records on it.
+    plan: 0.1c-256mb
+    databaseName: amtutortools
+    user: amtutor
