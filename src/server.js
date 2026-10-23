@@ -45,6 +45,7 @@ app.use('/api', require('./routes/catalog'));
 app.use('/api/sdk', require('./routes/sdk'));
 app.use('/api/students', require('./routes/students').router);
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/boards', require('./routes/boards'));
 app.use(tools.router);
 
 // Front-end (single page app) and the tool SDK

@@ -188,7 +188,7 @@
     var s = document.createElement('style'); s.id = 'amt-css';
     s.textContent = '.amt-pill{position:fixed;right:10px;bottom:10px;z-index:2147483000;font:600 12px/1 system-ui,sans-serif;padding:6px 10px;border-radius:999px;background:rgba(0,45,95,.85);color:#fff;opacity:0;transition:opacity .3s;pointer-events:none}' +
       '.amt-pill.on{opacity:1}.amt-pill.bad{background:#b42318}' +
-      '.amt-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;z-index:2147483000;font:600 13px/1.3 system-ui,sans-serif;padding:8px 14px;border-radius:12px;background:#fff8ee;color:#7a3a07;border:1px solid #f6d4a8;box-shadow:0 4px 14px rgba(0,0,0,.12);max-width:92vw;text-align:center}' +
+      '.amt-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;z-index:2147483000;font:600 13px/1.3 system-ui,sans-serif;padding:8px 14px;border-radius:12px;background:#fff8ee;color:#7a3a07;border:1px solid #f6d4a8;box-shadow:0 4px 14px rgba(0,0,0,.12);max-width:92vw;text-align:center;pointer-events:none}' +
       '.amt-toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:2147483001;font:800 16px/1.3 system-ui,sans-serif;padding:12px 18px;border-radius:14px;background:#0f9d58;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.18);transition:opacity .4s}';
     document.head.appendChild(s);
   }
@@ -213,6 +213,10 @@
   }
   if (mode === 'review' || mode === 'preview') {
     ui(function () {
+      // A tool that saves adults' work itself (e.g. the live whiteboard) can turn this off with
+      // <meta name="amt-banner" content="off">
+      var m = document.querySelector('meta[name="amt-banner"]');
+      if (m && m.getAttribute('content') === 'off') return;
       css();
       var b = document.createElement('div'); b.className = 'amt-banner';
       b.textContent = mode === 'review'

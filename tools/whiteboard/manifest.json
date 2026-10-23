@@ -1,0 +1,12 @@
+{
+  "name": "Whiteboard",
+  "subject": "math",
+  "grade_min": 3,
+  "grade_max": 12,
+  "icon": "🖊️",
+  "version": "1.0.0",
+  "description": "A live, shared whiteboard for lessons: pressure-sensitive pen, highlighters, shapes, geometry (angles, points, axes, protractor, ruler), text with math symbols, images, pages and a laser pointer. Tutor and student draw on the same board at the same time, and every board is saved.",
+  "settings": [
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

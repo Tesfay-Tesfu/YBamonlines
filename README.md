@@ -155,6 +155,20 @@ If the internet drops, changes are kept in the browser and sent when the connect
 
 ---
 
+### The live whiteboard (`tools/whiteboard`)
+
+Give **Whiteboard** to a student like any other tool. The student opens it from their tools; the tutor opens it from the student's page (**Tools → Open**). Both draw on the same board at the same time, and every board is saved.
+
+- **Tools:** pressure-sensitive pen (Wacom and other drawing tablets, iPad with stylus), highlighters, eraser (whole strokes or precise; the back of a tablet pen erases too), text with math symbols, lines and arrows, rectangles, ellipses, triangles, polygons, angles that show their size, labelled points, coordinate axes, protractor, ruler, images (button, paste or drag in) and a laser pointer.
+- **Paper:** grid, graph paper, dots, lined or plain, with snapping to the grid. Several pages per board; many boards per student.
+- **Live:** everyone sees each other's pointer, sees strokes as they are drawn, and the tutor can press **📣 Lead** so the student follows the tutor's page and view.
+- **Lesson prep:** a tutor can open Whiteboard from **Tools** without a student to prepare lesson boards, then use **Copy a lesson board** in a student's board list.
+- **Who can do what:** the student and their tutor (and admins) can draw. Parents can watch but not change anything. Removing the tool removes access.
+- **Export:** a page as PNG, or all pages as a PDF.
+- **Shortcuts:** V select, Space hold to move, P pen, M highlighter, E eraser, T text, L line, A arrow, R rectangle, O ellipse, G polygon, N angle, X axes, K laser, 1–9 colours, [ ] size, Ctrl+Z / Ctrl+Shift+Z, Ctrl+D duplicate, Del delete, Ctrl + scroll zoom, Ctrl+0 fit.
+
+Live editing keeps open boards in the server's memory, so the web service must run as **one instance** (Render's Starter plan does). Boards are saved to the database a moment after each change and when the server restarts.
+
 ## 5. Privacy and safety
 
 - Children sign in with a username and PIN; no child email is collected. Sessions for students end after 12 hours.
