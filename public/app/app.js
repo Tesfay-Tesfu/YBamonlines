@@ -395,7 +395,7 @@ async function studentsPage({ title }) {
   const isAdmin = ME.user.role === "admin";
   let q = "", grade = "";
   const page = shell(`<div class="page-head"><h1>${esc(title)}</h1>
-      <div class="actions"><button class="btn primary" id="add">Add a student</button>${isAdmin ? `<button class="btn" id="bulk">Import from a spreadsheet</button><a class="btn" href="/api/admin/export/students.csv">Download list</a>` : ""}</div></div>
+      <div class="actions"><button class="btn primary" id="add">Add a student</button>${isAdmin ? `<button class="btn" id="bulk">Import from a spreadsheet</button><a class="btn" href="#/admin/duplicates">Find duplicates</a><a class="btn" href="/api/admin/export/students.csv">Download list</a>` : ""}</div></div>
     <div class="inline" style="margin-bottom:14px"><input type="search" id="q" placeholder="Search by name or username" aria-label="Search">
       <select id="g" aria-label="Grade"><option value="">All grades</option>${[5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4].map(g => `<option value="${g}">Grade ${g}</option>`).join("")}</select></div>
     <div id="list"><p class="muted">Loading…</p></div>`);
@@ -429,10 +429,29 @@ function addStudentModal() {
       <div class="btn-row"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Add student</button></div>
     </form>`, {
     onMount: (m, close) => onSubmit($("#f", m), async d => {
+      const { students: same } = await GET(`/api/students/similar?name=${encodeURIComponent(d.name)}`);
+      if (same.length && !(await sameNameOk(same.map(s => `${s.name} — username ${s.username}${s.grade ? `, grade ${s.grade}` : ""}, added ${fmtDate(s.created_at)}`), "student"))) return;
       const { student } = await POST("/api/students", d);
       close();
       credentialsModal([student], { title: "Student added", next: `#/student/${student.id}` });
     }),
+  });
+}
+
+// Asks before adding a second account with a name that already exists.
+function sameNameOk(lines, kind) {
+  return new Promise(resolve => {
+    const box = document.createElement("div");
+    box.className = "modal-back"; box.style.zIndex = 200;
+    box.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h2>This name is already here</h2>
+      <p>You already have ${lines.length === 1 ? `a ${kind}` : `${lines.length} ${kind}s`} with this name:</p>
+      <ul>${lines.map(l => `<li>${esc(l)}</li>`).join("")}</ul>
+      <p class="muted small">If it is the same person, cancel and use the existing account. Add a new one only if this is a different person with the same name.</p>
+      <div class="btn-row"><button class="btn primary" id="no">Cancel</button><button class="btn" id="yes">Add a new ${kind} anyway</button></div></div>`;
+    document.body.appendChild(box);
+    const done = v => { box.remove(); resolve(v); };
+    box.querySelector("#no").onclick = () => done(false);
+    box.querySelector("#yes").onclick = () => done(true);
   });
 }
 
@@ -508,7 +527,7 @@ async function studentPage(id, tab) {
     if (!(await confirmBox("Make a new PIN?", `${esc(s.name.split(" ")[0])} will need the new PIN to sign in. The old PIN stops working.`, "Make new PIN"))) return;
     try { const r = await POST(`/api/students/${id}/pin`); credentialsModal([{ name: s.name, username: s.username, pin: r.pin }], { title: "New PIN" }); } catch (e) { fail(e); }
   };
-  if ($("#edit", page)) $("#edit", page).onclick = () => editStudentModal(s);
+  if ($("#edit", page)) $("#edit", page).onclick = () => editStudentModal(s, d.canDelete);
 
   function show(t) {
     const box = $("#tab", page);
@@ -548,16 +567,18 @@ function toolTable(tools, sid, manage) {
         ${t.status === "revoked" ? ' <span class="tag bad">Removed</span>' : !t.tool_active ? ' <span class="tag warn">Tool turned off</span>' : t.expires_at ? ` <span class="tag ${new Date(t.expires_at) < new Date() ? "bad" : "info"}">Until ${fmtDate(t.expires_at)}</span>` : ""}</td>
       <td class="num">${minutes(t.seconds_7d)}</td><td class="num">${minutes(t.seconds_total)}</td><td class="num">${t.attempts}</td><td>${meter(t.accuracy)}</td><td>${ago(t.last_day || t.last_at)}</td>
       <td style="white-space:nowrap"><a class="btn small" href="#/play/${esc(t.slug)}?student=${sid}">Open</a>
-        ${manage ? `<button class="btn small" data-plan="${t.tool_id}">Plan</button><button class="btn small" data-more="${t.tool_id}">More</button>` : ""}</td></tr>`).join("")}
+        ${manage ? `<button class="btn small" data-plan="${t.tool_id}">Plan</button><button class="btn small" data-more="${t.tool_id}">${ME.user.role === "admin" ? "More" : "Start over"}</button>` : ""}</td></tr>`).join("")}
   </tbody></table></div>`;
 }
 
 function toolsTab(box, d, sid) {
-  box.innerHTML = `${d.canManage ? `<div class="btn-row" style="margin-bottom:14px"><button class="btn primary" id="assign">Give a tool</button></div>` : ""}
+  const admin = ME.user.role === "admin";
+  box.innerHTML = `${admin ? `<div class="btn-row" style="margin-bottom:14px"><button class="btn primary" id="assign">Give a tool</button></div>`
+      : d.canManage ? `<p class="muted small" style="margin:0 0 12px">These are the tools an admin has given to ${esc(d.student.name.split(" ")[0])}. You can set the plan for each one. To add or remove a tool, ask an admin.</p>` : ""}
     ${toolTable(d.tools, sid, d.canManage)}
     <p class="muted small" style="margin-top:10px">“Open” shows the tool with ${esc(d.student.name.split(" ")[0])}’s saved progress. Nothing you do there is saved.</p>`;
   if (!d.canManage) return;
-  $("#assign", box).onclick = () => assignToolModal(d, sid);
+  if ($("#assign", box)) $("#assign", box).onclick = () => assignToolModal(d, sid);
   $$("[data-plan]", box).forEach(b => b.onclick = () => planModal(d.tools.find(t => t.tool_id === Number(b.dataset.plan)), sid, d.student));
   $$("[data-more]", box).forEach(b => b.onclick = () => allocationModal(d.tools.find(t => t.tool_id === Number(b.dataset.more)), sid, d.student));
 }
@@ -629,18 +650,18 @@ function planModal(t, sid, student) {
 }
 
 function allocationModal(t, sid, student) {
-  const first = esc(student.name.split(" ")[0]);
+  const first = esc(student.name.split(" ")[0]), admin = ME.user.role === "admin";
   modal(`<h2>${esc(t.icon)} ${esc(t.name)}</h2>
-    <label class="field"><span>Access ends</span><div class="inline"><input type="date" id="exp" value="${t.expires_at ? new Date(t.expires_at).toISOString().slice(0, 10) : ""}"><button class="btn" id="saveExp">Save date</button></div><small>Empty means no end date.</small></label>
+    ${admin ? `<label class="field"><span>Access ends</span><div class="inline"><input type="date" id="exp" value="${t.expires_at ? new Date(t.expires_at).toISOString().slice(0, 10) : ""}"><button class="btn" id="saveExp">Save date</button></div><small>Empty means no end date.</small></label>
     <div class="btn-row" style="justify-content:flex-start;margin:6px 0 14px">
-      ${t.status === "active" ? `<button class="btn danger" id="revoke">Remove from ${first}</button>` : `<button class="btn primary" id="restore">Give back to ${first}</button>`}</div>
+      ${t.status === "active" ? `<button class="btn danger" id="revoke">Remove from ${first}</button>` : `<button class="btn primary" id="restore">Give back to ${first}</button>`}</div>` : ""}
     <h3>Start over</h3>
     <p class="small muted">Clears ${first}’s saved progress in this tool, so it opens like new. You can keep or delete the answer history used in reports.</p>
     <div class="btn-row" style="justify-content:flex-start"><button class="btn" id="r1">Clear progress, keep history</button><button class="btn danger" id="r2">Clear progress and history</button></div>
     <div class="btn-row"><button class="btn" data-close>Close</button></div>`, {
     onMount: (m, close) => {
       const done = msg => { toast(msg); close(); studentPage(sid, "tools"); };
-      $("#saveExp", m).onclick = () => PATCH(`/api/students/${sid}/tools/${t.tool_id}`, { expires_at: $("#exp", m).value ? new Date($("#exp", m).value + "T23:59:59").toISOString() : null }).then(() => done("Date saved")).catch(fail);
+      if ($("#saveExp", m)) $("#saveExp", m).onclick = () => PATCH(`/api/students/${sid}/tools/${t.tool_id}`, { expires_at: $("#exp", m).value ? new Date($("#exp", m).value + "T23:59:59").toISOString() : null }).then(() => done("Date saved")).catch(fail);
       if ($("#revoke", m)) $("#revoke", m).onclick = () => PATCH(`/api/students/${sid}/tools/${t.tool_id}`, { status: "revoked" }).then(() => done("Tool removed. Progress is kept if you give it back.")).catch(fail);
       if ($("#restore", m)) $("#restore", m).onclick = () => PATCH(`/api/students/${sid}/tools/${t.tool_id}`, { status: "active" }).then(() => done("Tool given back")).catch(fail);
       $("#r1", m).onclick = async () => { if (await confirmBox("Clear progress?", `${first} will start ${esc(t.name)} from the beginning.`, "Clear progress", true)) DEL(`/api/students/${sid}/tools/${t.tool_id}/progress`).then(() => done("Progress cleared")).catch(fail); };
@@ -713,20 +734,20 @@ function inviteModal(inv, student) {
   { onMount: (m, close) => { $("#cp", m).onclick = () => copy(msg); $$("[data-close]", m).forEach(b => b.addEventListener("click", () => { if (student) studentPage(student.id, "people"); else render(); })); } });
 }
 
-function editStudentModal(s) {
+function editStudentModal(s, canDelete = false) {
   const admin = ME.user.role === "admin";
   modal(`<h2>Edit ${esc(s.name)}</h2><form id="f">
     <label class="field"><span>Full name</span><input type="text" name="name" value="${esc(s.name)}" required></label>
     <div class="grid cols-2"><label class="field"><span>Grade</span><select name="grade"><option value="">—</option>${Array.from({ length: 12 }, (_, i) => `<option ${s.grade === i + 1 ? "selected" : ""}>${i + 1}</option>`).join("")}</select></label>
     <label class="field"><span>Username</span><input type="text" name="username" value="${esc(s.username)}" required></label></div>
     ${admin ? `<label class="check"><input type="checkbox" name="active" ${s.active ? "checked" : ""}><span>Can sign in</span></label>` : ""}
-    <div class="btn-row">${admin ? '<button type="button" class="btn danger" id="del" style="margin-right:auto">Delete student</button>' : ""}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save</button></div></form>`, {
+    <div class="btn-row">${admin || canDelete ? '<button type="button" class="btn danger" id="del" style="margin-right:auto">Delete student</button>' : ""}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save</button></div></form>`, {
     onMount: (m, close) => {
       onSubmit($("#f", m), async d => { await PATCH(`/api/students/${s.id}`, d); toast("Saved"); close(); studentPage(s.id, "overview"); });
       if ($("#del", m)) $("#del", m).onclick = async () => {
         close();
         if (!(await confirmBox(`Delete ${s.name}?`, "This deletes the student’s account and all their progress, answers and badges. It can’t be undone.", "Delete student", true))) return;
-        DEL(`/api/students/${s.id}`).then(() => { toast("Student deleted"); location.hash = "#/students"; }).catch(fail);
+        DEL(`/api/students/${s.id}`).then(() => { toast("Student deleted"); location.hash = admin ? "#/students" : "#/"; }).catch(fail);
       };
     },
   });
@@ -738,11 +759,12 @@ function editStudentModal(s) {
 route("/catalog", async () => {
   loading();
   const { tools } = await GET("/api/tools");
-  shell(`<div class="page-head"><h1>Tools</h1></div>
-    <p class="muted">Open a preview to try a tool. To give a tool to a student, go to the student’s page.</p>
+  const tutor = ME.user.role === "tutor";
+  shell(`<div class="page-head"><h1>${tutor ? "My students’ tools" : "Tools"}</h1></div>
+    <p class="muted">${tutor ? "These are the tools an admin has given to your students. Open a preview to try one. To give a student a new tool, ask an admin." : "Open a preview to try a tool. To give a tool to a student, go to the student’s page."}</p>
     <div class="tool-grid">${tools.map(t => `<a class="tool-tile ${esc(t.subject)}" href="#/play/${esc(t.slug)}?from=%23%2Fcatalog">
       <div class="icon" aria-hidden="true">${esc(t.icon)}</div><h2>${esc(t.name)}</h2><p>${esc(t.description)}</p>
-      <div class="foot"><span>Grades ${t.grade_min}–${t.grade_max}</span><span class="go">Preview</span></div></a>`).join("") || '<p class="muted">No tools yet.</p>'}</div>`);
+      <div class="foot"><span>${t.students ? `${t.students} student${t.students === 1 ? "" : "s"}` : `Grades ${t.grade_min}–${t.grade_max}`}</span><span class="go">Preview</span></div></a>`).join("") || `<p class="muted">${tutor ? "None of your students has been given a tool yet." : "No tools yet."}</p>`}</div>`);
 }, { roles: ["tutor", "admin"] });
 
 /* =====================================================================
@@ -773,6 +795,7 @@ async function adminOverview() {
           <tr><td>Students with no practice this week</td><td class="num">${W.inactive_students ? `<span class="tag warn">${W.inactive_students}</span>` : '<span class="tag good">0</span>'}</td></tr>
           <tr><td>Students without a tutor</td><td class="num">${W.students_without_tutor ? `<span class="tag warn">${W.students_without_tutor}</span>` : '<span class="tag good">0</span>'}</td></tr>
           <tr><td>Students without a linked parent</td><td class="num">${W.students_without_parent ? `<span class="tag warn">${W.students_without_parent}</span>` : '<span class="tag good">0</span>'}</td></tr>
+          <tr><td><a href="#/admin/duplicates">Names entered more than once</a></td><td class="num">${W.duplicate_names ? `<a href="#/admin/duplicates" class="tag warn">${W.duplicate_names}</a>` : '<span class="tag good">0</span>'}</td></tr>
         </tbody></table>
         <h3 style="margin-top:22px">Accounts</h3>
         <table class="data"><tbody>${["student", "parent", "tutor", "admin"].map(r => `<tr><td>${roleName(r)}s</td><td class="num">${c[r] ? c[r].n : 0}</td></tr>`).join("")}</tbody></table>
@@ -785,7 +808,7 @@ async function adminOverview() {
 route("/admin/users", async (q) => {
   loading();
   let role = q.role || "", search = "";
-  const page = shell(`<div class="page-head"><h1>People</h1><div class="actions"><button class="btn primary" id="add">Add an account</button><button class="btn" id="inv">Invite a tutor</button></div></div>
+  const page = shell(`<div class="page-head"><h1>People</h1><div class="actions"><button class="btn primary" id="add">Add an account</button><button class="btn" id="inv">Invite a tutor</button><a class="btn" href="#/admin/duplicates">Find duplicates</a></div></div>
     <div class="inline" style="margin-bottom:14px"><input type="search" id="q" placeholder="Search name or email" aria-label="Search">
     <select id="r" aria-label="Role"><option value="">Everyone</option><option value="tutor">Tutors</option><option value="parent">Parents</option><option value="admin">Admins</option></select></div>
     <div id="list"></div>`);
@@ -807,6 +830,10 @@ route("/admin/users", async (q) => {
       <label class="field"><span>Temporary password</span><input type="text" name="password" placeholder="Leave empty to make one"><small>Share it privately. They can change it under Account.</small></label>
       <div class="btn-row"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Add account</button></div></form>`, {
     onMount: (m, close) => onSubmit($("#f", m), async d => {
+      const key = String(d.name || "").trim().replace(/\s+/g, " ").toLowerCase();
+      const { users: found } = await GET(`/api/admin/users?q=${encodeURIComponent(String(d.name || "").trim())}`);
+      const same = found.filter(u => u.name.trim().replace(/\s+/g, " ").toLowerCase() === key);
+      if (same.length && !(await sameNameOk(same.map(u => `${u.name} — ${roleName(u.role)}, ${u.email}`), "account"))) return;
       const r = await POST("/api/admin/users", d);
       close();
       modal(`<h2>Account added</h2><p><b>${esc(r.user.name)}</b> (${roleName(r.user.role)}) can sign in now.</p>
@@ -823,6 +850,46 @@ route("/admin/users", async (q) => {
     onMount: (m, close) => onSubmit($("#f", m), async d => { const { invite } = await POST("/api/admin/invites", d); close(); inviteModal(invite, null); }),
   });
   await load();
+}, { roles: ["admin"] });
+
+/* ---------- duplicate names ---------- */
+route("/admin/duplicates", async () => {
+  loading();
+  const d = await GET("/api/admin/duplicates");
+  const group = (rows) => { const m = new Map(); rows.forEach(r => { if (!m.has(r.key)) m.set(r.key, []); m.get(r.key).push(r); }); return [...m.values()]; };
+  const sg = group(d.students), ag = group(d.adults);
+  const keepHint = list => { // suggest keeping the one with the most use
+    const score = r => (r.attempts || 0) * 10 + (r.tools || 0) + (r.students || 0) + (r.last_login_at ? 1 : 0);
+    return list.reduce((a, b) => (score(b) > score(a) ? b : a)).id;
+  };
+  const page = shell(`<div class="page-head"><h1>Duplicate names</h1><div class="actions"><a class="btn" href="#/students">Students</a><a class="btn" href="#/admin/users">People</a></div></div>
+    <p class="muted">Accounts below share the same name. Tick the extra copies you want to delete, then press <b>Delete selected</b>. The copy with the most use is marked <span class="tag good">Keep</span>.
+      Deleting a student removes their progress and answers; deleting a tutor or parent account only removes their links to students.</p>
+    <div class="panel"><h3>Students (${sg.length} name${sg.length === 1 ? "" : "s"})</h3>
+      ${sg.length ? sg.map(g => { const keep = keepHint(g); return `<div class="table-wrap" style="margin-bottom:14px"><table class="data"><thead><tr><th></th><th>${esc(g[0].name)}</th><th>Username</th><th>Grade</th><th class="num">Tools</th><th class="num">Answers</th><th>Last sign-in</th><th>Tutor</th><th>Parents</th><th>Added</th></tr></thead><tbody>
+        ${g.map(s => `<tr><td><input type="checkbox" data-s="${s.id}" aria-label="Select ${esc(s.username)}"></td><td><a href="#/student/${s.id}">${esc(s.name)}</a> ${s.id === keep ? '<span class="tag good">Keep</span>' : ""}</td><td>${esc(s.username)}</td><td>${s.grade || "—"}</td>
+          <td class="num">${s.tools}</td><td class="num">${s.attempts}</td><td>${ago(s.last_login_at)}</td><td>${esc(s.tutors || "—")}</td><td>${esc(s.parents || "—")}</td><td>${fmtDate(s.created_at)}</td></tr>`).join("")}</tbody></table></div>`; }).join("")
+      : '<p class="muted">No students share a name. 👍</p>'}</div>
+    <div class="panel" style="margin-top:16px"><h3>Tutors, parents and admins (${ag.length} name${ag.length === 1 ? "" : "s"})</h3>
+      ${ag.length ? ag.map(g => { const keep = keepHint(g); return `<div class="table-wrap" style="margin-bottom:14px"><table class="data"><thead><tr><th></th><th>${esc(g[0].name)}</th><th>Role</th><th>Email</th><th class="num">Students</th><th>Last sign-in</th><th>Added</th></tr></thead><tbody>
+        ${g.map(u => `<tr><td>${u.id === ME.user.id ? "" : `<input type="checkbox" data-u="${u.id}" aria-label="Select ${esc(u.email)}">`}</td><td>${esc(u.name)} ${u.id === keep ? '<span class="tag good">Keep</span>' : ""}${u.id === ME.user.id ? ' <span class="tag info">You</span>' : ""}</td><td>${roleName(u.role)}</td><td>${esc(u.email)}</td>
+          <td class="num" title="${esc(u.student_names || "")}">${u.students}</td><td>${ago(u.last_login_at)}</td><td>${fmtDate(u.created_at)}</td></tr>`).join("")}</tbody></table></div>`; }).join("")
+      : '<p class="muted">No tutors, parents or admins share a name. 👍</p>'}</div>
+    ${sg.length || ag.length ? `<div class="btn-row" style="margin-top:16px"><span class="muted" id="cnt">Nothing selected</span><button class="btn danger" id="go" disabled>Delete selected</button></div>` : ""}`);
+  if (!$("#go", page)) return;
+  const picked = () => ({ students: $$("[data-s]:checked", page).map(b => Number(b.dataset.s)), users: $$("[data-u]:checked", page).map(b => Number(b.dataset.u)) });
+  $$("input[type=checkbox]", page).forEach(b => b.onchange = () => {
+    const p = picked(), n = p.students.length + p.users.length;
+    $("#cnt", page).textContent = n ? `${n} selected` : "Nothing selected"; $("#go", page).disabled = !n;
+  });
+  $("#go", page).onclick = async () => {
+    const p = picked();
+    const withWork = d.students.filter(s => p.students.includes(s.id) && s.attempts > 0);
+    const text = `${p.students.length ? `${p.students.length} student account${p.students.length === 1 ? "" : "s"}` : ""}${p.students.length && p.users.length ? " and " : ""}${p.users.length ? `${p.users.length} tutor/parent/admin account${p.users.length === 1 ? "" : "s"}` : ""} will be deleted. It can’t be undone.` +
+      (withWork.length ? ` Warning: ${withWork.map(s => `${s.username} has ${s.attempts} saved answers`).join("; ")}.` : "");
+    if (!(await confirmBox("Delete the selected accounts?", esc(text), "Delete", true))) return;
+    try { const r = await POST("/api/admin/delete-many", p); toast(`Deleted ${r.students + r.users} account${r.students + r.users === 1 ? "" : "s"}`); render(); } catch (e) { fail(e); }
+  };
 }, { roles: ["admin"] });
 
 function userModal(u, reload) {

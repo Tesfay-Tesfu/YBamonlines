@@ -24,10 +24,19 @@ r.get('/my/tools', A.requireRole('student'), async (req, res) => {
   res.json({ tools, badges, streak: streak ? streak.days : 0 });
 });
 
-// Adults: the catalog they can assign or preview
+// Adults: admins see the whole catalog. Tutors and parents see only the tools
+// that an admin has given to their own students.
 r.get('/tools', A.requireRole('admin', 'tutor', 'parent'), async (req, res) => {
-  const tools = await db.many(`SELECT id, slug, name, icon, subject, grade_min, grade_max, description, version, source, active, settings_schema
-                                 FROM tools ${req.user.role === 'admin' ? '' : 'WHERE active'} ORDER BY subject, grade_min, name`);
+  const cols = 'id, slug, name, icon, subject, grade_min, grade_max, description, version, source, active, settings_schema';
+  const tools = req.user.role === 'admin'
+    ? await db.many(`SELECT ${cols} FROM tools ORDER BY subject, grade_min, name`)
+    : await db.many(`SELECT ${cols},
+          (SELECT count(DISTINCT a.student_id)::int FROM allocations a JOIN student_links l ON l.student_id=a.student_id
+            WHERE a.tool_id=t.id AND a.status='active' AND l.adult_id=$1) AS students
+         FROM tools t
+        WHERE t.active AND EXISTS (SELECT 1 FROM allocations a JOIN student_links l ON l.student_id=a.student_id
+                                    WHERE a.tool_id=t.id AND a.status='active' AND l.adult_id=$1)
+        ORDER BY subject, grade_min, name`, [req.user.id]);
   res.json({ tools });
 });
 

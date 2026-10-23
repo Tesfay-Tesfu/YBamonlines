@@ -80,6 +80,27 @@ r.get('/', async (req, res) => {
   res.json({ students: rows });
 });
 
+// ---------- same-name check before adding (admin, tutor) ----------
+const normName = s => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+r.get('/similar', A.requireRole('admin', 'tutor'), async (req, res) => {
+  const name = normName(req.query.name);
+  if (!name) return res.json({ students: [] });
+  const params = [name]; let scope = '';
+  if (req.user.role !== 'admin') { params.push(req.user.id); scope = `AND EXISTS (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.adult_id=$2)`; }
+  const students = await db.many(`SELECT s.id, s.name, s.username, s.grade, s.created_at FROM users s
+     WHERE s.role='student' AND lower(regexp_replace(trim(s.name), '\\s+', ' ', 'g'))=$1 ${scope} ORDER BY s.created_at`, params);
+  res.json({ students });
+});
+
+// Who may delete a student: admins, or the tutor who added them while they have no saved answers yet
+async function canDeleteStudent(user, id) {
+  if (user.role === 'admin') return true;
+  if (user.role !== 'tutor') return false;
+  return !!(await db.one(`SELECT 1 FROM users s WHERE s.id=$1 AND s.role='student' AND s.created_by=$2
+      AND EXISTS (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.adult_id=$2 AND l.relation='tutor')
+      AND NOT EXISTS (SELECT 1 FROM attempts t WHERE t.student_id=s.id)`, [id, user.id]));
+}
+
 // ---------- create (admin, tutor) ----------
 r.post('/', A.requireRole('admin', 'tutor'), async (req, res) => {
   const s = await db.tx(c => createStudent(c, req.user, req.body));
@@ -115,7 +136,7 @@ r.get('/:id', async (req, res) => {
   const adults = req.user.role === 'student' ? [] : await db.many(`
     SELECT a.id, a.name, ${manage || req.user.role === 'admin' ? 'a.email,' : ''} l.relation, l.consent_at
       FROM student_links l JOIN users a ON a.id=l.adult_id WHERE l.student_id=$1 ORDER BY l.relation DESC, a.name`, [id]);
-  const tools = await toolRows(id);
+  const tools = (await toolRows(id)).filter(t => req.user.role === 'admin' || t.status === 'active');
   const achievements = await db.many(`SELECT ac.code, ac.title, ac.icon, ac.created_at, t.name AS tool FROM achievements ac LEFT JOIN tools t ON t.id=ac.tool_id
                                       WHERE ac.student_id=$1 ORDER BY ac.created_at DESC LIMIT 100`, [id]);
   const days = await db.many(`SELECT to_char(d, 'YYYY-MM-DD') AS day,
@@ -124,7 +145,7 @@ r.get('/:id', async (req, res) => {
       FROM generate_series(current_date - 27, current_date, interval '1 day') d ORDER BY d`, [id]);
   const invites = manage ? await db.many(`SELECT id, code, role, email, expires_at, used_at FROM invites WHERE student_id=$1 AND used_at IS NULL AND expires_at > now() ORDER BY created_at DESC`, [id]) : [];
   if (req.user.role !== 'student' && req.user.id !== id) A.audit(req, 'view_student', id);
-  res.json({ student: s, canManage: manage, canResetPin: manage || adults.some(a => a.id === req.user.id && a.relation === 'parent'), adults, tools, achievements, days, invites });
+  res.json({ student: s, canManage: manage, canDelete: await canDeleteStudent(req.user, id), canResetPin: manage || adults.some(a => a.id === req.user.id && a.relation === 'parent'), adults, tools, achievements, days, invites });
 });
 
 r.patch('/:id', async (req, res) => {
@@ -149,8 +170,9 @@ r.patch('/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-r.delete('/:id', A.requireRole('admin'), async (req, res) => {
+r.delete('/:id', A.requireRole('admin', 'tutor'), async (req, res) => {
   const id = Number(req.params.id);
+  if (!(await canDeleteStudent(req.user, id))) A.fail(403, 'Only an admin can delete this student. Tutors can delete students they added who have no saved answers yet.');
   const s = await db.one(`DELETE FROM users WHERE id=$1 AND role='student' RETURNING name`, [id]);
   if (!s) A.fail(404, 'Student not found.');
   A.audit(req, 'delete_student', null, { id, name: s.name });
@@ -171,9 +193,8 @@ r.post('/:id/pin', async (req, res) => {
 });
 
 // ---------- tools for a student ----------
-r.post('/:id/tools', async (req, res) => {
+r.post('/:id/tools', A.requireRole('admin'), async (req, res) => {
   const id = Number(req.params.id);
-  await A.assertManage(req.user, id);
   const tool = req.body.slug ? await toolBySlug(req.body.slug) : await db.one('SELECT * FROM tools WHERE id=$1', [Number(req.body.tool_id)]);
   if (!tool) A.fail(404, 'Tool not found.');
   await db.q(`INSERT INTO allocations(student_id, tool_id, settings, expires_at, assigned_by) VALUES ($1,$2,$3::jsonb,$4,$5)
@@ -188,6 +209,10 @@ r.patch('/:id/tools/:toolId', async (req, res) => {
   await A.assertManage(req.user, id);
   const a = await db.one('SELECT * FROM allocations WHERE student_id=$1 AND tool_id=$2', [id, toolId]);
   if (!a) A.fail(404, 'This tool is not assigned to this student.');
+  if (req.user.role !== 'admin') {
+    if (a.status !== 'active') A.fail(403, 'This tool has been removed from this student.');
+    if (req.body.status !== undefined || req.body.expires_at !== undefined) A.fail(403, 'Only an admin can give or remove tools.');
+  }
   const status = ['active', 'revoked'].includes(req.body.status) ? req.body.status : a.status;
   const settings = req.body.settings && typeof req.body.settings === 'object'
     ? { ...req.body.settings, _updated: new Date().toISOString(), _by: req.user.name } : a.settings;
@@ -202,6 +227,7 @@ r.patch('/:id/tools/:toolId', async (req, res) => {
 r.delete('/:id/tools/:toolId/progress', async (req, res) => {
   const id = Number(req.params.id), toolId = Number(req.params.toolId);
   await A.assertManage(req.user, id);
+  if (req.user.role !== 'admin' && !(await db.one(`SELECT 1 FROM allocations WHERE student_id=$1 AND tool_id=$2 AND status='active'`, [id, toolId]))) A.fail(403, 'This tool has not been given to this student.');
   await db.q('DELETE FROM tool_state WHERE student_id=$1 AND tool_id=$2', [id, toolId]);
   if (req.query.history === '1') {
     await db.q('DELETE FROM attempts WHERE student_id=$1 AND tool_id=$2', [id, toolId]);

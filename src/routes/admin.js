@@ -27,7 +27,8 @@ r.get('/overview', async (req, res) => {
           (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.relation='tutor'))::int AS students_without_tutor,
       (SELECT count(*) FROM users s WHERE s.role='student' AND NOT EXISTS
           (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.relation='parent'))::int AS students_without_parent,
-      (SELECT count(*) FROM tools WHERE active)::int AS active_tools`);
+      (SELECT count(*) FROM tools WHERE active)::int AS active_tools,
+      (SELECT count(*) FROM (SELECT 1 FROM users GROUP BY role = 'student', lower(regexp_replace(trim(name), '\\s+', ' ', 'g')) HAVING count(*) > 1) d)::int AS duplicate_names`);
   const topTools = await db.many(`SELECT t.name, t.icon, COALESCE(sum(v.seconds),0)::int AS seconds, count(DISTINCT v.student_id)::int AS students
       FROM tools t LEFT JOIN activity v ON v.tool_id=t.id AND v.day > current_date - 7
      GROUP BY t.id ORDER BY seconds DESC, t.name LIMIT 8`);
@@ -93,6 +94,45 @@ r.delete('/users/:id', async (req, res) => {
   if (!u) A.fail(404, 'User not found.');
   A.audit(req, 'delete_user', null, { id, email: u.email });
   res.json({ ok: true });
+});
+
+// ---------- duplicate names ----------
+// Groups students, and adult accounts, that share the same name (ignoring case and extra spaces).
+r.get('/duplicates', async (req, res) => {
+  const norm = col => `lower(regexp_replace(trim(${col}), '\\s+', ' ', 'g'))`;
+  const students = await db.many(`
+    SELECT s.id, s.name, s.username, s.grade, s.active, s.created_at, s.last_login_at, ${norm('s.name')} AS key,
+      (SELECT count(*)::int FROM allocations a WHERE a.student_id=s.id AND a.status='active') AS tools,
+      (SELECT count(*)::int FROM attempts t WHERE t.student_id=s.id) AS attempts,
+      (SELECT max(created_at) FROM attempts t WHERE t.student_id=s.id) AS last_answer,
+      (SELECT string_agg(a.name, ', ' ORDER BY a.name) FROM student_links l JOIN users a ON a.id=l.adult_id WHERE l.student_id=s.id AND l.relation='tutor') AS tutors,
+      (SELECT string_agg(a.name, ', ' ORDER BY a.name) FROM student_links l JOIN users a ON a.id=l.adult_id WHERE l.student_id=s.id AND l.relation='parent') AS parents
+    FROM users s
+    WHERE s.role='student' AND ${norm('s.name')} IN (SELECT ${norm('name')} FROM users WHERE role='student' GROUP BY 1 HAVING count(*) > 1)
+    ORDER BY key, s.created_at`);
+  const adults = await db.many(`
+    SELECT u.id, u.name, u.email, u.role, u.active, u.created_at, u.last_login_at, ${norm('u.name')} AS key,
+      (SELECT count(*)::int FROM student_links l WHERE l.adult_id=u.id) AS students,
+      (SELECT string_agg(s.name, ', ' ORDER BY s.name) FROM student_links l JOIN users s ON s.id=l.student_id WHERE l.adult_id=u.id) AS student_names
+    FROM users u
+    WHERE u.role <> 'student' AND ${norm('u.name')} IN (SELECT ${norm('name')} FROM users WHERE role <> 'student' GROUP BY 1 HAVING count(*) > 1)
+    ORDER BY key, u.role, u.created_at`);
+  res.json({ students, adults });
+});
+
+r.post('/delete-many', async (req, res) => {
+  const sids = [...new Set((req.body.students || []).map(Number).filter(Number.isInteger))];
+  const uids = [...new Set((req.body.users || []).map(Number).filter(Number.isInteger))];
+  if (uids.includes(req.user.id)) A.fail(400, 'You cannot delete your own account.');
+  if (!sids.length && !uids.length) A.fail(400, 'Choose at least one account.');
+  const out = await db.tx(async c => {
+    const s = (await c.query(`DELETE FROM users WHERE role='student' AND id = ANY($1::int[]) RETURNING id, name`, [sids])).rows;
+    const u = (await c.query(`DELETE FROM users WHERE role <> 'student' AND id = ANY($1::int[]) RETURNING id, name, email`, [uids])).rows;
+    return { s, u };
+  });
+  out.s.forEach(x => A.audit(req, 'delete_student', null, { id: x.id, name: x.name, reason: 'duplicate' }));
+  out.u.forEach(x => A.audit(req, 'delete_user', null, { id: x.id, email: x.email, reason: 'duplicate' }));
+  res.json({ students: out.s.length, users: out.u.length });
 });
 
 // ---------- links ----------

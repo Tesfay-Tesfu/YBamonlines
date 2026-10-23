@@ -4,8 +4,8 @@ The Afro-Merica Tutor platform for grade 5–12 math and physics tools.
 
 - **Students** sign in with a username and PIN (no email needed) and see only the tools assigned to them. Their progress is saved on the server, so it follows them to any device.
 - **Parents** join with an invite code, give consent, and see their child's time, answers, accuracy, badges and "practice these next" list. They can open the child's tools to look at progress (nothing they do there is saved) and make a new PIN.
-- **Tutors** add students, give tools, set a weekly plan for each tool (e.g. "×6 and ×7 tables"), invite parents, reset progress, and see reports.
-- **Admins** do all of that for everyone, plus manage accounts, upload new tools, give a tool to a whole grade at once, import students from a spreadsheet, and see the activity log of who viewed which student's records.
+- **Tutors** add students, set a weekly plan for each tool their students have been given (e.g. "×6 and ×7 tables"), invite parents, reset progress, and see reports.
+- **Admins** do all of that for everyone, plus give and remove tools (tutors only see and open the tools an admin has given to their students), manage accounts, find and delete duplicate names, upload new tools, give a tool to a whole grade at once, import students from a spreadsheet, and see the activity log of who viewed which student's records.
 
 Built with Node.js (no framework) and PostgreSQL. The only npm dependency is `pg`.
 
@@ -72,7 +72,10 @@ MAIL_FROM      = AMtutorTools <no-reply@yourdomain.com>
 ### Adding students and parents
 1. **Students → Add a student** (or **Import from a spreadsheet** for many at once). The PIN is shown once: print the login cards.
 2. On the student's page, **Parents & tutors → Make invite code**. Send the code to the parent. They open the site, choose **I have an invite code**, create an account and confirm consent. A parent with two children enters a second code under **Account**.
-3. **Tools → Give a tool**, then **Plan** to choose what the student should practice this week and leave them a note.
+3. An admin opens **Tools → Give a tool** on the student's page. Then the tutor (or admin) uses **Plan** to choose what the student should practice this week and leave them a note.
+
+### Duplicate names
+When someone adds a student or account with a name that already exists, the site asks first. To clean up copies that are already there, go to **Students → Find duplicates** (or **People → Find duplicates**, or the "Names entered more than once" line on the Overview). Tick the extra copies and press **Delete selected**. The copy with the most use is marked **Keep**. Tutors can also delete a student they added themselves, as long as that student has no saved answers yet.
 
 Spreadsheet import columns: `name, grade, username, pin, tutor_email, parent_email` (only `name` is required). A `parent_email` creates a 30-day invite code for that parent; a `tutor_email` links an existing tutor.
 
@@ -156,8 +159,8 @@ If the internet drops, changes are kept in the browser and sent when the connect
 
 - Children sign in with a username and PIN; no child email is collected. Sessions for students end after 12 hours.
 - Parents link to a child only with an invite code from a tutor or admin, and must confirm they are the parent or guardian. The date of consent is stored.
-- Parents see only their own children. Tutors see only students linked to them. Every time an adult opens a student's records, it is written to the **Activity log**.
-- Admins can delete a student, which removes all of that student's data.
+- Parents see only their own children. Tutors see only students linked to them, and only the tools an admin has given to those students. Every time an adult opens a student's records, it is written to the **Activity log**.
+- Admins can delete a student, which removes all of that student's data. Tutors can delete only students they added who have no saved answers yet.
 - After 8 wrong passwords or PINs, the account is locked for 15 minutes.
 - Passwords and PINs are stored as scrypt hashes.
 
