@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scale Drawings & Proportional Relationships</title>
+<style>
+  :root { --deep:#002d5f; --brand:#005596; --accent:#e66414; --ink:#1c2635; --muted:#5b6b7c; --line:#dfe6ef; --bg:#f4f6fb;
+          --green:#0f9d58; --red:#d93025; --c:#0d9488; --soft:#0d948814; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:16.5px; color:var(--ink); background:var(--bg); line-height:1.5; }
+  button, input, select { font:inherit; color:inherit; }
+  header { background:var(--deep); color:#fff; padding:10px 18px; display:flex; align-items:center; gap:12px; border-bottom:4px solid var(--accent); }
+  header .logo { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#0d9488,#e66414); display:grid; place-items:center; font-weight:900; font-size:22px; flex:none; }
+  header h1 { font-size:18px; margin:0; } header .sub { font-size:12.5px; opacity:.75; } header .grow { flex:1; }
+  .pill { background:rgba(255,255,255,.12); border-radius:999px; padding:5px 12px; font-weight:800; white-space:nowrap; font-size:14px; }
+  nav.top { background:#fff; border-bottom:1px solid var(--line); display:flex; gap:4px; padding:6px 12px; overflow-x:auto; position:sticky; top:0; z-index:6; }
+  .tab { border:none; background:none; padding:9px 14px; border-radius:12px; cursor:pointer; font-weight:800; color:var(--muted); white-space:nowrap; }
+  .tab:hover { background:#f1f5fa; color:var(--brand); } .tab.on { background:var(--brand); color:#fff; }
+  main { max-width:1220px; margin:0 auto; padding:18px 16px 70px; }
+  .view { display:none; } .view.on { display:block; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 18px; min-width:0; }
+  .card h3 { margin:0 0 10px; font-size:14px; letter-spacing:.06em; color:var(--c); text-transform:uppercase; display:flex; gap:8px; align-items:center; }
+  .card h3::before { content:""; width:5px; height:15px; border-radius:3px; background:var(--c); }
+  .grid2 { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
+  .stack { display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .btn { border:2px solid var(--line); background:#fff; border-radius:12px; padding:7px 14px; cursor:pointer; font-weight:800; }
+  .btn:hover { border-color:var(--c); color:var(--c); }
+  .btn.primary { background:var(--c); border-color:var(--c); color:#fff; }
+  .btn.primary:hover { filter:brightness(.92); color:#fff; }
+  .btn.big { padding:12px 22px; font-size:17px; }
+  .btn.small { padding:4px 10px; font-size:14px; border-radius:10px; }
+  .muted { color:var(--muted); font-size:14.5px; }
+  .row { display:flex; gap:8px 12px; align-items:center; flex-wrap:wrap; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { border:2px solid var(--line); background:#fff; border-radius:999px; padding:4px 12px; cursor:pointer; font-weight:800; font-size:14px; }
+  .chip.on { background:var(--c); border-color:var(--c); color:#fff; }
+  .eq { font-family:"Cambria Math","STIX Two Math","Times New Roman",serif; font-size:1.15em; white-space:nowrap; }
+  input[type=text] { width:100%; border:2px solid var(--line); border-radius:12px; padding:8px 12px; font-size:18px; font-weight:700; background:#fff; }
+  input[type=text]:focus { outline:none; border-color:var(--c); }
+  input[type=range] { width:100%; accent-color:var(--c); }
+  canvas.chart { width:100%; display:block; }
+  table.tbl { border-collapse:collapse; margin:8px 0; font-size:16px; }
+  table.tbl th { background:var(--soft); color:var(--c); padding:6px 14px; border:1px solid var(--line); font-weight:800; }
+  table.tbl td { padding:5px 14px; border:1px solid var(--line); text-align:center; font-variant-numeric:tabular-nums; }
+  table.tbl td.hl { background:#fff1e6; font-weight:800; } table.tbl td.bad { background:#fdecea; color:var(--red); font-weight:800; }
+  .pw { display:inline-flex; align-items:center; gap:4px; font-family:"Cambria Math","Times New Roman",serif; font-size:18px; vertical-align:middle; margin:4px 0; }
+  .pw .brace { font-weight:300; line-height:1; transform:scaleX(.7); }
+  .pw table td { padding:1px 10px 1px 2px; } .pw tr.on td { background:#fff1e6; border-radius:6px; font-weight:700; }
+  /* home */
+  .hero { border-radius:22px; padding:24px 26px; color:#fff; background:linear-gradient(120deg,#134e4a 0%,#0d9488 40%,#2563eb 70%,#e66414 100%); display:grid; grid-template-columns:1.4fr 1fr; gap:20px; align-items:center; }
+  .hero h2 { margin:0 0 6px; font-size:30px; } .hero p { margin:0 0 10px; opacity:.95; }
+  .hero ul { margin:6px 0 0; padding-left:20px; opacity:.95; font-size:15px; }
+  .hero .meter { background:rgba(255,255,255,.15); border-radius:16px; padding:16px; }
+  .hero .meter b { font-size:34px; display:block; line-height:1.1; }
+  .bigbar { height:12px; border-radius:6px; background:rgba(255,255,255,.25); overflow:hidden; margin:8px 0 12px; } .bigbar div { height:100%; background:#fff; }
+  .secs { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-top:18px; }
+  .sec { background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+  .sec .head { padding:12px 16px; color:#fff; font-weight:900; display:flex; gap:10px; align-items:center; }
+  .sec .head span { font-size:22px; }
+  .les { display:flex; gap:10px; align-items:center; padding:9px 14px; border-top:1px solid var(--line); cursor:pointer; background:none; border-left:none; border-right:none; border-bottom:none; width:100%; text-align:left; }
+  .les:hover { background:#f7f9fd; }
+  .les .num { width:30px; height:30px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:900; font-size:14px; flex:none; }
+  .les .t { flex:1; font-weight:700; }
+  .les .st { font-size:13px; font-weight:800; }
+  .mini { width:54px; height:7px; background:#edf1f6; border-radius:4px; overflow:hidden; flex:none; } .mini div { height:100%; }
+  .plan { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px; margin-bottom:16px; display:none; }
+  /* lesson */
+  .lhead { border-radius:20px; padding:16px 20px; color:#fff; display:flex; gap:14px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
+  .lhead .n { width:52px; height:52px; border-radius:16px; background:rgba(255,255,255,.2); display:grid; place-items:center; font-size:24px; font-weight:900; }
+  .lhead h2 { margin:0; font-size:23px; } .lhead .s { opacity:.85; font-size:14px; }
+  .lhead .grow { flex:1; }
+  .lhead .btn { background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.35); color:#fff; }
+  .seg { display:inline-flex; background:#eef0f7; padding:4px; border-radius:12px; gap:4px; margin-bottom:14px; flex-wrap:wrap; }
+  .seg button { border:none; background:none; padding:8px 16px; border-radius:9px; cursor:pointer; font-weight:800; color:var(--muted); }
+  .seg button.on { background:#fff; color:var(--c); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .keylist { margin:0; padding-left:0; list-style:none; }
+  .keylist li { padding:9px 12px 9px 40px; position:relative; border-radius:12px; margin-bottom:6px; background:var(--soft); }
+  .keylist li::before { content:"✦"; position:absolute; left:14px; top:9px; color:var(--c); font-weight:900; }
+  .vocab { display:flex; flex-wrap:wrap; gap:8px; }
+  .vocab div { border:2px solid var(--soft); border-radius:12px; padding:8px 12px; flex:1 1 220px; }
+  .vocab b { color:var(--c); }
+  .example { background:#fffaf2; border:1px dashed #f3c48f; border-radius:14px; padding:12px 14px; }
+  .slider { display:grid; grid-template-columns:120px 1fr 64px; gap:10px; align-items:center; margin:6px 0; }
+  .slider output { text-align:right; font-weight:800; }
+  .readout { background:var(--soft); border-radius:12px; padding:10px 14px; margin-top:10px; font-size:17px; }
+  /* question */
+  .q { font-size:19px; font-weight:700; margin:4px 0 10px; }
+  .q .tbl { font-weight:400; }
+  .ansrow { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .ansrow input { flex:1; min-width:200px; }
+  .keys { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+  .keys button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 10px; cursor:pointer; font-weight:800; min-width:38px; }
+  .choice { min-width:120px; text-align:left; }
+  .choice.right { background:var(--green); border-color:var(--green); color:#fff; } .choice.wrong { background:var(--red); border-color:var(--red); color:#fff; }
+  .choice.picked { border-color:var(--c); background:var(--soft); }
+  .multi label { display:flex; gap:10px; align-items:flex-start; padding:8px 12px; border:2px solid var(--line); border-radius:12px; margin:6px 0; cursor:pointer; font-weight:700; }
+  .multi label:hover { border-color:var(--c); } .multi input { width:20px; height:20px; accent-color:var(--c); margin-top:2px; }
+  .multi label.right { border-color:var(--green); background:#e8f6ee; } .multi label.wrong { border-color:var(--red); background:#fdecea; }
+  .fb { min-height:26px; font-size:17px; font-weight:800; margin-top:10px; }
+  .fb.okc { color:var(--green); } .fb.badc { color:var(--red); } .fb.info { color:var(--c); }
+  .steps { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px 10px 32px; margin:10px 0 0; }
+  .steps li { margin:3px 0; }
+  .bar { height:10px; border-radius:5px; background:#edf1f6; overflow:hidden; } .bar div { height:100%; }
+  .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-size:12.5px; font-weight:800; }
+  .ok { color:var(--green); } .bad { color:var(--red); }
+  table.simple { width:100%; border-collapse:collapse; font-size:15px; }
+  table.simple td, table.simple th { padding:7px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  .testbar { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+  .testbar .bar { flex:1; min-width:160px; height:12px; }
+  .score { font-size:46px; font-weight:900; line-height:1; }
+  details.rev { border:1px solid var(--line); border-radius:12px; padding:8px 12px; margin:8px 0; background:#fff; }
+  details.rev summary { cursor:pointer; font-weight:700; }
+  .bgrid { display:flex; flex-wrap:wrap; gap:5px; }
+  .bq { width:36px; height:32px; border-radius:9px; border:2px solid var(--line); background:#f8fafc; font-weight:800; cursor:pointer; color:#64748b; }
+  .bq.y { background:#dcfce7; border-color:#86efac; color:#15803d; } .bq.n { background:#fee2e2; border-color:#fca5a5; color:#b91c1c; } .bq:hover { border-color:var(--c); }
+  .choice:disabled { opacity:.75; }
+  .machine { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:10px 0; }
+  .machine .box { background:linear-gradient(135deg,#7c3aed,#2563eb); color:#fff; border-radius:14px; padding:12px 16px; font-weight:900; }
+  @media (max-width:600px) { .hm { display:none; } header h1 { font-size:16px; } }
+  @media (max-width:900px) { .grid2, .hero { grid-template-columns:1fr; } header .sub { display:none; } .slider { grid-template-columns:90px 1fr 56px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="logo">∝</div>
+  <div><h1 id="appTitle">Proportions Lab</h1><div class="sub">Afro-Merica Tutor · Math 7 · Scale Drawings &amp; Proportional Relationships</div></div>
+  <div class="grow"></div>
+  <span class="pill" id="hdrMastered">⭐ 0 / 7 lessons</span>
+</header>
+<nav class="top">
+  <button class="tab on" data-v="home">🗺️ Unit map</button>
+  <button class="tab" data-v="lesson">📘 Lesson</button>
+  <button class="tab" data-v="test">📝 Tests</button>
+  <button class="tab" data-v="progress">📊 My progress</button>
+</nav>
+<main>
+  <div class="plan" id="plan"></div>
+  <section class="view on" id="home"></section>
+  <section class="view" id="lesson"></section>
+  <section class="view" id="test"></section>
+  <section class="view" id="progress"></section>
+</main>
+
+<script>
+"use strict";
+/* =====================================================================
+   Platform (AMtutorTools) — also works as a plain file
+   ===================================================================== */
+const AM = window.AMT || null;
+const store = AM && AM.storage ? AM.storage : (() => { try { return window.localStorage; } catch (e) { return null; } })();
+const load = (k, d) => { try { const v = JSON.parse(store.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const save = (k, v) => { try { store.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const $ = id => document.getElementById(id);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const nz = (a, b) => { let v; do { v = rnd(a, b); } while (v === 0); return v; };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const MINUS = "−";
+
+/* =====================================================================
+   Numbers
+   ===================================================================== */
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a || 1; }
+function toFrac(v, maxDen = 12) {
+  if (!Number.isFinite(v)) return null;
+  for (let d = 1; d <= maxDen; d++) { const n = Math.round(v * d); if (Math.abs(n / d - v) < 1e-7) { const g = gcd(n, d); return [n / g, d / g]; } }
+  return null;
+}
+function fmt(v) {
+  if (v === Infinity) return "∞";
+  if (v === -Infinity) return MINUS + "∞";
+  if (Math.abs(v) < 1e-9) v = 0;
+  const f = toFrac(v);
+  if (f) { const [n, d] = f; return (n < 0 ? MINUS : "") + (d === 1 ? Math.abs(n) : Math.abs(n) + "/" + d); }
+  return (v < 0 ? MINUS : "") + (+Math.abs(v).toFixed(2));
+}
+const pt = (x, y) => `(${fmt(x)}, ${fmt(y)})`;
+function coefBody(a, v) { // a > 0
+  if (!v) return fmt(a);
+  if (Math.abs(a - 1) < 1e-12) return v;
+  const f = toFrac(a);
+  if (f && f[1] !== 1) return `(${f[0]}/${f[1]})${v}`;
+  return fmt(a) + v;
+}
+function poly(terms) {
+  let s = "";
+  for (const [c, v] of terms) {
+    if (Math.abs(c) < 1e-12) continue;
+    const body = coefBody(Math.abs(c), v);
+    s += s ? (c < 0 ? " − " : " + ") + body : (c < 0 ? MINUS : "") + body;
+  }
+  return s || "0";
+}
+const coefPrefix = a => (Math.abs(a - 1) < 1e-12 ? "" : Math.abs(a + 1) < 1e-12 ? MINUS : (toFrac(a) && toFrac(a)[1] !== 1 ? `(${fmt(a).replace(MINUS, "-").replace("-", MINUS)})` : fmt(a)));
+const shiftStr = h => (Math.abs(h) < 1e-12 ? "x" : `(x ${h > 0 ? "−" : "+"} ${fmt(Math.abs(h))})`);
+const plusK = k => (Math.abs(k) < 1e-12 ? "" : k > 0 ? ` + ${fmt(k)}` : ` − ${fmt(-k)}`);
+const lineEq = (m, b) => "y = " + poly([[m, "x"], [b, ""]]);
+function parseNum(s) {
+  if (s == null) return NaN;
+  let t = String(s).trim().toLowerCase().replace(/[−–—]/g, "-").replace(/\s+/g, "").replace(/^\+/, "");
+  if (/^-?(∞|inf|infinity)$/.test(t)) return t.startsWith("-") ? -Infinity : Infinity;
+  if (/^\+?(∞|inf|infinity)$/.test(t)) return Infinity;
+  t = t.replace(/^\((.*)\)$/, "$1");
+  let m = t.match(/^(-?)(\d+(?:\.\d+)?|\.\d+)\/(-?)(\d+(?:\.\d+)?)$/);
+  if (m) { const d = +m[4]; if (!d) return NaN; return ((m[1] ? -1 : 1) * (m[3] ? -1 : 1) * +m[2]) / d; }
+  m = t.match(/^-\((\d+)\/(\d+)\)$/);
+  if (m) return -(+m[1]) / +m[2];
+  if (/^-?(\d+(\.\d*)?|\.\d+)$/.test(t)) return +t;
+  return NaN;
+}
+const sameNum = (a, b) => (a === b) || (Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= 0.011);
+
+/* =====================================================================
+   Small helpers
+   ===================================================================== */
+const E = s => `<span class="eq">${s}</span>`;
+const dec = v => (+(+v).toFixed(2)).toString().replace("-", MINUS);
+const money = v => (v < 0 ? MINUS : "") + "$" + Math.abs(v).toFixed(2);
+const NAMES = ["Amara", "Jasmine", "Kofi", "Malik", "Nia", "Tunde", "Zara", "Imani", "Jaden", "Ayana", "Omar", "Lina", "Selam", "Dawit"];
+const tableHTML = (head, rows, cls = []) => `<table class="tbl"><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr>${rows.map((r, i) => `<tr>${r.map(c => `<td class="${cls[i] || ""}">${c}</td>`).join("")}</tr>`).join("")}</table>`;
+const plural = (n, one, many) => (Math.abs(n) === 1 ? one : many);
+const cap = s => s[0].toUpperCase() + s.slice(1);
+const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+/* =====================================================================
+   Chart — fixed window graphs with independent x / y scales
+   ===================================================================== */
+class Chart {
+  constructor(canvas, opts = {}) {
+    this.c = canvas; this.ctx = canvas.getContext("2d"); this.layers = () => {};
+    this.set(opts, false);
+    this.ro = new ResizeObserver(() => this.render()); this.ro.observe(canvas);
+  }
+  set(o = {}, draw = true) {
+    this.x = o.x || [-10, 10]; this.y = o.y || [-10, 10]; this.xl = o.xl || "x"; this.yl = o.yl || "y";
+    this.square = !!o.square; this.maxH = o.maxH || 440; this.xstep = o.xstep || null; this.ystep = o.ystep || null;
+    if (draw) this.render();
+  }
+  destroy() { this.ro.disconnect(); }
+  get L() { return 48; } get R() { return 16; } get T() { return 26; } get B() { return 42; }
+  X(x) { return this.L + (x - this.x[0]) / (this.x[1] - this.x[0]) * (this.W - this.L - this.R); }
+  Y(y) { return this.T + (this.y[1] - y) / (this.y[1] - this.y[0]) * (this.H - this.T - this.B); }
+  step(span, px) { const c = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000]; return c.find(s => s / span * px >= 30) || 1000; }
+  render() {
+    const W = this.c.clientWidth; if (!W) return;
+    let H = this.square ? Math.min(W - this.L - this.R + this.T + this.B, this.maxH + 60) : Math.min(Math.round(W * 0.68), this.maxH);
+    this.W = W; this.H = H; const dpr = window.devicePixelRatio || 1;
+    this.c.style.height = H + "px"; this.c.width = Math.round(W * dpr); this.c.height = Math.round(H * dpr);
+    const ctx = this.ctx; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+    this.grid(); this.layers(this);
+  }
+  grid() {
+    const ctx = this.ctx, [x0, x1] = this.x, [y0, y1] = this.y;
+    let xs = this.xstep || this.step(x1 - x0, this.W - this.L - this.R), ys = this.ystep || this.step(y1 - y0, this.H - this.T - this.B);
+    while (xs / (x1 - x0) * (this.W - this.L - this.R) < 24) xs *= 2;
+    while (ys / (y1 - y0) * (this.H - this.T - this.B) < 18) ys *= 2;
+    ctx.lineWidth = 1; ctx.font = "12px system-ui, sans-serif"; ctx.fillStyle = "#5b6b7c";
+    const nf = v => (+v.toFixed(2)).toString().replace("-", MINUS);
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (let v = Math.ceil(x0 / xs - 1e-9) * xs; v <= x1 + 1e-9; v += xs) { const X = Math.round(this.X(v)) + .5; ctx.strokeStyle = "#e8edf4"; ctx.beginPath(); ctx.moveTo(X, this.T); ctx.lineTo(X, this.H - this.B); ctx.stroke(); ctx.fillText(nf(v), X, this.H - this.B + 6); }
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let v = Math.ceil(y0 / ys - 1e-9) * ys; v <= y1 + 1e-9; v += ys) { const Y = Math.round(this.Y(v)) + .5; ctx.strokeStyle = "#e8edf4"; ctx.beginPath(); ctx.moveTo(this.L, Y); ctx.lineTo(this.W - this.R, Y); ctx.stroke(); ctx.fillText(nf(v), this.L - 6, Y); }
+    ctx.strokeStyle = "#1c2635"; ctx.lineWidth = 1.6;
+    const ax = x0 <= 0 && x1 >= 0 ? this.X(0) : this.L, ay = y0 <= 0 && y1 >= 0 ? this.Y(0) : this.H - this.B;
+    ctx.beginPath(); ctx.moveTo(this.L, ay); ctx.lineTo(this.W - this.R, ay); ctx.moveTo(ax, this.T); ctx.lineTo(ax, this.H - this.B); ctx.stroke();
+    ctx.fillStyle = "#1c2635"; ctx.font = "bold 13px system-ui, sans-serif"; ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "right"; ctx.fillText(this.xl, this.W - this.R, this.H - 6);
+    ctx.textAlign = "left"; ctx.fillText(this.yl, 6, 16);
+  }
+  clip(fn) { const ctx = this.ctx; ctx.save(); ctx.beginPath(); ctx.rect(this.L, this.T - 2, this.W - this.L - this.R, this.H - this.T - this.B + 4); ctx.clip(); fn(); ctx.restore(); }
+  curve(f, { color = "#2563eb", width = 3, from = -Infinity, to = Infinity, dash = null } = {}) {
+    this.clip(() => {
+      const ctx = this.ctx, a = Math.max(this.x[0], from), b = Math.min(this.x[1], to); if (a >= b) return;
+      ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.setLineDash(dash || []);
+      ctx.beginPath(); let pen = false; const n = Math.ceil(this.X(b) - this.X(a)) * 2 + 2;
+      for (let i = 0; i <= n; i++) { const x = a + (b - a) * i / n, y = f(x); if (!Number.isFinite(y)) { pen = false; continue; } const P = [this.X(x), this.Y(y)]; pen ? ctx.lineTo(...P) : ctx.moveTo(...P); pen = true; }
+      ctx.stroke(); ctx.setLineDash([]);
+    });
+  }
+  poly(pts, { color = "#2563eb", width = 3, dash = null } = {}) {
+    this.clip(() => { const ctx = this.ctx; ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.setLineDash(dash || []);
+      ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(this.X(x), this.Y(y)) : ctx.moveTo(this.X(x), this.Y(y)))); ctx.stroke(); ctx.setLineDash([]); });
+  }
+  seg(x1, y1, x2, y2, o = {}) { this.poly([[x1, y1], [x2, y2]], o); }
+  dot(x, y, { color = "#1c2635", open = false, r = 5.5, label = null, dx = 8, dy = -8, align = "left" } = {}) {
+    const ctx = this.ctx, X = this.X(x), Y = this.Y(y);
+    ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2);
+    if (open) { ctx.fillStyle = "#fff"; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = color; ctx.stroke(); } else { ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+    if (label) this.text(X + dx, Y + dy, label, color, align);
+  }
+  text(X, Y, s, color = "#1c2635", align = "left") {
+    const ctx = this.ctx; ctx.font = "bold 13px system-ui, sans-serif"; ctx.textAlign = align; ctx.textBaseline = "alphabetic";
+    ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.strokeText(s, X, Y); ctx.fillStyle = color; ctx.fillText(s, X, Y); ctx.textAlign = "left";
+  }
+  label(x, y, s, color, align) { this.text(this.X(x), this.Y(y), s, color, align); }
+  band(a, b, color, alpha = 0.14) { const ctx = this.ctx; a = Math.max(a, this.x[0]); b = Math.min(b, this.x[1]); if (a >= b) return; ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fillRect(this.X(a), this.T, this.X(b) - this.X(a), this.H - this.T - this.B); ctx.globalAlpha = 1; }
+  hband(a, b, color, alpha = 0.14) { const ctx = this.ctx; a = Math.max(a, this.y[0]); b = Math.min(b, this.y[1]); if (a >= b) return; ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fillRect(this.L, this.Y(b), this.W - this.L - this.R, this.Y(a) - this.Y(b)); ctx.globalAlpha = 1; }
+  vline(x, o = {}) { this.seg(x, this.y[0], x, this.y[1], { width: 1.5, color: "#8a94a6", dash: [6, 5], ...o }); }
+  hline(y, o = {}) { this.seg(this.x[0], y, this.x[1], y, { width: 1.5, color: "#8a94a6", dash: [6, 5], ...o }); }
+}
+
+
+Chart.prototype.fillPoly = function (pts, color = "#7c3aed", alpha = 0.18, stroke = true) {
+  const ctx = this.ctx;
+  this.clip(() => {
+    ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(this.X(x), this.Y(y)) : ctx.moveTo(this.X(x), this.Y(y)))); ctx.closePath();
+    ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fill(); ctx.globalAlpha = 1;
+    if (stroke) { ctx.lineWidth = 3; ctx.strokeStyle = color; ctx.lineJoin = "round"; ctx.stroke(); }
+  });
+};
+Chart.prototype.toData = function (px, py) {
+  return [this.x[0] + (px - this.L) / (this.W - this.L - this.R) * (this.x[1] - this.x[0]), this.y[1] - (py - this.T) / (this.H - this.T - this.B) * (this.y[1] - this.y[0])];
+};
+
+/* =====================================================================
+   Answer checkers
+   ===================================================================== */
+const uniq = a => [...new Set(a)];
+function numOf(v) {
+  let t = String(v).trim().toLowerCase().replace(/[−–—]/g, "-").replace(/^[a-z]+\s*=\s*/, "").replace(/^(about|k\s*=)\s*/, "").replace(/[$,]/g, "");
+  const m = t.match(/^(-?\s*(?:\d+(?:\.\d+)?|\.\d+)(?:\s*\/\s*\d+(?:\.\d+)?)?)(.*)$/);
+  if (!m) return NaN;
+  const rest = m[2].trim();
+  if (rest && !/^[a-z\s.²³]*(\^[23])?[a-z\s.]*$/.test(rest)) return NaN;
+  return parseNum(m[1].replace(/\s/g, ""));
+}
+function checkNum(v, target, tol = 0.006) {
+  if (/\(.*,.*\)/.test(v)) return { ok: false, invalid: true, msg: "Type one number, not a point." };
+  const n = numOf(v);
+  if (Number.isNaN(n)) return { ok: false, invalid: true, msg: "Type a number, like 12, 2.5 or 3/4." };
+  return { ok: Math.abs(n - target) <= tol + 1e-9 };
+}
+function parseRatio(v) {
+  const m = String(v).trim().toLowerCase().match(/^(\d+(?:\.\d+)?)\s*(?::|\/|to)\s*(\d+(?:\.\d+)?)$/);
+  return m ? [+m[1], +m[2]] : null;
+}
+function checkRatio(v, a, b, simplest = true) {
+  const r = parseRatio(v);
+  if (!r) return { ok: false, invalid: true, msg: "Write a ratio like 2 : 3." };
+  const [p, q] = r;
+  if (Math.abs(p * b - q * a) > 1e-9) return { ok: false, msg: Math.abs(p * a - q * b) < 1e-9 ? "Check the order of the two terms." : "" };
+  if (simplest && (!Number.isInteger(p) || !Number.isInteger(q) || gcd(p, q) !== 1)) return { ok: false, msg: "That ratio is equivalent, but it is not in simplest form yet." };
+  return { ok: true };
+}
+function parsePoint(v) {
+  const t = String(v).trim().replace(/[−–—]/g, "-").replace(/^[a-z]'?\s*=\s*/i, "");
+  const m = t.match(/^\(?\s*(-?\d*\.?\d+(?:\/\d+)?)\s*[,;]\s*(-?\d*\.?\d+(?:\/\d+)?)\s*\)?$/);
+  return m ? [parseNum(m[1]), parseNum(m[2])] : null;
+}
+function checkPoint(v, x, y) {
+  const p = parsePoint(v);
+  if (!p) return { ok: false, invalid: true, msg: "Write a point like (3, −2)." };
+  if (sameNum(p[0], x) && sameNum(p[1], y)) return { ok: true };
+  return { ok: false, msg: sameNum(p[0], y) && sameNum(p[1], x) ? "Check the order: (x, y). x comes first." : "" };
+}
+function checkEq(v, k) {
+  let t = String(v).toLowerCase().replace(/\s+/g, "").replace(/[−–—]/g, "-").replace(/[·×*]/g, "");
+  t = t.replace(/^y=/, "").replace(/=y$/, "");
+  if (/x.*[+]|[+].*x|x-|\d-/.test(t)) return { ok: false, msg: "A proportional relationship has no added number: it looks like y = kx." };
+  let c = NaN, m;
+  if ((m = t.match(/^\(?(-?[\d./]*)\)?x$/))) c = m[1] === "" ? 1 : m[1] === "-" ? -1 : parseNum(m[1]);
+  else if ((m = t.match(/^(-?[\d.]*)x\/(\d+(?:\.\d+)?)$/))) c = (m[1] === "" ? 1 : m[1] === "-" ? -1 : parseNum(m[1])) / +m[2];
+  if (Number.isNaN(c)) return { ok: false, invalid: true, msg: "Write the equation like y = 4x." };
+  return { ok: Math.abs(c - k) < 0.006 };
+}
+
+/* =====================================================================
+   Question builders
+   ===================================================================== */
+function mc(q, right, wrongs, extra = {}) {
+  right = String(right);
+  const w = uniq(wrongs.map(String)).filter(x => x !== right).slice(0, (extra.n || 4) - 1);
+  const choices = Array.isArray(extra.keep) ? extra.keep.filter(c => c === right || w.includes(c)) : shuffle([right, ...w]);
+  return Object.assign({ q, input: "choice", choices, correct: right, ans: right, check: v => ({ ok: v === right }) }, extra);
+}
+const numQ = (q, target, ans, extra = {}) => Object.assign({ q, input: "number", check: v => checkNum(v, target), ans: String(ans), ph: "Type a number" }, extra);
+const fs = v => fmt(v); // plain-text number, fractions as a/b
+const unitLen = n => (Math.abs(n) === 1 ? "unit" : "units");
+
+/* =====================================================================
+   Units, sections, lessons
+   ===================================================================== */
+const SECTIONS = [
+  { id: "A", name: "Ratios and rates", icon: "🍰", color: "#0d9488", lessons: [1, 2] },
+  { id: "B", name: "Proportional graphs", icon: "📈", color: "#2563eb", lessons: [3, 4] },
+  { id: "C", name: "Scale and scale drawings", icon: "📐", color: "#7c3aed", lessons: [5, 6, 7] },
+];
+const NL = 7;
+const secOf = n => SECTIONS.find(s => s.lessons.includes(n));
+const L = {};
+L[1] = { title: "Equivalent ratios", key: [
+  "A <b>ratio</b> compares two quantities. 3 cups of sugar for every 4 cups of flour can be written <span class=eq>3 : 4</span>, “3 to 4” or <span class=eq>3/4</span>.",
+  "<b>Equivalent ratios</b> make the same comparison. Multiply or divide <b>both</b> terms by the same non-zero number: <span class=eq>3 : 4 = 6 : 8 = 9 : 12</span>.",
+  "Adding the same number to both terms does <b>not</b> work: 3 : 4 and 4 : 5 are different comparisons.",
+  "A <b>proportion</b> says two ratios are equal, <span class=eq>a/b = c/d</span>. In a proportion the cross products are equal: <span class=eq>a × d = b × c</span>.",
+  "To write a ratio in <b>simplest form</b>, divide both terms by their greatest common factor: <span class=eq>12 : 18 → 2 : 3</span>."],
+  vocab: [["Ratio", "a comparison of two quantities, a : b"], ["Equivalent ratios", "ratios that make the same comparison"], ["Proportion", "an equation that says two ratios are equal"], ["Simplest form", "both terms have no common factor except 1"]],
+  example: `A recipe uses <b>3 cups of sugar for every 4 cups of flour</b>. How much sugar goes with 12 cups of flour?
+    ${tableHTML(["Sugar (cups)", "Flour (cups)"], [[3, 4], [6, 8], ["<b>9</b>", "<b>12</b>"]], ["", "", "hl"])}
+    4 × <b>3</b> = 12, so multiply the sugar by 3 as well: 3 × 3 = <b>9 cups</b>. Check with cross products: 3 × 12 = 4 × 9 = 36 ✓` };
+L[2] = { title: "Constant of proportionality", key: [
+  "Two quantities are <b>proportional</b> when <span class=eq>y ÷ x</span> is the same number for every pair. That number is the <b>constant of proportionality</b>, <span class=eq>k</span>.",
+  "Find k by dividing: <span class=eq>k = y ÷ x</span>. It is the <b>unit rate</b>, the amount of y for <b>1</b> of x.",
+  "Every proportional relationship has an equation of the form <span class=eq>y = kx</span>, where k ≠ 0.",
+  "<span class=eq>y = x + 3</span> is <b>not</b> proportional: y ÷ x keeps changing (4/1, 5/2, 6/3 …). <span class=eq>y = 5x</span> is proportional with k = 5.",
+  "Once you know k, any missing value is one multiplication away: <span class=eq>y = k × x</span>."],
+  vocab: [["Proportional", "y ÷ x is the same for every pair"], ["Constant of proportionality (k)", "the number in y = kx"], ["Unit rate", "the amount for 1 unit, like $8.50 per ticket"], ["Directly proportional", "another way to say y = kx"]],
+  example: `5 tickets cost $42.50. ${tableHTML(["Tickets (x)", "Cost $ (y)", "y ÷ x"], [[1, "8.50", "8.50"], [5, "42.50", "8.50"], [12, "<b>102.00</b>", "8.50"]], ["hl", "", ""])}
+    k = 42.50 ÷ 5 = <b>8.50 dollars per ticket</b>, so <span class=eq>y = 8.5x</span>. For 12 tickets: 8.5 × 12 = <b>$102.00</b>.` };
+L[3] = { title: "The coordinate plane", key: [
+  "The <b>x-axis</b> is the horizontal number line and the <b>y-axis</b> is the vertical one. They cross at the <b>origin</b>, (0, 0).",
+  "An ordered pair <span class=eq>(x, y)</span> gives the x-coordinate <b>first</b> (left/right), then the y-coordinate (up/down).",
+  "The axes split the plane into 4 <b>quadrants</b>: I (+, +), II (−, +), III (−, −) and IV (+, −), counted counter-clockwise from the top right.",
+  "A <b>dilation about the origin</b> with scale factor k multiplies <b>both</b> coordinates by k: <span class=eq>(x, y) → (kx, ky)</span>.",
+  "A negative scale factor also flips the point to the opposite side of the origin."],
+  vocab: [["Origin", "the point (0, 0) where the axes cross"], ["x-axis", "the horizontal axis"], ["y-axis", "the vertical axis"], ["Quadrant", "one of the four regions made by the axes"], ["Dilation", "a resize from a center point by a scale factor"]],
+  example: `Point A is at <span class=eq>(6, −8)</span>: 6 right, 8 down, in quadrant IV.<br>
+    Dilate about the origin with k = 1/2: <span class=eq>(6 × ½, −8 × ½) = (3, −4)</span>.<br>
+    With k = −1/2: <span class=eq>(−3, 4)</span>. The point flips into quadrant II.` };
+L[4] = { title: "Graphing proportional relationships", key: [
+  "The graph of a proportional relationship is a <b>straight line through the origin</b> (0, 0).",
+  "The point <span class=eq>(1, k)</span> is on the line. It shows the unit rate.",
+  "The <b>slope</b> (steepness) of the line <span class=eq>y = kx</span> is k. A bigger k gives a steeper line.",
+  "For any point (x, y) on the line other than the origin, <span class=eq>k = y ÷ x</span>.",
+  "A line that misses the origin, or a curve, is <b>not</b> proportional."],
+  vocab: [["Slope", "how steep a line is: rise ÷ run"], ["Unit rate point", "the point (1, k)"], ["Linear", "graph is a straight line"], ["Through the origin", "the line passes (0, 0)"]],
+  example: `A car drives at a steady 60 miles per hour. ${tableHTML(["Hours (x)", "Miles (y)"], [[0, 0], [1, 60], [2, 120], [4.5, 270]])}
+    The points line up on a straight line through (0, 0). The point (1, 60) shows k = 60, so <span class=eq>y = 60x</span>.` };
+L[5] = { title: "Scale factor", key: [
+  "A <b>scaled copy</b> has the same shape as the original: every length is multiplied by the same number, the <b>scale factor</b> k. Angles do not change.",
+  "Find k from a pair of <b>corresponding</b> sides: <span class=eq>k = copy length ÷ original length</span>.",
+  "k > 1 makes an <b>enlargement</b>, k < 1 makes a <b>reduction</b>, and k = 1 keeps the same size.",
+  "Copy length = original × k. Original length = copy ÷ k.",
+  "To go back from the copy to the original, use the <b>reciprocal</b> scale factor <span class=eq>1/k</span>. The reciprocal of 2/3 is 3/2."],
+  vocab: [["Scaled copy", "same shape, every length × k"], ["Scale factor", "the number every length is multiplied by"], ["Corresponding", "matching sides, angles or points"], ["Reciprocal", "flip the fraction: a/b → b/a"]],
+  example: `Triangle ABC has sides 3, 4 and 5 cm. Triangle DEF is a scaled copy whose shortest side is 9 cm.<br>
+    k = 9 ÷ 3 = <b>3</b>, so the other sides are 4 × 3 = <b>12 cm</b> and 5 × 3 = <b>15 cm</b>.<br>
+    To go from DEF back to ABC, multiply by the reciprocal, <b>1/3</b>.` };
+L[6] = { title: "Scale drawings and maps", key: [
+  "A scale like <span class=eq>1 cm : 4 km</span> means 1 cm on the drawing stands for 4 km in real life.",
+  "Drawing → actual: <b>multiply</b> by the scale. 7 cm × 4 = 28 km.",
+  "Actual → drawing: <b>divide</b> by the scale. 30 km ÷ 4 = 7.5 cm.",
+  "A scale with no units, like <span class=eq>1 : 200</span>, uses the same unit on both sides. Convert units when you need to: 1 m = 100 cm, 1 km = 1000 m, 1 ft = 12 in.",
+  "To find the scale, work out what <b>1</b> unit on the drawing stands for: 3 cm for 45 km → 1 cm : 15 km."],
+  vocab: [["Scale drawing", "a drawing in which every length uses the same scale"], ["Scale", "drawing length : actual length"], ["Blueprint", "a scale drawing of a building"], ["Model", "a 3-D scaled copy"]],
+  example: `A blueprint uses <b>1 inch : 8 feet</b>.<br>A wall drawn 3 inches long is 3 × 8 = <b>24 feet</b> long.<br>A room that is 20 feet long is drawn 20 ÷ 8 = <b>2.5 inches</b> long.` };
+L[7] = { title: "Perimeter, area and volume", key: [
+  "When every length is multiplied by k, <b>perimeter</b> is multiplied by <b>k</b>.",
+  "<b>Area</b>, including surface area, is multiplied by <b>k²</b>, because it uses two lengths (length × width).",
+  "<b>Volume</b> is multiplied by <b>k³</b>, because it uses three lengths.",
+  "For similar figures, first find k from a pair of corresponding lengths, then use k, k² or k³.",
+  "On a 1 : 250 map, lengths are 250 times bigger in real life, but areas are 250² = 62,500 times bigger."],
+  vocab: [["Similar figures", "same shape, any size (scaled copies)"], ["Perimeter", "distance around: scales by k"], ["Area", "space inside: scales by k²"], ["Volume", "space filled: scales by k³"]],
+  example: `A square with side 5 cm is scaled by k = 4. ${tableHTML(["", "Original", "Scaled (k = 4)", "Multiplied by"], [["Side", "5 cm", "20 cm", "4"], ["Perimeter", "20 cm", "80 cm", "4"], ["Area", "25 cm²", "400 cm²", "4² = 16"], ["Cube volume", "125 cm³", "8000 cm³", "4³ = 64"]])}` };
+
+/* =====================================================================
+   The 50-question bank (from the Math 7 quiz). Q25's key was corrected.
+   ===================================================================== */
+const BANK = [{"id":1,"l":5,"q":"A rectangle has dimensions 6 cm by 4 cm. A scaled copy has a shortest side of 10 cm. What is the scale factor from the original rectangle to the scaled copy?","opts":["2/5","5/2","2","5"],"c":1,"steps":["Identify original shortest side = 4 cm.","Scaled copy shortest side = 10 cm.","Scale factor k = scaled/original = 10/4 = 5/2."]},
+{"id":2,"l":1,"q":"Which of the following ratios is strictly equivalent to 3:4?","opts":["4:3","6:8","9:16","3:8"],"c":1,"steps":["Equivalent ratios are formed by multiplying both terms by the same non-zero number.","3 × 2 : 4 × 2 = 6:8."]},
+{"id":3,"l":2,"q":"If a proportional relationship is defined by the equation y = 7x, what is the constant of proportionality k?","opts":["1","14","7","1/7"],"c":2,"steps":["Compare y = 7x to standard form y = kx.","Constant of proportionality k = 7."]},
+{"id":4,"l":4,"q":"The graph of any standard proportional relationship given by y = kx always passes through which specific point on the coordinate plane?","opts":["(1, 1)","The origin (0, 0)","(0, 1)","(1, 0)"],"c":1,"steps":["Substitute x = 0 into y = kx.","y = k(0) = 0.","The graph passes through the origin (0,0)."]},
+{"id":5,"l":5,"q":"A drawing uses a scale factor of 1/4. If an original side length of an object is 20 cm, what is the corresponding side length in the drawing?","opts":["4 cm","5 cm","16 cm","80 cm"],"c":1,"steps":["Scaled length = original length × scale factor.","20 × 1/4 = 5 cm."]},
+{"id":6,"l":6,"q":"A map uses a scale of 1 cm : 4 km. Two towns are represented as 7 cm apart on the map. What is the actual distance between the two towns?","opts":["11 km","14 km","28 km","21 km"],"c":2,"steps":["Scale is 1 cm = 4 km.","Actual distance = 7 × 4 = 28 km."]},
+{"id":7,"l":2,"q":"Which of the following equations represents a proportional relationship?","opts":["y = x + 3","y = 5x","y = x²","y = 1/x"],"c":1,"steps":["Proportional relationships fit y = kx.","y = 5x fits with k = 5."]},
+{"id":8,"l":1,"q":"A recipe uses 3 cups of sugar for every 4 cups of flour. How many cups of sugar are needed if a baker uses 12 cups of flour?","opts":["6 cups","8 cups","9 cups","12 cups"],"c":2,"steps":["Ratio of sugar to flour is 3/4.","Sugar needed = 3/4 × 12 = 9 cups."]},
+{"id":9,"l":5,"q":"A side of a geometric figure measures 15 cm. A scaled copy is created using a scale factor of 2/3. What is the length of the corresponding side in the scaled copy?","opts":["5 cm","10 cm","12 cm","22.5 cm"],"c":1,"steps":["Multiply side length by scale factor: 15 × 2/3.","15 ÷ 3 = 5, and 5 × 2 = 10 cm."]},
+{"id":10,"l":2,"q":"A table shows a proportional relationship where x = 2 corresponds to y = 10, and x = 4 corresponds to y = 20. What is the missing value of y when x = 6?","opts":["24","30","36","40"],"c":1,"steps":["Constant k = y/x = 10/2 = 5.","For x = 6, y = 5 × 6 = 30."]},
+{"id":11,"l":5,"q":"Triangle ABC has side lengths 3 cm, 4 cm, and 5 cm. Triangle DEF is a scaled copy with a shortest side of 9 cm. What is the scale factor from triangle ABC to triangle DEF?","opts":["2","3","4","1/3"],"c":1,"steps":["Shortest original side = 3 cm. Shortest scaled side = 9 cm.","Scale factor k = 9/3 = 3."]},
+{"id":12,"l":6,"q":"Referring to Triangle ABC (3, 4, 5 cm) and Triangle DEF (scale factor = 3), what are the lengths of the other two sides of Triangle DEF?","opts":["6 cm and 8 cm","12 cm and 15 cm","7 cm and 8 cm","10 cm and 12 cm"],"c":1,"steps":["Multiply original sides by k = 3.","4 × 3 = 12 cm and 5 × 3 = 15 cm."]},
+{"id":13,"l":5,"q":"If a scale factor from an original figure to a scaled copy is k = 4, what is the reciprocal scale factor needed to go from the scaled copy back to the original figure?","opts":["−4","1/4","4","4/1"],"c":1,"steps":["The reciprocal of scale factor k is 1/k.","Reciprocal of 4 is 1/4."]},
+{"id":14,"l":5,"q":"A scaled copy has a side length of 12 cm. If the original scale factor used to create this copy from the original was 3, what was the length of the original side?","opts":["36 cm","9 cm","4 cm","3 cm"],"c":2,"steps":["Original side = scaled length × 1/k.","12 × 1/3 = 4 cm."]},
+{"id":15,"l":6,"q":"Which of the following describes a scaled copy?","opts":["A figure with completely different side ratios.","A figure that is the same shape as the original but can be a different size.","A figure that has identical side lengths but different angles.","A figure rotated on a coordinate grid without changing position."],"c":1,"steps":["By definition, a scaled copy retains identical shape (equal corresponding angles) while multiplying side lengths by a scale factor."]},
+{"id":16,"l":6,"q":"What term is used to describe matching parts (such as matching sides, angles, or points) in two geometric figures?","opts":["Reciprocal","Corresponding","Constant","Equivalent"],"c":1,"steps":["'Corresponding' refers to matching positions across related figures."]},
+{"id":17,"l":2,"q":"In a proportional relationship represented by y = kx, what restriction is placed on the constant of proportionality k?","opts":["k must equal 1","k ≠ 0","k > 10","k must be negative"],"c":1,"steps":["For a valid proportional relationship y = kx, k is a non-zero constant (k ≠ 0)."]},
+{"id":18,"l":3,"q":"What are the two intersecting number lines that form a coordinate plane called?","opts":["The x-axis and y-axis","Horizontal line and vertical slope","Scale axes","Origin lines"],"c":0,"steps":["A standard coordinate plane is formed by a horizontal x-axis and vertical y-axis."]},
+{"id":19,"l":3,"q":"What is the specific name of the point where the x-axis and y-axis intersect on a coordinate plane, represented by coordinates (0, 0)?","opts":["Center unit","The origin","Scale point","Intercept"],"c":1,"steps":["The point (0, 0) where axes intersect is the origin."]},
+{"id":20,"l":2,"q":"If a recipe requires 2 cups of flour for every 3 cups of milk, what is the constant of proportionality k representing flour per cup of milk?","opts":["3/2","2/3","6","1"],"c":1,"steps":["Constant k = flour/milk = 2/3."]},
+{"id":21,"l":1,"q":"Using the recipe (2 cups flour per 3 cups milk), how many cups of flour are needed if a chef uses 12 cups of milk?","opts":["6 cups","8 cups","18 cups","24 cups"],"c":1,"steps":["Flour = k × milk = 2/3 × 12 = 8 cups."]},
+{"id":22,"l":1,"q":"Which of the following sets of ratios represents equivalent ratios?","opts":["2:3, 4:6, 6:9, 10:15","2:3, 3:4, 4:5, 5:6","1:2, 2:3, 3:4, 4:5","2:5, 4:8, 6:12, 8:16"],"c":0,"steps":["Simplifying each ratio in option A gives 2/3 for all."]},
+{"id":23,"l":4,"q":"What is the slope of the graph of a proportional relationship given by y = kx?","opts":["The origin (0,0)","The value x","The constant of proportionality k","Always 1"],"c":2,"steps":["In y = kx, coefficient k represents both the constant of proportionality and the graph's slope."]},
+{"id":24,"l":7,"q":"If two similar polygons have corresponding sides of length 4 cm and 10 cm, and the perimeter of the smaller polygon is 28 cm, what is the perimeter of the larger polygon?","opts":["56 cm","70 cm","112 cm","140 cm"],"c":1,"steps":["Scale factor k = 10/4 = 2.5.","Perimeter scales linearly: 28 × 2.5 = 70 cm."]},
+{"id":25,"l":7,"q":"A map is drawn to a scale of 1 : 250. On this map, the area of a public park is represented by 16 cm². What is the actual area of the park in square meters? (1 m = 100 cm)","opts":["100 m²","1000 m²","4000 m²","10,000 m²"],"c":0,"steps":["Lengths scale by 250, so areas scale by 250² = 62,500.","Actual area = 16 × 62,500 = 1,000,000 cm².","1 m² = 100 cm × 100 cm = 10,000 cm², so 1,000,000 ÷ 10,000 = 100 m²."],"fixed":true},
+{"id":26,"l":3,"q":"Triangle ABC is dilated about the origin with a scale factor of k = −1/2 to form Triangle A'B'C'. If vertex A is located at (6, −8), what are the coordinates of vertex A'?","opts":["(−3, 4)","(3, −4)","(−12, 16)","(12, −16)"],"c":0,"steps":["Multiply each coordinate of (6, −8) by k = −1/2.","x' = 6 × −0.5 = −3; y' = −8 × −0.5 = 4. Point A' = (−3, 4)."]},
+{"id":27,"l":7,"q":"A solid rectangular prism has dimensions 3 cm × 4 cm × 5 cm. If the prism is dilated by a scale factor of k = 3, what is the total surface area of the new dilated prism?","opts":["94 cm²","282 cm²","846 cm²","2538 cm²"],"c":2,"steps":["Original surface area = 2(12 + 20 + 15) = 94 cm².","Area scales by k² = 3² = 9.","New surface area = 94 × 9 = 846 cm²."]},
+{"id":28,"l":7,"q":"Two similar cylinders have heights of 6 cm and 18 cm respectively. If the volume of the smaller cylinder is 50 cm³, what is the volume of the larger cylinder?","opts":["150 cm³","450 cm³","1350 cm³","2700 cm³"],"c":2,"steps":["Linear scale factor k = 18/6 = 3.","Volume scales by k³ = 3³ = 27.","New volume = 50 × 27 = 1350 cm³."]},
+{"id":29,"l":1,"q":"Which of the following ratios represents the same comparison as 12 : 18?","opts":["2 : 3","3 : 2","4 : 9","1 : 6"],"c":0,"steps":["Divide both terms of 12:18 by 6 to get 2:3."]},
+{"id":30,"l":2,"q":"If y is directly proportional to x, and y = 24 when x = 3, what is the equation representing this proportional relationship?","opts":["y = 3x","y = 8x","y = 24x","y = x + 21"],"c":1,"steps":["Find k = y/x = 24/3 = 8.","Equation is y = 8x."]},
+{"id":31,"l":6,"q":"In a scale drawing, a bridge is drawn with a length of 5 inches. If the scale of the drawing is 1 inch : 30 feet, what is the actual length of the bridge?","opts":["35 feet","150 feet","180 feet","60 feet"],"c":1,"steps":["Actual length = 5 × 30 = 150 feet."]},
+{"id":32,"l":3,"q":"Which point on a coordinate grid represents the origin?","opts":["(1, 1)","(0, 1)","(0, 0)","(1, 0)"],"c":2,"steps":["The origin is always at (0, 0)."]},
+{"id":33,"l":2,"q":"A car travels at a constant speed, traveling 120 miles in 2 hours. What is the constant of proportionality representing miles per hour?","opts":["60","120","240","30"],"c":0,"steps":["Unit rate k = 120/2 = 60 mph."]},
+{"id":34,"l":1,"q":"Using the car's speed (60 mph), how far will the car travel in 4.5 hours?","opts":["240 miles","270 miles","300 miles","180 miles"],"c":1,"steps":["Distance = 60 × 4.5 = 270 miles."]},
+{"id":35,"l":7,"q":"If a square with a side length of 5 cm is scaled by a factor of k = 4, what is the perimeter of the new scaled square?","opts":["20 cm","80 cm","100 cm","40 cm"],"c":1,"steps":["Original perimeter = 4 × 5 = 20 cm.","Scaled perimeter = 20 × 4 = 80 cm."]},
+{"id":36,"l":3,"q":"Which of the following describes the horizontal number line on a coordinate plane?","opts":["The y-axis","The x-axis","The origin","Vertical axis"],"c":1,"steps":["The horizontal line is the x-axis."]},
+{"id":37,"l":3,"q":"Which of the following describes the vertical number line on a coordinate plane?","opts":["The x-axis","The y-axis","The origin","Slope line"],"c":1,"steps":["The vertical line is the y-axis."]},
+{"id":38,"l":1,"q":"If two ratios a/b and c/d form an equivalence (proportion), which cross-multiplication equation must always be true?","opts":["ab = cd","ad = bc","ac = bd","a + d = b + c"],"c":1,"steps":["Cross-multiplying a/b = c/d gives ad = bc."]},
+{"id":39,"l":1,"q":"Solve for x in the proportion: 3/4 = x/20","opts":["15","12","16","8"],"c":0,"steps":["4x = 3 × 20 = 60.","x = 60 ÷ 4 = 15."]},
+{"id":40,"l":6,"q":"A blueprint of a house has a scale of 1 inch : 8 feet. If a bedroom wall measures 3 inches on the blueprint, what is the actual length of the wall?","opts":["11 feet","24 feet","32 feet","16 feet"],"c":1,"steps":["Actual length = 3 × 8 = 24 feet."]},
+{"id":41,"l":1,"q":"Which ratio is NOT equivalent to 5/7?","opts":["10 : 14","15 : 21","25 : 35","20 : 25"],"c":3,"steps":["Simplifying 20:25 yields 4/5, which is not equal to 5/7."]},
+{"id":42,"l":2,"q":"If y = 3.5x, what is the value of y when x = 4?","opts":["7","14","12","15.5"],"c":1,"steps":["Substitute x = 4: y = 3.5 × 4 = 14."]},
+{"id":43,"l":5,"q":"A model ship is built with a scale factor of 1 : 200. If the actual length of the ship is 100 meters, what is the length of the model in centimeters? (1 m = 100 cm)","opts":["50 cm","200 cm","20 cm","5 cm"],"c":0,"steps":["Actual length in cm = 100 × 100 = 10,000 cm.","Model length = 10,000 ÷ 200 = 50 cm."]},
+{"id":44,"l":4,"q":"Which of the following statements is true regarding proportional relationships and their graphs?","opts":["The graph is a curved line starting at (0,1).","The graph is a straight line that passes through the origin (0,0) with slope k.","The graph is a horizontal line along the x-axis.","The graph does not pass through (0,0)."],"c":1,"steps":["Proportional relationship graphs are straight lines with slope k passing through (0,0)."]},
+{"id":45,"l":2,"q":"If 5 tickets cost $42.50, what is the constant unit price per ticket?","opts":["$7.50","$8.50","$9.00","$8.00"],"c":1,"steps":["Unit price = 42.50/5 = $8.50 per ticket."]},
+{"id":46,"l":1,"q":"Tickets cost $8.50 each (the unit price from Question 45). How much will 12 tickets cost?","opts":["$96.00","$102.00","$110.00","$85.00"],"c":1,"steps":["Total cost = 12 × 8.50 = $102.00."]},
+{"id":47,"l":5,"q":"What is the reciprocal of the fraction 7/11?","opts":["−7/11","11/7","7/11","1/7"],"c":1,"steps":["Swapping numerator and denominator gives 11/7."]},
+{"id":48,"l":5,"q":"A rectangle measures 8 cm by 12 cm. A scaled copy has a scale factor of 3/4. What are the dimensions of the scaled copy?","opts":["6 cm by 9 cm","4 cm by 6 cm","6 cm by 8 cm","10 cm by 15 cm"],"c":0,"steps":["Width = 8 × 3/4 = 6 cm; Length = 12 × 3/4 = 9 cm."]},
+{"id":49,"l":2,"q":"If y = 12x represents a proportional relationship between hours worked (x) and units produced (y), how many units are produced in 7 hours?","opts":["72","84","96","60"],"c":1,"steps":["Substitute x = 7: y = 12 × 7 = 84 units."]},
+{"id":50,"l":6,"q":"What is the primary purpose of using a scale factor when creating a scale drawing of a large object like a building or a map of a city?","opts":["To change the shape of the original object.","To reduce or enlarge all parts proportionally so that the drawing fits conveniently while maintaining accurate geometric proportions.","To alter the angle measures of the original structure.","To eliminate negative coordinates on a grid."],"c":1,"steps":["Scale factors resize objects uniformly, preserving exact shape and angular proportions."]}];
+
+const bankQ = b => ({
+  q: esc(b.q), input: "choice", bankId: b.id, choices: b.opts.map((o, i) => `${"ABCD"[i]}. ${o}`), correct: `${"ABCD"[b.c]}. ${b.opts[b.c]}`,
+  get ans() { return this.correct; }, check(v) { return { ok: v === this.correct }; }, steps: b.steps.map(esc),
+  hint: BANK_HINT[b.l],
+});
+const BANK_HINT = { 1: "Multiply or divide both terms by the same number.", 2: "k = y ÷ x. It is the amount for 1.", 3: "x is horizontal and comes first; y is vertical.", 4: "Proportional graphs are straight lines through (0, 0).", 5: "k = copy length ÷ original length.", 6: "Drawing → actual: multiply by the scale.", 7: "Lengths × k, areas × k², volumes × k³." };
+
+/* =====================================================================
+   Question generators (endless practice)
+   ===================================================================== */
+const G = {};
+const CTX1 = [["cups of juice", "cups of water"], ["red beads", "blue beads"], ["cups of rice", "cups of water"], ["teaspoons of salt", "cups of flour"], ["boys", "girls"], ["laps", "minutes"], ["pages", "minutes"]];
+G[1] = hard => pick([
+  () => { // missing value in a proportion
+    let a, b; do { a = rnd(1, 9); b = rnd(2, 10); } while (a === b);
+    const m = rnd(2, hard ? 12 : 6), inDen = hard && Math.random() < .5;
+    if (inDen) return numQ(`Solve the proportion: ${E(`${a}/${b} = ${a * m}/x`)}`, b * m, b * m, { hint: `What number times ${a} gives ${a * m}? Multiply ${b} by the same number.`, steps: [`${a} × <b>${m}</b> = ${a * m}`, `So x = ${b} × ${m} = <b>${b * m}</b>`, `Check: ${a} × ${b * m} = ${b} × ${a * m} = ${a * b * m} ✓`] });
+    return numQ(`Solve the proportion: ${E(`${a}/${b} = x/${b * m}`)}`, a * m, a * m, { hint: `What number times ${b} gives ${b * m}? Multiply ${a} by the same number.`, steps: [`${b} × <b>${m}</b> = ${b * m}`, `So x = ${a} × ${m} = <b>${a * m}</b>`, `Check with cross products: ${a} × ${b * m} = ${b} × ${a * m} = ${a * b * m} ✓`] });
+  },
+  () => { // story scaling
+    const [u, w] = pick(CTX1); let a, b; do { a = rnd(1, 7); b = rnd(2, 9); } while (a === b || gcd(a, b) !== 1);
+    let m = rnd(2, 6); if (hard && b % 2 === 0) m += .5;
+    const given = b * m, ansv = a * m;
+    return numQ(`A mix uses <b>${a} ${u}</b> for every <b>${b} ${w}</b>. How many ${u} go with <b>${given} ${w}</b>?`, ansv, `${dec(ansv)} ${u}`, { ansPlain: dec(ansv), hint: `${b} times what number gives ${given}?`, steps: [`${given} ÷ ${b} = ${dec(m)}, so the batch is ${dec(m)} times bigger.`, `${a} × ${dec(m)} = <b>${dec(ansv)} ${u}</b>`] });
+  },
+  () => { // simplest form
+    let a, b; do { a = rnd(1, 9); b = rnd(1, 9); } while (a === b || gcd(a, b) !== 1);
+    const m = rnd(2, hard ? 12 : 8);
+    return { q: `Write the ratio ${E(`${a * m} : ${b * m}`)} in simplest form.`, input: "ratio", check: v => checkRatio(v, a, b), ans: `${a} : ${b}`, ansPlain: `${a}:${b}`, ph: "like 2 : 3",
+      hint: `Find the greatest number that divides both ${a * m} and ${b * m}.`, steps: [`The greatest common factor of ${a * m} and ${b * m} is ${m}.`, `${a * m} ÷ ${m} = ${a} and ${b * m} ÷ ${m} = ${b}`, `Simplest form: <b>${a} : ${b}</b>`] };
+  },
+  () => { // which is equivalent / not equivalent
+    let a, b; do { a = rnd(1, 9); b = rnd(2, 9); } while (a === b || gcd(a, b) !== 1);
+    const eqv = (x, y) => x * b === y * a;
+    const goods = shuffle([2, 3, 4, 5, 6, 7]).slice(0, 3).map(m => `${a * m} : ${b * m}`);
+    const m = rnd(2, 5);
+    const bads = [`${a + m} : ${b + m}`, `${b * m} : ${a * m}`, `${a * m} : ${b * m + 1}`, `${a * m + m} : ${b * m}`, `${a + 1} : ${b + 1}`].filter(s => { const [x, y] = s.split(" : ").map(Number); return !eqv(x, y); });
+    if (hard || Math.random() < .4) return mc(`Which ratio is <b>NOT</b> equivalent to ${E(`${a} : ${b}`)}?`, bads[0], goods, { hint: "Divide both terms of each choice by the same number and compare.", steps: [`${goods.join(", ")} all simplify to ${a} : ${b}.`, `<b>${bads[0]}</b> does not simplify to ${a} : ${b}, so it is not equivalent.`] });
+    return mc(`Which ratio is equivalent to ${E(`${a} : ${b}`)}?`, goods[0], bads, { hint: "Multiply both terms by the same number. Adding does not work.", steps: [`${goods[0]} = ${a} × ${+goods[0].split(" : ")[0] / a} : ${b} × ${+goods[0].split(" : ")[0] / a}`, `So <b>${goods[0]}</b> is equivalent to ${a} : ${b}.`] });
+  },
+  () => { // ratio table
+    const [u, w] = pick(CTX1); let a, b; do { a = rnd(1, 6); b = rnd(2, 9); } while (a === b);
+    const ms = shuffle([2, 3, 4, 5, 6, 8, 10]).slice(0, 3).sort((x, y) => x - y), hide = rnd(0, 2), col = Math.random() < .5 ? 0 : 1;
+    const rows = [[a, b], ...ms.map(m => [a * m, b * m])];
+    const target = rows[hide + 1][col];
+    const shown = rows.map((r, i) => (i === hide + 1 ? r.map((c, j) => (j === col ? "?" : c)) : r));
+    return numQ(`The table shows equivalent ratios of ${u} to ${w}. What number replaces the <b>?</b>${tableHTML([cap(u), cap(w)], shown)}`, target, target, { hint: `Look at the first row: ${a} ${u} for ${b} ${w}. How many times bigger is the row with the “?”`, steps: [`In that row the ${col ? u : w} is ${rows[hide + 1][1 - col]}, which is ${ms[hide]} × ${col ? a : b}.`, `${col ? b : a} × ${ms[hide]} = <b>${target}</b>`] });
+  },
+])();
+
+G[2] = hard => pick([
+  () => { // k from a table
+    const k = hard ? pick([1.5, 2.5, 0.5, 0.75, 2 / 3, 5 / 2, 4 / 3, 1.25]) : pick([2, 3, 4, 5, 6, 7, 8, 1.5, 2.5]);
+    const d = toFrac(k)[1]; const xs = shuffle([1, 2, 3, 4, 5, 6, 8, 10]).slice(0, 3).sort((a, b) => a - b).map(x => x * d);
+    return numQ(`This table shows a proportional relationship. What is the constant of proportionality, <b>k</b>?${tableHTML(["x", "y"], xs.map(x => [x, dec(k * x)]))}`, k, fmt(k), { hint: "Divide y by x for any row.", steps: [`k = y ÷ x = ${dec(k * xs[0])} ÷ ${xs[0]} = <b>${fmt(k)}</b>`, `Check another row: ${dec(k * xs[1])} ÷ ${xs[1]} = ${fmt(k)} ✓`] });
+  },
+  () => { // evaluate y = kx
+    const k = hard ? pick([1.5, 2.5, 3.5, 0.75, 1.25, 12, 15]) : pick([3, 4, 5, 6, 7, 8, 9, 12]); const x = rnd(2, 12);
+    return numQ(`A proportional relationship is ${E(`y = ${dec(k)}x`)}. What is y when x = ${x}?`, k * x, dec(k * x), { hint: "Multiply k by x.", steps: [`y = ${dec(k)} × ${x} = <b>${dec(k * x)}</b>`] });
+  },
+  () => { // unit rate story
+    const [item, items] = pick([["notebook", "notebooks"], ["ticket", "tickets"], ["bag of apples", "bags of apples"], ["sandwich", "sandwiches"], ["pen", "pens"]]);
+    const u = pick([1.25, 2.5, 3.75, 4.5, 6.25, 8.5, 12, 15.5, 2.4, 3.2]), n = rnd(3, 9), tot = +(u * n).toFixed(2);
+    if (hard) { const m = rnd(10, 20); return numQ(`${n} ${items} cost ${money(tot)}. At the same price each, how much do <b>${m}</b> ${items} cost?`, u * m, money(u * m), { hint: "First find the price of 1 (the unit rate).", steps: [`Unit price: ${money(tot)} ÷ ${n} = ${money(u)} per ${item}`, `${m} × ${money(u)} = <b>${money(u * m)}</b>`] }); }
+    return numQ(`${n} ${items} cost ${money(tot)}. What is the unit price (the cost of one ${item})?`, u, money(u), { hint: "Divide the total cost by the number of items.", steps: [`${money(tot)} ÷ ${n} = <b>${money(u)}</b> per ${item}`] });
+  },
+  () => { // which equation is proportional
+    const k = rnd(2, 9), b = rnd(1, 9);
+    const right = pick([`y = ${k}x`, `y = x/${k}`, `y = ${k / 2 === Math.floor(k / 2) ? k / 2 + ".5" : k + ".5"}x`]);
+    return mc("Which equation represents a <b>proportional</b> relationship?", right, [`y = ${k}x + ${b}`, `y = x + ${k}`, `y = ${k}x²`, `y = ${k}/x`, `y = ${k}x − ${b}`], { hint: "Proportional relationships look exactly like y = kx (nothing added or subtracted, no powers).", steps: [`Only <b>${right}</b> has the form y = kx.`, "Adding a number, squaring x, or dividing by x breaks the pattern."] });
+  },
+  () => { // is the table proportional?
+    const k = rnd(2, 6), prop = Math.random() < .5, b = prop ? 0 : nz(1, 4);
+    const xs = shuffle([1, 2, 3, 4, 5, 6]).slice(0, 3).sort((a, c) => a - c);
+    const rows = xs.map(x => [x, k * x + b]);
+    const ratios = rows.map(([x, y]) => fmt(y / x)).join(", ");
+    return mc(`Is this relationship proportional?${tableHTML(["x", "y"], rows)}`, prop ? "Yes: y ÷ x is the same for every row" : "No: y ÷ x is not the same for every row",
+      [prop ? "No: y ÷ x is not the same for every row" : "Yes: y ÷ x is the same for every row"], { hint: "Work out y ÷ x for each row.", steps: [`y ÷ x for each row: ${ratios}`, prop ? `They are all ${k}, so it <b>is proportional</b> (y = ${k}x).` : "The ratios are different, so it is <b>not proportional</b>."] });
+  },
+  () => { // write the equation
+    const k = hard ? pick([2.5, 1.5, 0.5, 3.5, 2 / 3, 3 / 4]) : rnd(2, 12); const d = toFrac(k)[1]; const x = rnd(2, 6) * d, y = k * x;
+    const kStr = d === 1 ? String(k) : Number.isInteger(k * 10) ? dec(k) : `(${fmt(k)})`;
+    return { q: `y is proportional to x, and y = ${dec(y)} when x = ${x}. Write the equation for this relationship.`, input: "eq", check: v => checkEq(v, k), ans: `y = ${kStr}x`, ph: "y = ", hint: "Find k = y ÷ x, then write y = kx.", steps: [`k = ${dec(y)} ÷ ${x} = ${fmt(k)}`, `Equation: <b>y = ${kStr}x</b>`] };
+  },
+])();
+
+const quadrant = (x, y) => (x > 0 && y > 0 ? "I" : x < 0 && y > 0 ? "II" : x < 0 && y < 0 ? "III" : x > 0 && y < 0 ? "IV" : "axis");
+G[3] = hard => pick([
+  () => { // read a point
+    const R = hard ? 8 : 6; let a, b; do { a = rnd(-R, R); b = rnd(-R, R); } while (!a && !b);
+    return { q: "What are the coordinates of point <b>P</b>?", input: "point", check: v => checkPoint(v, a, b), ans: pt(a, b), ansPlain: `(${a}, ${b})`, ph: "(x, y)", chart: { x: [-R - 1, R + 1], y: [-R - 1, R + 1], square: true, maxH: 420, xstep: 1, ystep: 1 },
+      draw: c => c.dot(a, b, { color: "#2563eb", label: "P", r: 6 }), reveal: c => { c.seg(a, 0, a, b, { color: "#ea580c", width: 2, dash: [5, 4] }); c.seg(0, b, a, b, { color: "#0d9488", width: 2, dash: [5, 4] }); c.dot(a, b, { color: "#2563eb", label: "P " + pt(a, b), r: 6 }); },
+      hint: "Start at the origin. How far left/right? That is x. Then how far up/down? That is y.", steps: [`Left/right: ${a >= 0 ? a + " right" : -a + " left"}, so x = ${fmt(a)}`, `Up/down: ${b >= 0 ? b + " up" : -b + " down"}, so y = ${fmt(b)}`, `P = <b>${pt(a, b)}</b>`] };
+  },
+  () => { // quadrant
+    let a, b; do { a = nz(-9, 9); b = nz(-9, 9); } while (false);
+    if (hard && Math.random() < .35) { if (Math.random() < .5) a = 0; else b = 0; }
+    const qd = quadrant(a, b), right = qd === "axis" ? "On an axis (not in a quadrant)" : "Quadrant " + qd;
+    return mc(`In which quadrant is the point ${E(pt(a, b))}?`, right, ["Quadrant I", "Quadrant II", "Quadrant III", "Quadrant IV", "On an axis (not in a quadrant)"], { n: hard ? 5 : 4, keep: ["Quadrant I", "Quadrant II", "Quadrant III", "Quadrant IV", "On an axis (not in a quadrant)"], hint: "Quadrant I is (+, +). Go counter-clockwise: II (−, +), III (−, −), IV (+, −).",
+      steps: [`x is ${a > 0 ? "positive" : a < 0 ? "negative" : "zero"} and y is ${b > 0 ? "positive" : b < 0 ? "negative" : "zero"}.`, `So the point is <b>${right.toLowerCase().startsWith("on") ? "on an axis" : "in " + right}</b>.`] });
+  },
+  () => { // dilation
+    const k = hard ? pick([-1 / 2, -2, 1 / 2, 3, 1.5]) : pick([2, 3, 1 / 2]); const d = toFrac(k)[1];
+    let a, b; do { a = nz(-4, 4) * d; b = nz(-4, 4) * d; } while (Math.abs(a * k) > 12 || Math.abs(b * k) > 12);
+    const ka = k * a, kb = k * b, R = Math.max(8, Math.abs(a), Math.abs(b), Math.abs(ka), Math.abs(kb)) + 1;
+    return { q: `Point A ${E(pt(a, b))} is dilated about the origin with scale factor <b>k = ${fmt(k)}</b>. What are the coordinates of A′?`, input: "point", check: v => checkPoint(v, ka, kb), ans: pt(ka, kb), ansPlain: `(${ka}, ${kb})`, ph: "(x, y)",
+      chart: { x: [-R, R], y: [-R, R], square: true, maxH: 420, xstep: R > 10 ? 2 : 1, ystep: R > 10 ? 2 : 1 }, draw: c => c.dot(a, b, { color: "#2563eb", label: "A" }),
+      reveal: c => { c.seg(0, 0, Math.abs(k) > 1 ? ka : a, Math.abs(k) > 1 ? kb : b, { color: "#94a3b8", width: 1.5, dash: [5, 4] }); if (k < 0) c.seg(0, 0, ka, kb, { color: "#94a3b8", width: 1.5, dash: [5, 4] }); c.dot(a, b, { color: "#2563eb", label: "A" }); c.dot(ka, kb, { color: "#ea580c", label: "A′" }); },
+      hint: "Multiply BOTH coordinates by k.", steps: [`x′ = ${fmt(a)} × ${fmt(k)} = ${fmt(ka)}`, `y′ = ${fmt(b)} × ${fmt(k)} = ${fmt(kb)}`, `A′ = <b>${pt(ka, kb)}</b>`] };
+  },
+  () => { // moves from the origin
+    let a, b; do { a = rnd(-8, 8); b = rnd(-8, 8); } while (!a || !b);
+    return { q: `Start at the origin. Move <b>${Math.abs(a)} units ${a > 0 ? "right" : "left"}</b> and then <b>${Math.abs(b)} units ${b > 0 ? "up" : "down"}</b>. What point are you at?`, input: "point", check: v => checkPoint(v, a, b), ans: pt(a, b), ansPlain: `(${a}, ${b})`, ph: "(x, y)",
+      hint: "Right is +x, left is −x, up is +y, down is −y.", chart: { x: [-9, 9], y: [-9, 9], square: true, maxH: 420, xstep: 1, ystep: 1 }, draw: () => {}, reveal: c => { c.seg(0, 0, a, 0, { color: "#ea580c" }); c.seg(a, 0, a, b, { color: "#0d9488" }); c.dot(a, b, { color: "#2563eb", label: pt(a, b) }); },
+      steps: [`${a > 0 ? "Right" : "Left"} ${Math.abs(a)} → x = ${fmt(a)}`, `${b > 0 ? "Up" : "Down"} ${Math.abs(b)} → y = ${fmt(b)}`, `The point is <b>${pt(a, b)}</b>`] };
+  },
+  () => { // vocabulary
+    const V = [["What is the point (0, 0) called?", "The origin", ["The x-axis", "Quadrant I", "The y-intercept"]],
+      ["Which axis is the <b>horizontal</b> number line?", "The x-axis", ["The y-axis", "The origin", "Quadrant II"]],
+      ["Which axis is the <b>vertical</b> number line?", "The y-axis", ["The x-axis", "The origin", "Quadrant IV"]],
+      ["In the ordered pair (4, −7), which number is the x-coordinate?", "4", ["−7", "Both", "Neither"]],
+      ["In which quadrant are <b>both</b> coordinates negative?", "Quadrant III", ["Quadrant I", "Quadrant II", "Quadrant IV"]],
+      ["In which quadrant is x negative and y positive?", "Quadrant II", ["Quadrant I", "Quadrant III", "Quadrant IV"]]];
+    const [q, r, w] = pick(V);
+    return mc(q, r, w, { hint: "x is horizontal and comes first. Quadrants go counter-clockwise from the top right.", steps: [`<b>${r}</b>`] });
+  },
+])();
+
+const CTX4 = [["Hours", "Miles", "miles per hour"], ["Tickets", "Cost ($)", "dollars per ticket"], ["Minutes", "Pages read", "pages per minute"], ["Hours worked", "Dollars earned", "dollars per hour"], ["Cups of flour", "Cookies", "cookies per cup"]];
+G[4] = hard => pick([
+  () => { // k from a graph
+    const k = hard ? pick([1.5, 2.5, 0.5, 2 / 3, 4 / 3, 3 / 4]) : pick([1, 2, 3, 4, 5]); const d = toFrac(k)[1], x0 = d * rnd(1, 2);
+    const xmax = Math.max(6, 3 * d), ymax = Math.ceil(k * xmax / 2 + 1) * 2;
+    const [xl, yl, rate] = hard ? pick(CTX4) : ["x", "y", ""];
+    return numQ(`The graph shows a proportional relationship.${rate ? ` What is the unit rate in <b>${rate}</b>?` : " What is the constant of proportionality, k?"}`, k, fmt(k),
+      { chart: { x: [0, xmax], y: [0, ymax], xl, yl, xstep: 1 }, draw: c => { c.curve(x => k * x, { from: 0 }); c.dot(x0, k * x0, { color: "#ea580c", label: pt(x0, k * x0) }); }, reveal: c => { c.curve(x => k * x, { from: 0 }); c.dot(x0, k * x0, { color: "#ea580c", label: pt(x0, k * x0) }); c.dot(1, k, { color: "#16a34a", label: `(1, ${fmt(k)})` }); },
+        hint: "Use the marked point: k = y ÷ x.", steps: [`The point ${pt(x0, k * x0)} is on the line.`, `k = ${fmt(k * x0)} ÷ ${x0} = <b>${fmt(k)}</b>`, `The point (1, ${fmt(k)}) is on the line too.`] });
+  },
+  () => { // which line is proportional
+    const labels = shuffle(["A", "B", "C"]), k = pick([1, 2, 0.5, 1.5]), b = pick([2, 3, -2]), m2 = pick([0.5, 1, 2]);
+    const lines = [{ f: x => k * x, prop: true, d: `goes through the origin` }, { f: x => k * x + b, prop: false, d: `does not go through the origin` }, { f: x => m2 * x * x / 4, prop: false, d: "is curved, not straight" }];
+    const cols = ["#2563eb", "#ea580c", "#16a34a"];
+    lines.forEach((l, i) => { l.lab = labels[i]; l.col = cols[i]; });
+    const right = "Line " + lines[0].lab;
+    return mc("Which graph shows a <b>proportional</b> relationship?", right, ["Line A", "Line B", "Line C"].filter(s => s !== right), { keep: false,
+      chart: { x: [0, 8], y: [-3, 12], xstep: 1 }, draw: c => lines.forEach(l => { c.curve(l.f, { color: l.col, from: 0 }); const xe = [7, 6.3, 5.6][labels.indexOf(l.lab)]; const ye = Math.min(11, l.f(xe)); c.label(Math.min(7.3, xe), ye + .6, l.lab, l.col); }),
+      hint: "A proportional graph is a straight line through (0, 0).", steps: lines.map(l => `Line ${l.lab} ${l.d}${l.prop ? " and is straight → <b>proportional</b>" : " → not proportional"}.`) });
+  },
+  () => { // meaning of (1, k)
+    const [xl, yl, rate] = pick(CTX4), k = rnd(3, 15);
+    const xu = xl.toLowerCase().replace(/s$/, ""), yu = yl.toLowerCase();
+    return mc(`A graph of <b>${xl}</b> (x) and <b>${yl}</b> (y) is a straight line through the origin that passes through ${E(`(1, ${k})`)}. What does this point mean?`, `The unit rate is ${k} ${rate}.`,
+      [`The unit rate is 1 ${rate.replace(/^\w+/, xu)}.`, `It starts at ${k} ${yu.replace(" ($)", "")} when x = 0.`, `The rate goes up by 1 every time.`], { hint: "(1, k) shows what you get for 1 unit of x.", steps: [`For x = 1 (one ${xu}), y = ${k}.`, `So k = ${k}: <b>${k} ${rate}</b>.`] });
+  },
+  () => { // use a point to predict
+    const k = pick([2, 3, 4, 5, 6, 8, 12, 1.5, 2.5]), x1 = rnd(2, 5), x2 = rnd(6, 12);
+    return numQ(`A proportional graph passes through ${E(pt(x1, k * x1))}. What is y when x = ${x2}?`, k * x2, dec(k * x2), { hint: "Find k first: k = y ÷ x.", steps: [`k = ${dec(k * x1)} ÷ ${x1} = ${fmt(k)}`, `y = ${fmt(k)} × ${x2} = <b>${dec(k * x2)}</b>`] });
+  },
+  () => { // steeper line
+    const ks = shuffle([1, 2, 3, 0.5]).slice(0, 3), labels = ["A", "B", "C"], cols = ["#2563eb", "#ea580c", "#16a34a"];
+    const big = ks.indexOf(Math.max(...ks));
+    return mc("Three proportional relationships are graphed. Which one has the <b>greatest</b> constant of proportionality?", "Line " + labels[big], labels.filter((_, i) => i !== big).map(l => "Line " + l), { keep: false,
+      chart: { x: [0, 6], y: [0, 12], xstep: 1 }, draw: c => ks.forEach((k, i) => { c.curve(x => k * x, { color: cols[i], from: 0 }); const xe = Math.min(5.6, 11 / k); c.label(xe, k * xe + .5, labels[i], cols[i]); }),
+      hint: "The bigger k is, the steeper the line.", steps: [...ks.map((k, i) => `Line ${labels[i]} goes through (1, ${fmt(k)}), so k = ${fmt(k)}.`), `The steepest line is <b>Line ${labels[big]}</b>.`] });
+  },
+])();
+
+const KS = [2, 3, 4, 1 / 2, 1 / 3, 3 / 2, 5 / 2, 2 / 3, 3 / 4, 5 / 4];
+G[5] = hard => pick([
+  () => { // find k
+    const k = hard ? pick(KS) : pick([2, 3, 4, 5, 1 / 2]); const d = toFrac(k)[1], s = rnd(1, 4) * d * (hard ? 1 : rnd(1, 3)), c = k * s;
+    return numQ(`A side of a figure is <b>${s} cm</b>. The corresponding side of a scaled copy is <b>${dec(c)} cm</b>. What is the scale factor from the original to the copy?`, k, fmt(k), { hint: "k = copy length ÷ original length.", steps: [`k = ${dec(c)} ÷ ${s} = <b>${fmt(k)}</b>`, k > 1 ? "k > 1: the copy is an enlargement." : "k < 1: the copy is a reduction."] });
+  },
+  () => { // copy length
+    const k = hard ? pick(KS) : pick([2, 3, 4, 1 / 2, 1 / 4]); const d = toFrac(k)[1], s = rnd(1, 6) * d;
+    return numQ(`A figure has a side of <b>${s} cm</b>. A scaled copy uses a scale factor of <b>${fmt(k)}</b>. How long is the corresponding side of the copy?`, k * s, `${dec(k * s)} cm`, { ansPlain: dec(k * s), hint: "Copy length = original × k.", steps: [`${s} × ${fmt(k)} = <b>${dec(k * s)} cm</b>`] });
+  },
+  () => { // original length
+    const k = hard ? pick([3 / 2, 5 / 2, 2 / 3, 4]) : pick([2, 3, 4, 5]); const n = toFrac(k)[0], o = rnd(1, 6) * (hard ? toFrac(k)[1] : 1) * (n > 1 ? 1 : 1), c = k * o;
+    return numQ(`A scaled copy was made with a scale factor of <b>${fmt(k)}</b>. A side of the copy is <b>${dec(c)} cm</b>. How long was the original side?`, o, `${o} cm`, { ansPlain: String(o), hint: "Original = copy ÷ k (or copy × 1/k).", steps: [`${dec(c)} ÷ ${fmt(k)} = <b>${o} cm</b>`, `Check: ${o} × ${fmt(k)} = ${dec(c)} ✓`] });
+  },
+  () => { // reciprocal
+    let n, d; do { n = rnd(1, 9); d = rnd(1, 9); } while (n === d || gcd(n, d) !== 1);
+    const k = n / d;
+    return numQ(`The scale factor from figure A to figure B is <b>${fmt(k)}</b>. What scale factor takes figure B back to figure A?`, d / n, fmt(d / n), { hint: "Use the reciprocal: flip the fraction.", steps: [`The reciprocal of ${fmt(k)} is <b>${fmt(d / n)}</b>.`, `Check: ${fmt(k)} × ${fmt(d / n)} = 1 ✓`] });
+  },
+  () => { // enlargement / reduction
+    const k = pick([...KS, 1, 0.8, 1.2, 5]);
+    const right = k > 1 ? "An enlargement (the copy is bigger)" : k < 1 ? "A reduction (the copy is smaller)" : "Same size";
+    return mc(`A scaled copy is made with scale factor <b>${fmt(k)}</b>. What kind of copy is it?`, right, ["An enlargement (the copy is bigger)", "A reduction (the copy is smaller)", "Same size"], { keep: ["An enlargement (the copy is bigger)", "A reduction (the copy is smaller)", "Same size"], n: 3, hint: "Compare k to 1.", steps: [`k = ${fmt(k)} is ${k > 1 ? "greater than" : k < 1 ? "less than" : "equal to"} 1, so: <b>${right}</b>.`] });
+  },
+  () => { // rectangle dimensions
+    const k = hard ? pick([3 / 4, 2 / 3, 3 / 2, 5 / 2]) : pick([2, 3, 1 / 2]); const d = toFrac(k)[1];
+    let a = rnd(1, 4) * d, b = rnd(2, 5) * d; if (a === b) b += d;
+    const r = `${dec(a * k)} cm by ${dec(b * k)} cm`;
+    return mc(`A rectangle is <b>${a} cm by ${b} cm</b>. A scaled copy uses a scale factor of <b>${fmt(k)}</b>. What are the dimensions of the copy?`, r,
+      [`${dec(a * k)} cm by ${b} cm`, `${dec(a + k)} cm by ${dec(b + k)} cm`, `${dec(a / k)} cm by ${dec(b / k)} cm`, `${dec(a * k * k)} cm by ${dec(b * k * k)} cm`], { hint: "Multiply BOTH dimensions by k.", steps: [`${a} × ${fmt(k)} = ${dec(a * k)} cm`, `${b} × ${fmt(k)} = ${dec(b * k)} cm`, `The copy is <b>${r}</b>.`] });
+  },
+])();
+
+G[6] = hard => pick([
+  () => { // map: drawing → actual
+    const s = pick([2, 3, 4, 5, 10, 15, 20, 25, 50]), dd = hard ? rnd(3, 19) / 2 : rnd(2, 12), u = pick(["km", "miles"]), mu = u === "km" ? "cm" : "inch";
+    return numQ(`A map uses the scale <b>1 ${mu} : ${s} ${u}</b>. Two towns are <b>${dec(dd)} ${mu === "cm" ? "cm" : dd === 1 ? "inch" : "inches"}</b> apart on the map. What is the actual distance?`, dd * s, `${dec(dd * s)} ${u}`, { ansPlain: dec(dd * s), hint: "Drawing → actual: multiply by the scale.", steps: [`Each ${mu} stands for ${s} ${u}.`, `${dec(dd)} × ${s} = <b>${dec(dd * s)} ${u}</b>`] });
+  },
+  () => { // actual → drawing
+    const f = pick([2, 4, 5, 8, 10]), dd = hard ? rnd(3, 19) / 2 : rnd(2, 10), act = dd * f;
+    return numQ(`A blueprint uses the scale <b>1 inch : ${f} feet</b>. A wall is <b>${dec(act)} feet</b> long. How long is it on the blueprint (in inches)?`, dd, `${dec(dd)} inches`, { ansPlain: dec(dd), hint: "Actual → drawing: divide by the scale.", steps: [`${dec(act)} ÷ ${f} = <b>${dec(dd)} inches</b>`] });
+  },
+  () => { // find the scale
+    const s = pick([5, 8, 12, 15, 20, 25, 40]), dd = rnd(2, 7);
+    return numQ(`On a map, <b>${dd} cm</b> stands for <b>${dd * s} km</b>. How many km does <b>1 cm</b> stand for?`, s, `${s} km`, { ansPlain: String(s), hint: "Divide the actual distance by the map distance.", steps: [`${dd * s} ÷ ${dd} = ${s}`, `The scale is <b>1 cm : ${s} km</b>.`] });
+  },
+  () => { // ratio scale with unit conversion
+    const n = pick([50, 100, 200, 250, 500]), mcm = pick([2, 4, 5, 10, 20, 40, 50]).valueOf(), actm = mcm * n / 100;
+    if (!Number.isInteger(actm * 10)) return G[6](hard);
+    return numQ(`A model ship is built with the scale <b>1 : ${n}</b>. The real ship is <b>${dec(actm)} m</b> long. How long is the model, in <b>cm</b>? (1 m = 100 cm)`, mcm, `${mcm} cm`, { ansPlain: String(mcm), hint: "Change the real length to cm, then divide by the scale.", steps: [`${dec(actm)} m = ${dec(actm * 100)} cm`, `${dec(actm * 100)} ÷ ${n} = <b>${mcm} cm</b>`] });
+  },
+  () => { // room on a floor plan
+    const s = pick([2, 3, 4, 5]), w = rnd(2, 5); let h = rnd(2, 6) + (hard ? .5 : 0); if (h === w) h++;
+    const which = Math.random() < .5;
+    if (hard) return numQ(`On a floor plan with scale <b>1 cm : ${s} m</b>, a room is drawn <b>${w} cm by ${dec(h)} cm</b>. What is the actual <b>area</b> of the room, in m²?`, w * s * h * s, `${dec(w * s * h * s)} m²`, { ansPlain: dec(w * s * h * s), hint: "Find the real length and width first, then multiply.",
+      steps: [`Real size: ${w} × ${s} = ${w * s} m by ${dec(h)} × ${s} = ${dec(h * s)} m`, `Area = ${w * s} × ${dec(h * s)} = <b>${dec(w * s * h * s)} m²</b>`] });
+    return numQ(`On a floor plan with scale <b>1 cm : ${s} m</b>, a room is drawn <b>${w} cm by ${dec(h)} cm</b>. What is the actual <b>${which ? "length of the longer side" : "length of the shorter side"}</b>, in meters?`, (which ? Math.max(w, h) : Math.min(w, h)) * s, `${dec((which ? Math.max(w, h) : Math.min(w, h)) * s)} m`,
+      { ansPlain: dec((which ? Math.max(w, h) : Math.min(w, h)) * s), hint: "Multiply the drawing length by the scale.", chart: { x: [0, 7], y: [0, 7], square: true, maxH: 360, xl: "cm", yl: "cm", xstep: 1, ystep: 1 }, draw: c => { c.fillPoly([[0.5, 0.5], [0.5 + w, 0.5], [0.5 + w, 0.5 + h], [0.5, 0.5 + h]], "#7c3aed"); c.label(0.5 + w / 2, 0.2 + 0.0, `${w} cm`, "#7c3aed", "center"); c.label(0.7 + w, 0.5 + h / 2, `${dec(h)} cm`, "#7c3aed"); },
+        steps: [`${dec(which ? Math.max(w, h) : Math.min(w, h))} cm × ${s} = <b>${dec((which ? Math.max(w, h) : Math.min(w, h)) * s)} m</b>`] });
+  },
+])();
+
+G[7] = hard => pick([
+  () => { // perimeter
+    const k = hard ? pick([3 / 2, 5 / 2, 2 / 3]) : rnd(2, 5); const d = toFrac(k)[1], P = rnd(3, 12) * 2 * d;
+    return numQ(`A polygon has a perimeter of <b>${P} cm</b>. It is scaled by a factor of <b>${fmt(k)}</b>. What is the perimeter of the scaled copy?`, P * k, `${dec(P * k)} cm`, { ansPlain: dec(P * k), hint: "Perimeter is a length, so it scales by k.", steps: [`${P} × ${fmt(k)} = <b>${dec(P * k)} cm</b>`] });
+  },
+  () => { // area
+    const k = hard ? pick([3 / 2, 5 / 2, 1 / 2]) : rnd(2, 5); const d = toFrac(k)[1], A = rnd(2, 12) * d * d;
+    return numQ(`A shape has an area of <b>${A} cm²</b>. It is scaled by a factor of <b>${fmt(k)}</b>. What is the area of the scaled copy?`, A * k * k, `${dec(A * k * k)} cm²`, { ansPlain: dec(A * k * k), hint: "Area scales by k², not k.", steps: [`k² = ${fmt(k)}² = ${fmt(k * k)}`, `${A} × ${fmt(k * k)} = <b>${dec(A * k * k)} cm²</b>`] });
+  },
+  () => { // volume
+    const k = hard ? pick([1 / 2, 3, 3 / 2]) : pick([2, 3]); const d = toFrac(k)[1], V = rnd(2, 20) * d ** 3;
+    return numQ(`A solid has a volume of <b>${V} cm³</b>. It is scaled by a factor of <b>${fmt(k)}</b>. What is the volume of the scaled solid?`, V * k ** 3, `${dec(V * k ** 3)} cm³`, { ansPlain: dec(V * k ** 3), hint: "Volume scales by k³.", steps: [`k³ = ${fmt(k)}³ = ${fmt(k ** 3)}`, `${V} × ${fmt(k ** 3)} = <b>${dec(V * k ** 3)} cm³</b>`] });
+  },
+  () => { // similar figures from two lengths
+    const pair = pick([[2, 6], [3, 6], [4, 10], [2, 5], [3, 12], [5, 15], [6, 18]]), k = pair[1] / pair[0], kind = hard ? pick(["area", "volume"]) : pick(["perimeter", "area"]);
+    const pw = kind === "perimeter" ? 1 : kind === "area" ? 2 : 3, d = toFrac(k)[1], base = (pw === 1 ? pair[0] * rnd(3, 6) : rnd(2, 9)) * d ** pw, unit = ["cm", "cm²", "cm³"][pw - 1];
+    return numQ(`Two similar ${kind === "volume" ? "cylinders" : "polygons"} have corresponding ${kind === "volume" ? "heights" : "sides"} of <b>${pair[0]} cm</b> and <b>${pair[1]} cm</b>. The smaller one has a ${kind} of <b>${base} ${unit}</b>. What is the ${kind} of the larger one?`, base * k ** pw, `${dec(base * k ** pw)} ${unit}`,
+      { ansPlain: dec(base * k ** pw), hint: `Find k first, then multiply by ${["k", "k²", "k³"][pw - 1]}.`, steps: [`k = ${pair[1]} ÷ ${pair[0]} = ${fmt(k)}`, `${cap(kind)} scales by ${["k", "k²", "k³"][pw - 1]} = ${fmt(k ** pw)}`, `${base} × ${fmt(k ** pw)} = <b>${dec(base * k ** pw)} ${unit}</b>`] });
+  },
+  () => { // what factor?
+    const k = rnd(2, 6), kind = pick(["perimeter", "area", "volume"]), pw = { perimeter: 1, area: 2, volume: 3 }[kind];
+    return numQ(`Every length of a ${kind === "volume" ? "box" : "figure"} is multiplied by <b>${k}</b>. By what number is its <b>${kind}</b> multiplied?`, k ** pw, String(k ** pw), { hint: "Perimeter × k, area × k², volume × k³.", steps: [`${cap(kind)} scales by ${["k", "k²", "k³"][pw - 1]} = <b>${k ** pw}</b>`] });
+  },
+])();
+
+/* =====================================================================
+   Explore widgets
+   ===================================================================== */
+let charts = [];
+const newChart = (el, o) => { const c = new Chart(el, o); charts.push(c); return c; };
+const sliderHTML = (id, label, min, max, step, val) => `<div class="slider"><label for="${id}">${label}</label><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"><output id="${id}o"></output></div>`;
+const sv = id => +$(id).value;
+const EX = {};
+EX[1] = el => {
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Build a ratio</h3>${sliderHTML("e1a", "Sugar (cups)", 1, 9, 1, 3)}${sliderHTML("e1b", "Flour (cups)", 1, 9, 1, 4)}${sliderHTML("e1m", "Batches ×", 1, 8, 1, 3)}
+      <div id="e1tape" style="margin-top:10px"></div><div class="readout" id="e1r"></div></div>
+    <div class="card"><h3>Ratio table</h3><div id="e1t"></div><p class="muted">Every row is the first row multiplied by the same number. That is why all the rows are <b>equivalent ratios</b>.</p>
+      <div class="row"><button class="btn small" id="e1add">What if I ADD instead?</button></div><div class="readout" id="e1w" hidden></div></div></div>`;
+  const tape = (n, m, col) => `<div style="display:flex;gap:3px;flex-wrap:wrap;margin:4px 0">${Array.from({ length: n }, () => `<div style="background:${col};color:#fff;border-radius:6px;padding:4px 0;min-width:38px;text-align:center;font-weight:800">${m}</div>`).join("")}</div>`;
+  const draw = () => {
+    const a = sv("e1a"), b = sv("e1b"), m = sv("e1m"); $("e1ao").textContent = a; $("e1bo").textContent = b; $("e1mo").textContent = "× " + m;
+    $("e1tape").innerHTML = `<div class="muted">Tape diagram (each box = ${m} cup${m > 1 ? "s" : ""})</div><b>Sugar</b>${tape(a, m, "#0d9488")}<b>Flour</b>${tape(b, m, "#ea580c")}`;
+    const g = gcd(a, b);
+    $("e1r").innerHTML = `${E(`${a} : ${b} = ${a * m} : ${b * m}`)}<br><span class="muted">Cross products: ${a} × ${b * m} = ${a * b * m} and ${b} × ${a * m} = ${a * b * m} ✓${g > 1 ? ` · simplest form ${a / g} : ${b / g}` : ""}</span>`;
+    $("e1t").innerHTML = tableHTML(["Batches", "Sugar", "Flour"], [1, 2, 3, 4, 5, 6, 8].map(k => [k, a * k, b * k]), [1, 2, 3, 4, 5, 6, 8].map(k => (k === m ? "hl" : "")));
+    $("e1w").innerHTML = `Adding ${m} to both: ${a} + ${m} : ${b} + ${m} = <b>${a + m} : ${b + m}</b>. As fractions: ${fmt(a / b)} vs ${fmt((a + m) / (b + m))}. ${a === b ? "Equal here only because a = b." : "❌ Not equal, so adding does <b>not</b> make an equivalent ratio."}`;
+  };
+  ["e1a", "e1b", "e1m"].forEach(id => $(id).oninput = draw);
+  $("e1add").onclick = () => { $("e1w").hidden = !$("e1w").hidden; };
+  draw();
+};
+EX[2] = el => {
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Change k</h3>${sliderHTML("e2k", "k", 0.25, 8, 0.25, 2.5)}${sliderHTML("e2b", "Add b", -5, 5, 1, 0)}
+      <p class="muted">Keep <b>b = 0</b> for a proportional relationship. Then move b and watch y ÷ x.</p><div id="e2t"></div></div>
+    <div class="stack"><div class="card"><canvas class="chart" id="e2c"></canvas></div><div class="readout" id="e2r"></div></div></div>`;
+  const ch = newChart($("e2c"), { x: [0, 6], y: [0, 20], xstep: 1 });
+  const draw = () => {
+    const k = sv("e2k"), b = sv("e2b"); $("e2ko").textContent = dec(k); $("e2bo").textContent = fmt(b);
+    const rows = [1, 2, 3, 4, 5].map(x => [x, dec(k * x + b), fmt((k * x + b) / x)]); const prop = b === 0;
+    $("e2t").innerHTML = tableHTML(["x", "y", "y ÷ x"], rows, rows.map(() => (prop ? "hl" : "bad")));
+    $("e2r").innerHTML = prop ? `✅ y ÷ x is always <b>${dec(k)}</b>, so the relationship is proportional: ${E(`y = ${dec(k)}x`)}` : `❌ y ÷ x keeps changing, so ${E(`y = ${dec(k)}x ${b > 0 ? "+" : "−"} ${Math.abs(b)}`)} is <b>not</b> proportional. The line misses (0, 0).`;
+    const top = Math.max(10, Math.ceil((k * 6 + Math.max(b, 0)) / 5) * 5), bot = Math.min(0, b - 1);
+    ch.set({ x: [0, 6], y: [bot, top], xstep: 1 }, false);
+    ch.layers = c => { c.curve(x => k * x + b, { color: prop ? "#0d9488" : "#d93025", from: 0 }); [1, 2, 3, 4, 5].forEach(x => c.dot(x, k * x + b, { color: prop ? "#0d9488" : "#d93025" })); c.dot(0, b, { color: "#1c2635", open: !prop, label: pt(0, b) }); };
+    ch.render();
+  };
+  ["e2k", "e2b"].forEach(id => $(id).oninput = draw); draw();
+};
+EX[3] = el => {
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Click to place point P</h3><canvas class="chart" id="e3c" style="cursor:crosshair"></canvas></div>
+    <div class="stack"><div class="card"><h3>Dilate about the origin</h3>${sliderHTML("e3k", "Scale factor k", -2, 3, 0.5, 2)}<div class="readout" id="e3r"></div></div>
+    <div class="card"><h3>Quadrants</h3><div class="vocab"><div><b>I</b> (+, +)</div><div><b>II</b> (−, +)</div><div><b>III</b> (−, −)</div><div><b>IV</b> (+, −)</div></div></div></div></div>`;
+  let P = [3, 2];
+  const ch = newChart($("e3c"), { x: [-10, 10], y: [-10, 10], square: true, maxH: 480, xstep: 1, ystep: 1 });
+  const draw = () => {
+    const k = sv("e3k"); $("e3ko").textContent = fmt(k); const [a, b] = P, Q = [k * a, k * b];
+    const qd = quadrant(a, b);
+    $("e3r").innerHTML = `P = <b>${pt(a, b)}</b>: ${a >= 0 ? a + " right" : -a + " left"}, ${b >= 0 ? b + " up" : -b + " down"} · ${qd === "axis" ? (a === 0 && b === 0 ? "the origin" : "on an axis") : "quadrant " + qd}<br>
+      P′ = (${fmt(a)} × ${fmt(k)}, ${fmt(b)} × ${fmt(k)}) = <b>${pt(Q[0], Q[1])}</b>${k < 0 ? " · a negative k flips P through the origin" : k === 0 ? " · k = 0 squashes everything onto the origin" : ""}`;
+    ch.layers = c => { c.text(c.X(5), c.Y(9), "I", "#94a3b8"); c.text(c.X(-5), c.Y(9), "II", "#94a3b8"); c.text(c.X(-5), c.Y(-9), "III", "#94a3b8"); c.text(c.X(5), c.Y(-9), "IV", "#94a3b8");
+      c.seg(0, 0, Math.abs(k) >= 1 ? Q[0] : a, Math.abs(k) >= 1 ? Q[1] : b, { color: "#cbd5e1", width: 1.5, dash: [5, 4] }); if (k < 0) c.seg(0, 0, Q[0], Q[1], { color: "#cbd5e1", width: 1.5, dash: [5, 4] });
+      c.dot(a, b, { color: "#2563eb", label: "P" }); c.dot(Q[0], Q[1], { color: "#ea580c", label: "P′" }); c.dot(0, 0, { r: 4, label: "origin", dy: 16 }); };
+    ch.render();
+  };
+  $("e3c").addEventListener("click", e => { const r = $("e3c").getBoundingClientRect(); const [x, y] = ch.toData(e.clientX - r.left, e.clientY - r.top); P = [Math.max(-10, Math.min(10, Math.round(x))), Math.max(-10, Math.min(10, Math.round(y)))]; draw(); });
+  $("e3k").oninput = draw; draw();
+};
+EX[4] = el => {
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Proportional graph visualizer</h3><canvas class="chart" id="e4c"></canvas></div>
+    <div class="stack"><div class="card"><h3>Controls</h3>${sliderHTML("e4k", "k (slope)", 0.25, 8, 0.25, 2)}${sliderHTML("e4x", "x", 0, 10, 0.5, 4)}<label class="row" style="margin-top:6px"><input type="checkbox" id="e4cmp"> Compare with y = x</label></div>
+    <div class="readout" id="e4r"></div></div></div>`;
+  const ch = newChart($("e4c"), { x: [0, 10], y: [0, 20], xstep: 1 });
+  const draw = () => {
+    const k = sv("e4k"), x = sv("e4x"), y = k * x; $("e4ko").textContent = dec(k); $("e4xo").textContent = dec(x);
+    const top = Math.max(10, Math.ceil(k * 10 / 10) * 10);
+    ch.set({ x: [0, 10], y: [0, top], xstep: 1 }, false);
+    ch.layers = c => { if ($("e4cmp").checked) c.curve(t => t, { color: "#94a3b8", width: 2, dash: [6, 5] }); c.curve(t => k * t, { color: "#2563eb", from: 0 });
+      c.seg(x, 0, x, y, { color: "#ea580c", width: 2, dash: [5, 4] }); c.seg(0, y, x, y, { color: "#ea580c", width: 2, dash: [5, 4] });
+      c.dot(1, k, { color: "#16a34a", label: `(1, ${dec(k)})` }); c.dot(x, y, { color: "#ea580c", label: pt(x, y) }); c.dot(0, 0, { r: 4, label: "(0, 0)", dy: -10 }); };
+    ch.render();
+    $("e4r").innerHTML = `${E(`y = ${dec(k)}x`)}<br>When x = ${dec(x)}: y = ${dec(k)} × ${dec(x)} = <b>${dec(y)}</b><br><span class="muted">The line goes through (0, 0) and (1, ${dec(k)}). ${x > 0 ? `Check: ${dec(y)} ÷ ${dec(x)} = ${dec(k)} = k.` : ""} Slope = k = ${dec(k)}.</span>`;
+  };
+  ["e4k", "e4x", "e4cmp"].forEach(id => $(id).oninput = draw); draw();
+};
+EX[5] = el => {
+  const SH = { Rectangle: [[0, 0], [3, 0], [3, 2], [0, 2]], Triangle: [[0, 0], [4, 0], [0, 3]], "L-shape": [[0, 0], [4, 0], [4, 1], [1, 1], [1, 3], [0, 3]] };
+  let sh = "Triangle";
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Original (blue) and scaled copy (orange)</h3><canvas class="chart" id="e5c"></canvas></div>
+    <div class="stack"><div class="card"><h3>Controls</h3><div class="chips" id="e5s">${Object.keys(SH).map(k => `<button class="chip${k === sh ? " on" : ""}" data-s="${k}">${k}</button>`).join("")}</div>${sliderHTML("e5k", "Scale factor k", 0.25, 3, 0.25, 2)}</div>
+    <div class="card"><h3>Corresponding sides</h3><div id="e5t"></div><div class="readout" id="e5r"></div></div></div></div>`;
+  const ch = newChart($("e5c"), { x: [0, 20], y: [0, 14], square: true, maxH: 460, xstep: 1, ystep: 1 });
+  const draw = () => {
+    const k = sv("e5k"); $("e5ko").textContent = fmt(k); const P = SH[sh];
+    const w = Math.max(...P.map(p => p[0])), off = w + 2;
+    const O = P.map(([x, y]) => [x + 1, y + 1]), C = P.map(([x, y]) => [x * k + off, y * k + 1]);
+    ch.set({ x: [0, Math.max(14, off + w * k + 1)], y: [0, Math.max(14, off + w * k + 1)], square: true, maxH: 460, xstep: 1, ystep: 1 }, false);
+    ch.layers = c => { c.fillPoly(O, "#2563eb"); c.fillPoly(C, "#ea580c"); };
+    ch.render();
+    const sides = P.map((p, i) => { const q = P[(i + 1) % P.length]; return Math.hypot(q[0] - p[0], q[1] - p[1]); });
+    $("e5t").innerHTML = tableHTML(["Original", "× k", "Copy"], sides.map(s => [dec(s), fmt(k), dec(s * k)]));
+    $("e5r").innerHTML = k > 1 ? `k = ${fmt(k)} > 1: an <b>enlargement</b>.` : k < 1 ? `k = ${fmt(k)} < 1: a <b>reduction</b>.` : "k = 1: the <b>same size</b>.";
+    $("e5r").innerHTML += `<br><span class="muted">The angles stay the same. To go back, multiply by 1/k = ${fmt(1 / k)}.</span>`;
+  };
+  document.querySelectorAll("#e5s .chip").forEach(b => b.onclick = () => { sh = b.dataset.s; document.querySelectorAll("#e5s .chip").forEach(c => c.classList.toggle("on", c === b)); draw(); });
+  $("e5k").oninput = draw; draw();
+};
+EX[6] = el => {
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Map ruler</h3>${sliderHTML("e6s", "1 cm stands for", 1, 50, 1, 4)}${sliderHTML("e6d", "Map distance", 0.5, 15, 0.5, 7)}<canvas class="chart" id="e6c"></canvas><div class="readout" id="e6r"></div></div>
+    <div class="card"><h3>Going the other way</h3><p>Actual distance (km): <input type="text" id="e6a" value="30" style="width:120px;display:inline-block"></p><div class="readout" id="e6b"></div>
+      <h3 style="margin-top:16px">Ratio scales</h3><p class="muted">A scale like <b>1 : 100,000</b> uses the same unit on both sides. 1 cm on the map is 100,000 cm = 1,000 m = <b>1 km</b> in real life.</p></div></div>`;
+  const ch = newChart($("e6c"), { x: [0, 15], y: [0, 2], xl: "cm on map", yl: "", xstep: 1, ystep: 5, maxH: 150 });
+  const draw = () => {
+    const s = sv("e6s"), d = sv("e6d"); $("e6so").textContent = s + " km"; $("e6do").textContent = dec(d) + " cm";
+    ch.layers = c => { c.seg(0, 1, d, 1, { color: "#7c3aed", width: 8 }); c.dot(0, 1, { color: "#2563eb", label: "A", dy: -12 }); c.dot(d, 1, { color: "#ea580c", label: "B", dy: -12 }); };
+    ch.render();
+    $("e6r").innerHTML = `Scale ${E(`1 cm : ${s} km`)}<br>Actual distance = ${dec(d)} × ${s} = <b>${dec(d * s)} km</b>`;
+    const a = numOf($("e6a").value);
+    $("e6b").innerHTML = Number.isNaN(a) ? "Type a number." : `Map distance = ${dec(a)} ÷ ${s} = <b>${dec(a / s)} cm</b>`;
+  };
+  ["e6s", "e6d", "e6a"].forEach(id => $(id).oninput = draw); draw();
+};
+EX[7] = el => {
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Scale a 2 × 2 square</h3><canvas class="chart" id="e7c"></canvas></div>
+    <div class="stack"><div class="card"><h3>Scale factor</h3>${sliderHTML("e7k", "k", 1, 4, 0.5, 2)}</div><div class="card"><h3>What gets multiplied?</h3><div id="e7t"></div><div class="readout" id="e7r"></div></div></div></div>`;
+  const ch = newChart($("e7c"), { x: [0, 13], y: [0, 13], square: true, maxH: 460, xstep: 1, ystep: 1 });
+  const draw = () => {
+    const k = sv("e7k"), s = 2 * k; $("e7ko").textContent = dec(k);
+    ch.layers = c => { c.fillPoly([[1, 1], [3, 1], [3, 3], [1, 3]], "#2563eb"); c.fillPoly([[4, 1], [4 + s, 1], [4 + s, 1 + s], [4, 1 + s]], "#ea580c", .12);
+      for (let i = 0; i < s; i += 2) for (let j = 0; j < s; j += 2) c.fillPoly([[4 + i, 1 + j], [4 + Math.min(i + 2, s), 1 + j], [4 + Math.min(i + 2, s), 1 + Math.min(j + 2, s)], [4 + i, 1 + Math.min(j + 2, s)]], "#ea580c", .08); };
+    ch.render();
+    $("e7t").innerHTML = tableHTML(["", "Original", `Scaled (k = ${dec(k)})`, "×"], [["Side", "2", dec(s), dec(k)], ["Perimeter", "8", dec(4 * s), `k = ${dec(k)}`], ["Area", "4", dec(s * s), `k² = ${dec(k * k)}`], ["Cube volume", "8", dec(s ** 3), `k³ = ${dec(k ** 3)}`]]);
+    $("e7r").innerHTML = `${dec(k * k)} copies of the blue square fit inside the orange square. That is why area is multiplied by <b>k²</b>.`;
+  };
+  $("e7k").oninput = draw; draw();
+};
+
+/* =====================================================================
+   Question engine (practice + tests)
+   ===================================================================== */
+const plainText = h => { const d = document.createElement("div"); d.innerHTML = String(h).replace(/<\/t[dh]>\s*<\/tr>/gi, " ;</td></tr>").replace(/<\/t[dh]>/gi, " </td>").replace(/<br\s*\/?>|<\/li>|<\/div>/gi, " ; "); return d.textContent.replace(/\s+/g, " ").replace(/(\s*[|;]\s*)+$/, "").trim(); };
+const KEYS = { point: ["(", ")", ",", "−"], number: ["/", ".", "−"], ratio: [" : "], eq: ["y = ", "x", "/", "(", ")", "."] };
+function mountQuestion(root, Q, { mode, lesson, onFinish, chartHost, label }) {
+  let tries = 0, done = false, usedHelp = false; const t0 = performance.now(); const maxTries = mode === "test" || (Q.input === "choice" && Q.choices.length <= 2) ? 1 : 2;
+  const sec = secOf(lesson);
+  root.innerHTML = `<div class="muted">${sec.icon} Lesson ${lesson} · ${L[lesson].title}${Q.bankId ? ` <span class="tag" style="background:#eef2ff;color:#3730a3">📚 Quiz question ${Q.bankId}</span>` : mode === "practice" ? ' <span class="tag" style="background:#ecfdf5;color:#047857">♾️ New question</span>' : ""}</div><div class="q">${Q.q}</div><div class="qa"></div><div class="fb" aria-live="polite"></div><div class="work"></div>`;
+  const qa = root.querySelector(".qa"), fb = root.querySelector(".fb"), work = root.querySelector(".work");
+  let chart = null;
+  if (chartHost) {
+    chartHost.innerHTML = Q.chart ? `<canvas class="chart"></canvas>` : "";
+    chartHost.hidden = !Q.chart;
+    if (Q.chart) { chart = newChart(chartHost.querySelector("canvas"), Q.chart); chart.layers = c => { if (done && Q.reveal) Q.reveal(c); else if (Q.draw) Q.draw(c); }; chart.render(); }
+  }
+  if (Q.input === "choice") {
+    qa.innerHTML = `<div class="ansrow" style="flex-direction:column;align-items:stretch">${Q.choices.map(c => `<button class="btn choice" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
+    qa.querySelectorAll(".choice").forEach(b => b.onclick = () => submit(b.dataset.v, b));
+  } else {
+    const keys = KEYS[Q.input] || [];
+    qa.innerHTML = `<div class="ansrow"><input type="text" placeholder="${esc(Q.ph || "Your answer")}" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="${Q.input === "number" ? "decimal" : "text"}"><button class="btn primary chk">${mode === "test" ? "Save answer" : "Check"}</button></div>
+      ${keys.length ? `<div class="keys">${keys.map(k => `<button data-ins="${esc(k)}">${esc(k.trim())}</button>`).join("")}</div>` : ""}`;
+    const inp = qa.querySelector("input");
+    qa.querySelector(".chk").onclick = () => submit(inp.value);
+    inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); if (!done) submit(inp.value); else if (onFinish.next) onFinish.next(); } };
+    qa.querySelectorAll(".keys button").forEach(b => b.onclick = e => { e.preventDefault(); const s = inp.selectionStart ?? inp.value.length, en = inp.selectionEnd ?? s; inp.value = inp.value.slice(0, s) + b.dataset.ins + inp.value.slice(en); inp.focus(); const p = s + b.dataset.ins.length; inp.setSelectionRange(p, p); });
+    if (window.innerWidth > 900) setTimeout(() => inp.focus({ preventScroll: true }), 40);
+  }
+  const record = (resp, ok, how) => {
+    if (!AM) return;
+    AM.attempt({ question: (Q.bankId ? `[Quiz Q${Q.bankId}] ` : "") + plainText(Q.q).slice(0, 280), response: String(resp).slice(0, 190), answer: plainText(Q.ansPlain || Q.ans).slice(0, 190), correct: ok, ms: performance.now() - t0,
+      topic: `L${lesson} · ${L[lesson].title}`, mode: how, session: mode === "test" ? TEST.id : undefined, meta: { lesson, section: sec.id, kind: Q.input, bank: Q.bankId || null, test: mode === "test" ? TEST.id : null, testKind: mode === "test" ? TEST.kind : null } });
+  };
+  const showSteps = () => { const s = Q.steps || []; if (s.length) work.innerHTML = `<ol class="steps">${s.map(x => `<li>${x}</li>`).join("")}</ol>`; };
+  function submit(v, btn) {
+    if (done) return;
+    if (!String(v).trim()) { fb.className = "fb info"; fb.textContent = "Type an answer first."; return; }
+    const r = Q.check(v);
+    if (r.invalid) { fb.className = "fb info"; fb.textContent = r.msg; return; }
+    tries++;
+    const ok = !!r.ok;
+    record(v, ok, mode === "test" ? label || "unit test" : tries === 1 ? (usedHelp ? "after hint" : "first try") : "second try");
+    if (mode === "test") {
+      done = true; root.querySelectorAll("button.choice, input[type=text], .chk").forEach(e => (e.disabled = true));
+      if (btn) btn.classList.add("picked");
+      onFinish({ ok, resp: v, Q, lesson }); return;
+    }
+    if (btn) btn.classList.add(ok ? "right" : "wrong");
+    if (ok) { done = true; fb.className = "fb okc"; fb.innerHTML = `✓ ${pick(["Correct!", "Nice work!", "You got it!", "Exactly right!", "Great thinking!"])} ${r.msg ? `<span style="font-weight:600">${r.msg}</span>` : ""}`; }
+    else if (tries < maxTries) { usedHelp = true; if (btn) btn.disabled = true; fb.className = "fb badc"; fb.innerHTML = `Not quite. ${r.msg || ""} Try once more. <div class="muted" style="font-weight:600">💡 ${Q.hint}</div>`; return; }
+    else {
+      done = true; fb.className = "fb badc"; fb.innerHTML = `${r.msg ? r.msg + " " : ""}The answer is <span class="eq">${esc(plainText(Q.ans))}</span>.`;
+      if (Q.input === "choice") qa.querySelectorAll(".choice").forEach(b => { if (b.dataset.v === Q.correct) b.classList.add("right"); });
+    }
+    showSteps(); if (chart) chart.render();
+    onFinish({ ok, firstTry: ok && tries === 1 && !usedHelp, Q, lesson });
+  }
+  return {
+    hint() { if (done) return; usedHelp = true; fb.className = "fb info"; fb.innerHTML = `💡 ${Q.hint}`; },
+    reveal() { if (done) { showSteps(); return; } record("(showed the steps)", false, "showed answer"); done = true; fb.className = "fb info"; fb.innerHTML = `The answer is <span class="eq">${esc(plainText(Q.ans))}</span>.`;
+      if (Q.input === "choice") qa.querySelectorAll(".choice").forEach(b => { if (b.dataset.v === Q.correct) b.classList.add("right"); });
+      showSteps(); if (chart) chart.render(); onFinish({ ok: false, firstTry: false, Q, lesson }); },
+    get done() { return done; },
+  };
+}
+
+/* =====================================================================
+   State, mastery, plan
+   ===================================================================== */
+const PLAN = (AM && AM.settings) || {};
+let STATS = load("sp-stats", {});
+let TESTS = load("sp-tests", []);
+let BST = load("sp-bank", {});
+let CUR = load("sp-cur", 1);
+const stat = n => STATS[n] || { n: 0, c: 0, recent: [] };
+const mastered = n => { const r = stat(n).recent.slice(-5); return r.length >= 5 && r.reduce((a, b) => a + b, 0) >= 4; };
+const pct = n => { const r = stat(n).recent.slice(-5); return r.length ? Math.round(r.reduce((a, b) => a + b, 0) / Math.max(5, r.length) * 100) : 0; };
+const nMastered = () => Object.keys(L).filter(k => mastered(+k)).length;
+const bankRight = () => BANK.filter(b => BST[b.id] && BST[b.id].last === 1).length;
+function recordBank(Q, ok) { if (!Q.bankId) return; const s = BST[Q.bankId] || { n: 0, last: 0 }; s.n++; s.last = ok ? 1 : 0; BST[Q.bankId] = s; save("sp-bank", BST); }
+function recordResult(n, firstTry) {
+  const s = stat(n); s.n++; if (firstTry) s.c++; s.recent.push(firstTry ? 1 : 0); if (s.recent.length > 20) s.recent.shift(); STATS[n] = s; save("sp-stats", STATS);
+  if (AM && mastered(n)) AM.award(`lesson-${n}`, `Mastered: ${L[n].title}`, secOf(n).icon);
+  const m = nMastered();
+  if (AM) [[3, "🌟"], [5, "🏅"], [7, "🏆"]].forEach(([k, ic]) => { if (m >= k) AM.award(`mastered-${k}`, k === 7 ? "All 7 proportional-reasoning lessons mastered" : `${k} proportional-reasoning lessons mastered`, ic); });
+  updateHeader();
+}
+function updateHeader() { $("hdrMastered").innerHTML = `⭐ ${nMastered()} / ${NL}<span class="hm"> lessons</span> · 📚 ${bankRight()} / 50`; }
+const planLessons = () => (Array.isArray(PLAN.lessons) ? PLAN.lessons.map(Number).filter(n => L[n]) : []);
+
+/* =====================================================================
+   Views
+   ===================================================================== */
+function clearCharts() { charts.forEach(c => c.destroy()); charts = []; }
+const setTheme = c => { document.documentElement.style.setProperty("--c", c); document.documentElement.style.setProperty("--soft", c + "14"); };
+function renderHome() {
+  const done = nMastered(), focus = planLessons(), br = bankRight();
+  $("home").innerHTML = `<div class="hero"><div><h2>Scale Drawings &amp; Proportional Relationships</h2><p>Math 7: equivalent ratios, the constant of proportionality, graphs through the origin, the coordinate plane, scale factors, maps and blueprints, and how area and volume scale.</p>
+      <ul><li>How can you tell whether two quantities are proportional?</li><li>How do you use a scale to find real distances?</li><li>Why does area grow by k² when lengths grow by k?</li></ul></div>
+    <div class="meter"><b>${done} / ${NL}</b>lessons mastered<div class="bigbar"><div style="width:${done / NL * 100}%"></div></div>
+      <div style="font-weight:800">📚 ${br} / 50 quiz questions right</div><div class="bigbar"><div style="width:${br / 50 * 100}%"></div></div>
+      <div class="row"><button class="btn big" id="hContinue" style="background:#fff;color:#134e4a;border-color:#fff">▶ Continue: Lesson ${CUR}</button><button class="btn" id="hTest" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.6)">📝 Tests</button></div></div></div>
+    <div class="secs">${SECTIONS.map(S => `<div class="sec"><div class="head" style="background:${S.color}"><span>${S.icon}</span>${S.name}</div>
+      ${S.lessons.map(n => { const m = mastered(n), p = pct(n), st = stat(n), bk = BANK.filter(b => b.l === n), bd = bk.filter(b => BST[b.id] && BST[b.id].last === 1).length;
+        return `<button class="les" data-n="${n}"><span class="num" style="background:${S.color}">${n}</span><span class="t">${L[n].title}${focus.includes(n) ? ' <span class="tag" style="background:#fff1e6;color:#9a3412">📌 tutor’s plan</span>' : ""}<br><span class="muted" style="font-weight:600;font-size:13px">📚 ${bd} / ${bk.length} quiz questions</span></span>
+        <span class="mini"><div style="width:${p}%;background:${S.color}"></div></span><span class="st" style="color:${m ? "#0f9d58" : "#94a3b8"}">${m ? "★" : st.n ? p + "%" : ""}</span></button>`; }).join("")}</div>`).join("")}</div>`;
+  document.querySelectorAll(".les").forEach(b => b.onclick = () => openLesson(+b.dataset.n, "learn"));
+  $("hContinue").onclick = () => openLesson(CUR, "learn"); $("hTest").onclick = () => go("test");
+}
+let LV = { n: 1, tab: "learn", runner: null, force: null };
+function openLesson(n, tab = "learn", force = null) { LV = { n, tab, runner: null, force }; CUR = n; save("sp-cur", n); go("lesson"); }
+function renderLesson() {
+  clearCharts();
+  const n = LV.n, S = secOf(n), D = L[n];
+  setTheme(S.color);
+  $("lesson").innerHTML = `<div class="lhead" style="background:linear-gradient(120deg, ${S.color}, ${S.color}cc)"><div class="n">${n}</div><div><div class="s">${S.icon} ${S.name}</div><h2>${D.title}</h2></div><div class="grow"></div>
+      ${n > 1 ? `<button class="btn small" id="lPrev">‹ Lesson ${n - 1}</button>` : ""}${n < NL ? `<button class="btn small" id="lNext">Lesson ${n + 1} ›</button>` : ""}</div>
+    <div class="seg" id="lTabs"><button data-t="learn">📖 Learn</button><button data-t="explore">🔍 Explore</button><button data-t="practice">✏️ Practice</button></div><div id="lBody"></div>`;
+  if ($("lPrev")) $("lPrev").onclick = () => openLesson(n - 1, LV.tab);
+  if ($("lNext")) $("lNext").onclick = () => openLesson(n + 1, LV.tab);
+  document.querySelectorAll("#lTabs button").forEach(b => { b.classList.toggle("on", b.dataset.t === LV.tab); b.onclick = () => { LV.tab = b.dataset.t; renderLesson(); }; });
+  const body = $("lBody");
+  if (LV.tab === "learn") {
+    body.innerHTML = `<div class="grid2"><div class="card"><h3>Key ideas</h3><ul class="keylist">${D.key.map(k => `<li>${k}</li>`).join("")}</ul></div>
+      <div class="stack"><div class="card"><h3>Example</h3><div class="example">${D.example}</div></div><div class="card"><h3>Words to know</h3><div class="vocab">${D.vocab.map(([a, b]) => `<div><b>${a}</b><br><span class="muted">${b}</span></div>`).join("")}</div></div>
+      <div class="row"><button class="btn primary big" id="lGoEx">🔍 Explore it</button><button class="btn big" id="lGoPr">✏️ Practice</button></div></div></div>`;
+    $("lGoEx").onclick = () => { LV.tab = "explore"; renderLesson(); }; $("lGoPr").onclick = () => { LV.tab = "practice"; renderLesson(); };
+  } else if (LV.tab === "explore") { EX[n](body); }
+  else {
+    body.innerHTML = `<div class="grid2"><div class="card"><div id="pq"></div><div class="row" style="margin-top:12px"><button class="btn" id="pHint">💡 Hint</button><button class="btn" id="pSteps">👣 Show steps</button><span style="flex:1"></span><button class="btn primary" id="pNext">Next question ›</button></div></div>
+      <div class="stack"><div class="card" id="pChart" hidden></div><div class="card"><h3>This lesson</h3><div id="pStat"></div></div></div></div>`;
+    $("pHint").onclick = () => LV.runner && LV.runner.hint(); $("pSteps").onclick = () => LV.runner && LV.runner.reveal(); $("pNext").onclick = nextPractice;
+    nextPractice();
+  }
+}
+function lessonStatHTML(n) {
+  const s = stat(n), r = s.recent.slice(-5), bk = BANK.filter(b => b.l === n);
+  return `<div class="row">${[0, 1, 2, 3, 4].map(i => `<span style="width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;font-weight:900;background:${r[i] === 1 ? "#dcfce7" : r[i] === 0 ? "#fee2e2" : "#f1f5f9"};color:${r[i] === 1 ? "#15803d" : r[i] === 0 ? "#b91c1c" : "#94a3b8"}">${r[i] === 1 ? "✓" : r[i] === 0 ? "✗" : "·"}</span>`).join("")}</div>
+    <p class="muted" style="margin:8px 0 0">Get 4 of your last 5 right on the first try to master this lesson. ${mastered(n) ? '<b class="ok">★ Mastered!</b>' : ""}</p><p class="muted" style="margin:4px 0 0">Answered: ${s.n} · first-try correct: ${s.c}</p>
+    <p class="muted" style="margin:10px 0 4px"><b>📚 Quiz questions for this lesson</b> (you get these first, then new ones):</p>${bankGrid(bk)}`;
+}
+function bankGrid(list) {
+  return `<div class="bgrid">${list.map(b => { const s = BST[b.id]; return `<button class="bq ${s ? (s.last ? "y" : "n") : ""}" data-b="${b.id}" title="Quiz question ${b.id}">${b.id}</button>`; }).join("")}</div>`;
+}
+function wireBankGrid(root) { root.querySelectorAll(".bq").forEach(b => b.onclick = () => { const q = BANK.find(x => x.id === +b.dataset.b); openLesson(q.l, "practice", q.id); }); }
+function nextPractice() {
+  clearCharts();
+  const n = LV.n;
+  let Q;
+  if (LV.force) { Q = bankQ(BANK.find(b => b.id === LV.force)); LV.force = null; }
+  else {
+    const bk = BANK.filter(b => b.l === n), unseen = bk.filter(b => !BST[b.id]), missed = bk.filter(b => BST[b.id] && !BST[b.id].last);
+    Q = unseen.length ? bankQ(unseen[0]) : missed.length && Math.random() < .35 ? bankQ(pick(missed)) : G[n](Math.random() < 0.35);
+  }
+  $("pStat").innerHTML = lessonStatHTML(n); wireBankGrid($("pStat"));
+  LV.runner = mountQuestion($("pq"), Q, { mode: "practice", lesson: n, chartHost: $("pChart"), onFinish: Object.assign(res => { recordBank(Q, res.ok); recordResult(n, res.firstTry); $("pStat").innerHTML = lessonStatHTML(n); wireBankGrid($("pStat")); }, { next: nextPractice }) });
+}
+
+/* ---------- tests ---------- */
+let TEST = { id: null };
+function testLength() { const n = Number(PLAN.testLength); return [7, 14, 21].includes(n) ? n : 14; }
+function renderTestStart() {
+  clearCharts(); setTheme("#0d9488");
+  const len = testLength();
+  $("test").innerHTML = `<div class="grid2"><div class="stack"><div class="card"><h3>Mixed practice test</h3><p style="font-size:18px">${len} questions from all 7 lessons: a mix of quiz questions and new ones. One try each, no hints. You see your score and the worked answers at the end.</p>
+      <button class="btn primary big" id="tStart">Start the practice test</button></div>
+    <div class="card"><h3>The full 50-question quiz</h3><p style="font-size:18px">All 50 Math 7 quiz questions in order. Take your time: you can stop and come back to a lesson later.</p>
+      <button class="btn big" id="tQuiz">📚 Start the 50-question quiz</button></div><p class="muted">Every answer is saved for your tutor and parents to see.</p></div>
+    <div class="card"><h3>Past tests</h3>${TESTS.length ? `<table class="simple"><tr><th>Date</th><th>Test</th><th>Score</th><th>Time</th></tr>${TESTS.slice().reverse().slice(0, 12).map(t => `<tr><td>${new Date(t.d).toLocaleDateString()}</td><td>${t.kind === "quiz50" ? "50-question quiz" : "Practice test"}</td><td><b>${t.score} / ${t.n}</b> (${Math.round(t.score / t.n * 100)}%)</td><td>${Math.round(t.secs / 60)} min</td></tr>`).join("")}</table>` : '<p class="muted">No tests yet.</p>'}</div></div>`;
+  $("tStart").onclick = () => startTest("mixed"); $("tQuiz").onclick = () => startTest("quiz50");
+}
+function startTest(kind) {
+  let items;
+  if (kind === "quiz50") items = BANK.slice().sort((a, b) => a.id - b.id).map(b => ({ lesson: b.l, Q: bankQ(b) }));
+  else {
+    const len = testLength(), order = []; while (order.length < len) order.push(...shuffle(Object.keys(L).map(Number)));
+    const used = new Set();
+    items = order.slice(0, len).sort((a, b) => a - b).map(n => {
+      const pool = BANK.filter(b => b.l === n && !used.has(b.id) && b.id !== 46 && b.id !== 12);
+      if (pool.length && Math.random() < .5) { const b = pick(pool); used.add(b.id); return { lesson: n, Q: bankQ(b) }; }
+      return { lesson: n, Q: G[n](Math.random() < .4) };
+    });
+  }
+  TEST = { id: (kind === "quiz50" ? "quiz50-" : "test-") + Date.now().toString(36), kind, items, i: 0, results: [], t0: Date.now() };
+  showTestQ();
+}
+function showTestQ() {
+  clearCharts(); setTheme("#0d9488");
+  const T = TEST, { lesson: n, Q } = T.items[T.i];
+  $("test").innerHTML = `<div class="testbar"><b>${T.kind === "quiz50" ? "Quiz" : "Question"} ${T.i + 1} of ${T.items.length}</b><div class="bar"><div style="width:${T.i / T.items.length * 100}%;background:#0d9488"></div></div><span class="muted" id="tClock"></span>${T.kind === "quiz50" ? '<button class="btn small" id="tStop">Finish now</button>' : ""}</div>
+    <div class="grid2"><div class="card"><div id="tq"></div><div class="row" style="margin-top:12px"><span style="flex:1"></span><button class="btn primary" id="tNext" disabled>Next ›</button></div></div><div class="stack"><div class="card" id="tChart" hidden></div></div></div>`;
+  const tick = () => { if ($("tClock")) { const s = Math.round((Date.now() - T.t0) / 1000); $("tClock").textContent = `⏱ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; } };
+  tick(); clearInterval(T.timer); T.timer = setInterval(tick, 1000);
+  if ($("tStop")) $("tStop").onclick = () => { if (T.results.length) finishTest(); else { clearInterval(T.timer); TEST = { id: null }; renderTestStart(); } };
+  mountQuestion($("tq"), Q, { mode: "test", lesson: n, label: T.kind === "quiz50" ? "50-question quiz" : "unit test", chartHost: $("tChart"), onFinish: Object.assign(res => {
+    recordBank(Q, res.ok); T.results.push(res); $("tNext").disabled = false; $("tNext").textContent = T.i + 1 < T.items.length ? "Next ›" : "See my results";
+    $("tNext").onclick = () => { T.i++; T.i < T.items.length ? showTestQ() : finishTest(); }; $("tNext").focus();
+  }, { next: () => $("tNext") && !$("tNext").disabled && $("tNext").click() }) });
+}
+function finishTest() {
+  clearInterval(TEST.timer); clearCharts();
+  const R = TEST.results, score = R.filter(r => r.ok).length, n = R.length, secs = Math.round((Date.now() - TEST.t0) / 1000), p = Math.round(score / n * 100), kind = TEST.kind;
+  TESTS.push({ d: Date.now(), score, n, secs, kind }); save("sp-tests", TESTS); TEST.i = TEST.items.length; updateHeader();
+  if (AM) {
+    if (kind === "quiz50" && n === 50) { if (p >= 90) AM.award("quiz50-90", "50-question proportions quiz: 90% or better", "📚"); if (p === 100) AM.award("quiz50-100", "Perfect 50-question proportions quiz", "🏆"); }
+    else if (kind !== "quiz50") { if (p >= 80) AM.award("test-80", "Proportions practice test: 80% or better", "📝"); if (p === 100) AM.award("test-100", "Perfect proportions practice test", "🏆"); }
+    AM.flush && AM.flush();
+  }
+  const byL = Object.keys(L).map(Number).map(l => { const rs = R.filter(r => r.lesson === l); return { l, n: rs.length, c: rs.filter(r => r.ok).length }; }).filter(x => x.n);
+  $("test").innerHTML = `<div class="grid2"><div class="card"><h3>${kind === "quiz50" ? "50-question quiz results" : "Your results"}</h3><div class="score" style="color:${p >= 80 ? "#0f9d58" : p >= 60 ? "#ca8a04" : "#d93025"}">${score} / ${n}</div><p style="font-size:18px">${p}% · ${Math.floor(secs / 60)} min ${secs % 60} s</p>
+      <p>${p === 100 ? "🏆 Perfect score!" : p >= 80 ? "🌟 Great work. Review the ones you missed below." : "Keep going! Practice the lessons below, then try again."}</p><div class="row"><button class="btn primary" id="tAgain">Back to tests</button><button class="btn" id="tHome">Unit map</button></div></div>
+    <div class="card"><h3>By lesson</h3><table class="simple">${byL.map(x => `<tr><td>${secOf(x.l).icon} ${x.l}. ${L[x.l].title}</td><td style="white-space:nowrap"><b>${x.c} / ${x.n}</b></td><td style="width:35%"><div class="bar"><div style="width:${x.c / x.n * 100}%;background:${secOf(x.l).color}"></div></div></td></tr>`).join("")}</table></div></div>
+    <div class="card" style="margin-top:16px"><h3>Review your answers</h3>${R.map((r, i) => `<details class="rev"${r.ok ? "" : " open"}><summary>${r.ok ? '<b class="ok">✓</b>' : '<b class="bad">✗</b>'} ${i + 1}. ${r.Q.bankId ? `Quiz question ${r.Q.bankId}` : `Lesson ${r.lesson}: ${L[r.lesson].title}`}</summary>
+      <div style="margin-top:8px">${r.Q.q}</div><p>Your answer: <b>${esc(r.resp)}</b><br>Correct answer: <b class="eq">${esc(plainText(r.Q.ans))}</b></p>${(r.Q.steps || []).length ? `<ol class="steps">${r.Q.steps.map(s => `<li>${s}</li>`).join("")}</ol>` : ""}
+      ${r.ok ? "" : `<button class="btn small" data-l="${r.lesson}">Practice lesson ${r.lesson} ›</button>`}</details>`).join("")}</div>`;
+  $("tAgain").onclick = () => { TEST = { id: null }; renderTestStart(); }; $("tHome").onclick = () => go("home");
+  document.querySelectorAll("#test [data-l]").forEach(b => b.onclick = () => openLesson(+b.dataset.l, "practice"));
+}
+
+/* ---------- progress ---------- */
+function renderProgress() {
+  clearCharts(); setTheme("#0d9488");
+  const tot = Object.keys(L).reduce((a, k) => a + stat(+k).n, 0), cor = Object.keys(L).reduce((a, k) => a + stat(+k).c, 0);
+  $("progress").innerHTML = `<div class="grid2"><div class="stack"><div class="card"><h3>Lessons</h3><table class="simple"><tr><th>Lesson</th><th>Answered</th><th>Last 5</th><th></th></tr>
+      ${SECTIONS.map(S => S.lessons.map(n => { const s = stat(n), p = pct(n); return `<tr><td><span class="tag" style="background:${S.color};color:#fff">${n}</span> ${L[n].title}</td><td>${s.n}</td><td style="min-width:90px"><div class="bar"><div style="width:${p}%;background:${S.color}"></div></div></td><td>${mastered(n) ? '<b class="ok">★ mastered</b>' : s.n ? '<span class="muted">practicing</span>' : '<span class="muted">not started</span>'}</td></tr>`; }).join("")).join("")}</table></div>
+      <div class="card"><h3>📚 The 50 quiz questions</h3><p class="muted" style="margin-top:0">Green = right last time · red = wrong last time · grey = not tried. Tap a number to practice it.</p>${SECTIONS.map(S => S.lessons.map(n => `<div style="margin:8px 0 2px;font-weight:800;color:${S.color}">${n}. ${L[n].title}</div>${bankGrid(BANK.filter(b => b.l === n))}`).join("")).join("")}</div></div>
+    <div class="stack"><div class="card"><h3>Totals</h3><p style="font-size:20px;margin:0"><b>${nMastered()} / ${NL}</b> lessons mastered</p><p style="font-size:20px;margin:6px 0"><b>${bankRight()} / 50</b> quiz questions right</p><p style="font-size:20px;margin:6px 0"><b>${tot}</b> practice questions answered</p><p style="font-size:20px;margin:0"><b>${tot ? Math.round(cor / tot * 100) : 0}%</b> right on the first try</p></div>
+      <div class="card"><h3>Tests</h3>${TESTS.length ? TESTS.slice().reverse().slice(0, 10).map(t => `<div class="row" style="margin:6px 0"><span style="width:110px">${new Date(t.d).toLocaleDateString()}</span><span style="width:24px">${t.kind === "quiz50" ? "📚" : "📝"}</span><div class="bar" style="flex:1"><div style="width:${t.score / t.n * 100}%;background:#0d9488"></div></div><b>${t.score}/${t.n}</b></div>`).join("") : '<p class="muted">No tests yet.</p>'}</div></div></div>`;
+  wireBankGrid($("progress"));
+}
+
+/* ---------- nav ---------- */
+function go(v) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.v === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === v));
+  if (v !== "test" && TEST.timer) clearInterval(TEST.timer);
+  if (v === "home") { clearCharts(); setTheme("#0d9488"); renderHome(); }
+  if (v === "lesson") renderLesson();
+  if (v === "test") { if (!TEST.id || TEST.i >= (TEST.items || []).length) renderTestStart(); else showTestQ(); }
+  if (v === "progress") renderProgress();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => go(t.dataset.v));
+
+(function boot() {
+  if (AM && AM.student) { $("appTitle").textContent = `${AM.student.firstName}'s Proportions Lab`; document.title = $("appTitle").textContent; }
+  const focus = planLessons();
+  if (focus.length || PLAN.note) {
+    $("plan").innerHTML = `<b style="color:var(--accent)">📌 ${PLAN._by ? esc(PLAN._by.split(" ")[0]) + "’s" : "Your tutor’s"} plan:</b> ` + (focus.length ? `work on <b>lesson${focus.length > 1 ? "s" : ""} ${focus.join(", ")}</b>. ` : "") + (PLAN.note ? esc(PLAN.note) : "");
+    $("plan").style.display = "block";
+    if (focus.length && PLAN._updated && load("sp-planseen", null) !== PLAN._updated) { CUR = focus[0]; save("sp-planseen", PLAN._updated); }
+  }
+  updateHeader();
+  if (PLAN.open === "quiz50") { go("test"); } else go(PLAN.open === "test" ? "test" : "home");
+})();
+</script>
+</body>
+</html>

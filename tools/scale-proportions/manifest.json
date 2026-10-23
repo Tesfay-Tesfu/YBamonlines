@@ -1,0 +1,37 @@
+{
+  "name": "Scale Drawings & Proportional Relationships",
+  "subject": "math",
+  "grade_min": 6,
+  "grade_max": 8,
+  "icon": "∝",
+  "version": "1.0.0",
+  "description": "Math 7 in 7 lessons: equivalent ratios, constant of proportionality, the coordinate plane, proportional graphs, scale factor, scale drawings and maps, and how perimeter, area and volume scale. Includes the full 50-question quiz plus endless new practice. Every answer is recorded.",
+  "settings": [
+    {
+      "key": "lessons",
+      "label": "Lessons to focus on",
+      "type": "multi",
+      "options": [1, 2, 3, 4, 5, 6, 7],
+      "labels": ["1 Equivalent ratios", "2 Constant of proportionality", "3 Coordinate plane", "4 Proportional graphs", "5 Scale factor", "6 Scale drawings & maps", "7 Perimeter, area, volume"]
+    },
+    {
+      "key": "testLength",
+      "label": "Practice test length",
+      "type": "select",
+      "options": [7, 14, 21],
+      "labels": ["7 questions", "14 questions", "21 questions"]
+    },
+    {
+      "key": "open",
+      "label": "Open on",
+      "type": "select",
+      "options": ["home", "test"],
+      "labels": ["Unit map", "Tests (practice test and 50-question quiz)"]
+    },
+    {
+      "key": "note",
+      "label": "Note to the student",
+      "type": "text"
+    }
+  ]
+}
