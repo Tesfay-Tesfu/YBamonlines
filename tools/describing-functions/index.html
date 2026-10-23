@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Describing Functions</title>
+<style>
+  :root { --deep:#002d5f; --brand:#005596; --accent:#e66414; --ink:#1c2635; --muted:#5b6b7c; --line:#dfe6ef; --bg:#f4f6fb;
+          --green:#0f9d58; --red:#d93025; --c:#7c3aed; --soft:#f6f2ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:16.5px; color:var(--ink); background:var(--bg); line-height:1.5; }
+  button, input, select { font:inherit; color:inherit; }
+  header { background:var(--deep); color:#fff; padding:10px 18px; display:flex; align-items:center; gap:12px; border-bottom:4px solid var(--accent); }
+  header .logo { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#7c3aed,#e66414); display:grid; place-items:center; font-weight:900; flex:none; }
+  header h1 { font-size:18px; margin:0; } header .sub { font-size:12.5px; opacity:.75; } header .grow { flex:1; }
+  .pill { background:rgba(255,255,255,.12); border-radius:999px; padding:5px 12px; font-weight:800; white-space:nowrap; font-size:14px; }
+  nav.top { background:#fff; border-bottom:1px solid var(--line); display:flex; gap:4px; padding:6px 12px; overflow-x:auto; position:sticky; top:0; z-index:6; }
+  .tab { border:none; background:none; padding:9px 14px; border-radius:12px; cursor:pointer; font-weight:800; color:var(--muted); white-space:nowrap; }
+  .tab:hover { background:#f1f5fa; color:var(--brand); } .tab.on { background:var(--brand); color:#fff; }
+  main { max-width:1220px; margin:0 auto; padding:18px 16px 70px; }
+  .view { display:none; } .view.on { display:block; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 18px; min-width:0; }
+  .card h3 { margin:0 0 10px; font-size:14px; letter-spacing:.06em; color:var(--c); text-transform:uppercase; display:flex; gap:8px; align-items:center; }
+  .card h3::before { content:""; width:5px; height:15px; border-radius:3px; background:var(--c); }
+  .grid2 { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
+  .stack { display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .btn { border:2px solid var(--line); background:#fff; border-radius:12px; padding:7px 14px; cursor:pointer; font-weight:800; }
+  .btn:hover { border-color:var(--c); color:var(--c); }
+  .btn.primary { background:var(--c); border-color:var(--c); color:#fff; }
+  .btn.primary:hover { filter:brightness(.92); color:#fff; }
+  .btn.big { padding:12px 22px; font-size:17px; }
+  .btn.small { padding:4px 10px; font-size:14px; border-radius:10px; }
+  .muted { color:var(--muted); font-size:14.5px; }
+  .row { display:flex; gap:8px 12px; align-items:center; flex-wrap:wrap; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { border:2px solid var(--line); background:#fff; border-radius:999px; padding:4px 12px; cursor:pointer; font-weight:800; font-size:14px; }
+  .chip.on { background:var(--c); border-color:var(--c); color:#fff; }
+  .eq { font-family:"Cambria Math","STIX Two Math","Times New Roman",serif; font-size:1.15em; white-space:nowrap; }
+  input[type=text] { width:100%; border:2px solid var(--line); border-radius:12px; padding:8px 12px; font-size:18px; font-weight:700; background:#fff; }
+  input[type=text]:focus { outline:none; border-color:var(--c); }
+  input[type=range] { width:100%; accent-color:var(--c); }
+  canvas.chart { width:100%; display:block; }
+  table.tbl { border-collapse:collapse; margin:8px 0; font-size:16px; }
+  table.tbl th { background:var(--soft); color:var(--c); padding:6px 14px; border:1px solid var(--line); font-weight:800; }
+  table.tbl td { padding:5px 14px; border:1px solid var(--line); text-align:center; font-variant-numeric:tabular-nums; }
+  table.tbl td.hl { background:#fff1e6; font-weight:800; } table.tbl td.bad { background:#fdecea; color:var(--red); font-weight:800; }
+  .pw { display:inline-flex; align-items:center; gap:4px; font-family:"Cambria Math","Times New Roman",serif; font-size:18px; vertical-align:middle; margin:4px 0; }
+  .pw .brace { font-weight:300; line-height:1; transform:scaleX(.7); }
+  .pw table td { padding:1px 10px 1px 2px; } .pw tr.on td { background:#fff1e6; border-radius:6px; font-weight:700; }
+  /* home */
+  .hero { border-radius:22px; padding:24px 26px; color:#fff; background:linear-gradient(120deg,#3b1d8f 0%,#7c3aed 45%,#e66414 100%); display:grid; grid-template-columns:1.4fr 1fr; gap:20px; align-items:center; }
+  .hero h2 { margin:0 0 6px; font-size:30px; } .hero p { margin:0 0 10px; opacity:.95; }
+  .hero ul { margin:6px 0 0; padding-left:20px; opacity:.95; font-size:15px; }
+  .hero .meter { background:rgba(255,255,255,.15); border-radius:16px; padding:16px; }
+  .hero .meter b { font-size:34px; display:block; line-height:1.1; }
+  .bigbar { height:12px; border-radius:6px; background:rgba(255,255,255,.25); overflow:hidden; margin:8px 0 12px; } .bigbar div { height:100%; background:#fff; }
+  .secs { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-top:18px; }
+  .sec { background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+  .sec .head { padding:12px 16px; color:#fff; font-weight:900; display:flex; gap:10px; align-items:center; }
+  .sec .head span { font-size:22px; }
+  .les { display:flex; gap:10px; align-items:center; padding:9px 14px; border-top:1px solid var(--line); cursor:pointer; background:none; border-left:none; border-right:none; border-bottom:none; width:100%; text-align:left; }
+  .les:hover { background:#f7f9fd; }
+  .les .num { width:30px; height:30px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:900; font-size:14px; flex:none; }
+  .les .t { flex:1; font-weight:700; }
+  .les .st { font-size:13px; font-weight:800; }
+  .mini { width:54px; height:7px; background:#edf1f6; border-radius:4px; overflow:hidden; flex:none; } .mini div { height:100%; }
+  .plan { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px; margin-bottom:16px; display:none; }
+  /* lesson */
+  .lhead { border-radius:20px; padding:16px 20px; color:#fff; display:flex; gap:14px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
+  .lhead .n { width:52px; height:52px; border-radius:16px; background:rgba(255,255,255,.2); display:grid; place-items:center; font-size:24px; font-weight:900; }
+  .lhead h2 { margin:0; font-size:23px; } .lhead .s { opacity:.85; font-size:14px; }
+  .lhead .grow { flex:1; }
+  .lhead .btn { background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.35); color:#fff; }
+  .seg { display:inline-flex; background:#eef0f7; padding:4px; border-radius:12px; gap:4px; margin-bottom:14px; flex-wrap:wrap; }
+  .seg button { border:none; background:none; padding:8px 16px; border-radius:9px; cursor:pointer; font-weight:800; color:var(--muted); }
+  .seg button.on { background:#fff; color:var(--c); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .keylist { margin:0; padding-left:0; list-style:none; }
+  .keylist li { padding:9px 12px 9px 40px; position:relative; border-radius:12px; margin-bottom:6px; background:var(--soft); }
+  .keylist li::before { content:"✦"; position:absolute; left:14px; top:9px; color:var(--c); font-weight:900; }
+  .vocab { display:flex; flex-wrap:wrap; gap:8px; }
+  .vocab div { border:2px solid var(--soft); border-radius:12px; padding:8px 12px; flex:1 1 220px; }
+  .vocab b { color:var(--c); }
+  .example { background:#fffaf2; border:1px dashed #f3c48f; border-radius:14px; padding:12px 14px; }
+  .slider { display:grid; grid-template-columns:120px 1fr 64px; gap:10px; align-items:center; margin:6px 0; }
+  .slider output { text-align:right; font-weight:800; }
+  .readout { background:var(--soft); border-radius:12px; padding:10px 14px; margin-top:10px; font-size:17px; }
+  /* question */
+  .q { font-size:19px; font-weight:700; margin:4px 0 10px; }
+  .q .tbl { font-weight:400; }
+  .ansrow { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .ansrow input { flex:1; min-width:200px; }
+  .keys { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+  .keys button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:4px 10px; cursor:pointer; font-weight:800; min-width:38px; }
+  .choice { min-width:120px; text-align:left; }
+  .choice.right { background:var(--green); border-color:var(--green); color:#fff; } .choice.wrong { background:var(--red); border-color:var(--red); color:#fff; }
+  .choice.picked { border-color:var(--c); background:var(--soft); }
+  .multi label { display:flex; gap:10px; align-items:flex-start; padding:8px 12px; border:2px solid var(--line); border-radius:12px; margin:6px 0; cursor:pointer; font-weight:700; }
+  .multi label:hover { border-color:var(--c); } .multi input { width:20px; height:20px; accent-color:var(--c); margin-top:2px; }
+  .multi label.right { border-color:var(--green); background:#e8f6ee; } .multi label.wrong { border-color:var(--red); background:#fdecea; }
+  .fb { min-height:26px; font-size:17px; font-weight:800; margin-top:10px; }
+  .fb.okc { color:var(--green); } .fb.badc { color:var(--red); } .fb.info { color:var(--c); }
+  .steps { background:#fff8ee; border:1px solid #f6d4a8; border-radius:14px; padding:10px 14px 10px 32px; margin:10px 0 0; }
+  .steps li { margin:3px 0; }
+  .bar { height:10px; border-radius:5px; background:#edf1f6; overflow:hidden; } .bar div { height:100%; }
+  .tag { display:inline-block; padding:2px 9px; border-radius:999px; font-size:12.5px; font-weight:800; }
+  .ok { color:var(--green); } .bad { color:var(--red); }
+  table.simple { width:100%; border-collapse:collapse; font-size:15px; }
+  table.simple td, table.simple th { padding:7px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+  .testbar { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+  .testbar .bar { flex:1; min-width:160px; height:12px; }
+  .score { font-size:46px; font-weight:900; line-height:1; }
+  details.rev { border:1px solid var(--line); border-radius:12px; padding:8px 12px; margin:8px 0; background:#fff; }
+  details.rev summary { cursor:pointer; font-weight:700; }
+  .machine { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:10px 0; }
+  .machine .box { background:linear-gradient(135deg,#7c3aed,#2563eb); color:#fff; border-radius:14px; padding:12px 16px; font-weight:900; }
+  @media (max-width:900px) { .grid2, .hero { grid-template-columns:1fr; } header .sub { display:none; } .slider { grid-template-columns:90px 1fr 56px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="logo">ƒ</div>
+  <div><h1 id="appTitle">Describing Functions</h1><div class="sub">Afro-Merica Tutor · Algebra 1 · Unit 4</div></div>
+  <div class="grow"></div>
+  <span class="pill" id="hdrMastered">⭐ 0 / 19 lessons</span>
+</header>
+<nav class="top">
+  <button class="tab on" data-v="home">🗺️ Unit map</button>
+  <button class="tab" data-v="lesson">📘 Lesson</button>
+  <button class="tab" data-v="test">📝 Unit practice test</button>
+  <button class="tab" data-v="progress">📊 My progress</button>
+</nav>
+<main>
+  <div class="plan" id="plan"></div>
+  <section class="view on" id="home"></section>
+  <section class="view" id="lesson"></section>
+  <section class="view" id="test"></section>
+  <section class="view" id="progress"></section>
+</main>
+
+<script>
+"use strict";
+/* =====================================================================
+   Platform (AMtutorTools) — also works as a plain file
+   ===================================================================== */
+const AM = window.AMT || null;
+const store = AM && AM.storage ? AM.storage : (() => { try { return window.localStorage; } catch (e) { return null; } })();
+const load = (k, d) => { try { const v = JSON.parse(store.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const save = (k, v) => { try { store.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const $ = id => document.getElementById(id);
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const nz = (a, b) => { let v; do { v = rnd(a, b); } while (v === 0); return v; };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const MINUS = "−";
+
+/* =====================================================================
+   Numbers
+   ===================================================================== */
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a || 1; }
+function toFrac(v, maxDen = 12) {
+  if (!Number.isFinite(v)) return null;
+  for (let d = 1; d <= maxDen; d++) { const n = Math.round(v * d); if (Math.abs(n / d - v) < 1e-7) { const g = gcd(n, d); return [n / g, d / g]; } }
+  return null;
+}
+function fmt(v) {
+  if (v === Infinity) return "∞";
+  if (v === -Infinity) return MINUS + "∞";
+  if (Math.abs(v) < 1e-9) v = 0;
+  const f = toFrac(v);
+  if (f) { const [n, d] = f; return (n < 0 ? MINUS : "") + (d === 1 ? Math.abs(n) : Math.abs(n) + "/" + d); }
+  return (v < 0 ? MINUS : "") + (+Math.abs(v).toFixed(2));
+}
+const pt = (x, y) => `(${fmt(x)}, ${fmt(y)})`;
+function coefBody(a, v) { // a > 0
+  if (!v) return fmt(a);
+  if (Math.abs(a - 1) < 1e-12) return v;
+  const f = toFrac(a);
+  if (f && f[1] !== 1) return `(${f[0]}/${f[1]})${v}`;
+  return fmt(a) + v;
+}
+function poly(terms) {
+  let s = "";
+  for (const [c, v] of terms) {
+    if (Math.abs(c) < 1e-12) continue;
+    const body = coefBody(Math.abs(c), v);
+    s += s ? (c < 0 ? " − " : " + ") + body : (c < 0 ? MINUS : "") + body;
+  }
+  return s || "0";
+}
+const coefPrefix = a => (Math.abs(a - 1) < 1e-12 ? "" : Math.abs(a + 1) < 1e-12 ? MINUS : (toFrac(a) && toFrac(a)[1] !== 1 ? `(${fmt(a).replace(MINUS, "-").replace("-", MINUS)})` : fmt(a)));
+const shiftStr = h => (Math.abs(h) < 1e-12 ? "x" : `(x ${h > 0 ? "−" : "+"} ${fmt(Math.abs(h))})`);
+const plusK = k => (Math.abs(k) < 1e-12 ? "" : k > 0 ? ` + ${fmt(k)}` : ` − ${fmt(-k)}`);
+const lineEq = (m, b) => "y = " + poly([[m, "x"], [b, ""]]);
+function parseNum(s) {
+  if (s == null) return NaN;
+  let t = String(s).trim().toLowerCase().replace(/[−–—]/g, "-").replace(/\s+/g, "").replace(/^\+/, "");
+  if (/^-?(∞|inf|infinity)$/.test(t)) return t.startsWith("-") ? -Infinity : Infinity;
+  if (/^\+?(∞|inf|infinity)$/.test(t)) return Infinity;
+  t = t.replace(/^\((.*)\)$/, "$1");
+  let m = t.match(/^(-?)(\d+(?:\.\d+)?|\.\d+)\/(-?)(\d+(?:\.\d+)?)$/);
+  if (m) { const d = +m[4]; if (!d) return NaN; return ((m[1] ? -1 : 1) * (m[3] ? -1 : 1) * +m[2]) / d; }
+  m = t.match(/^-\((\d+)\/(\d+)\)$/);
+  if (m) return -(+m[1]) / +m[2];
+  if (/^-?(\d+(\.\d*)?|\.\d+)$/.test(t)) return +t;
+  return NaN;
+}
+const sameNum = (a, b) => (a === b) || (Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= 0.011);
+
+/* =====================================================================
+   Expression parser (no eval). Supports + − × ÷ ^, implicit ×, |x|, sqrt, abs, …
+   ===================================================================== */
+const FUNCS = { sqrt: Math.sqrt, cbrt: Math.cbrt, abs: Math.abs, sin: Math.sin, cos: Math.cos, tan: Math.tan, exp: Math.exp, ln: Math.log, log: Math.log10 };
+const FNAMES = ["sqrt", "cbrt", "abs", "sin", "cos", "tan", "exp", "log", "ln", "pi"];
+function normExpr(s) {
+  return String(s).replace(/[−–—]/g, "-").replace(/[×·∙]/g, "*").replace(/÷/g, "/").replace(/²/g, "^2").replace(/³/g, "^3")
+    .replace(/ˣ/g, "^x").replace(/√/g, "sqrt").replace(/π/g, "pi").replace(/\*\*/g, "^");
+}
+function tokenize(src) {
+  const s = normExpr(src).toLowerCase(); const out = []; let i = 0, depth = 0;
+  const prevIsValue = () => { const t = out[out.length - 1]; return t && ["num", "var", "const", ")", "absclose"].includes(t.t); };
+  while (i < s.length) {
+    const c = s[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (/[0-9.]/.test(c)) {
+      let j = i; while (j < s.length && /[0-9.]/.test(s[j])) j++;
+      const str = s.slice(i, j);
+      if (!/^(\d+\.?\d*|\.\d+)$/.test(str)) throw new Error(`“${str}” isn't a number.`);
+      out.push({ t: "num", v: +str }); i = j; continue;
+    }
+    if (/[a-z]/.test(c)) {
+      let j = i; while (j < s.length && /[a-z]/.test(s[j])) j++;
+      let w = s.slice(i, j); i = j;
+      while (w) {
+        const name = FNAMES.find(n => w.startsWith(n));
+        if (name) { out.push(name === "pi" ? { t: "const", v: Math.PI } : { t: "fn", v: name }); w = w.slice(name.length); continue; }
+        const ch = w[0]; w = w.slice(1);
+        if ("xnt".includes(ch)) out.push({ t: "var", v: "x" }); else if (ch === "y") out.push({ t: "var", v: "y" });
+        else if (ch === "e") out.push({ t: "const", v: Math.E });
+        else throw new Error(`I don't know “${ch}”. Use x${src.includes("y") ? " and y" : ""} as the variable.`);
+      }
+      continue;
+    }
+    if (c === "|") { if (depth > 0 && prevIsValue()) { out.push({ t: "absclose" }); depth--; } else { out.push({ t: "absopen" }); depth++; } i++; continue; }
+    if ("+-*/^()".includes(c)) { out.push({ t: c }); i++; continue; }
+    if (c === "[" ) { out.push({ t: "(" }); i++; continue; }
+    if (c === "]") { out.push({ t: ")" }); i++; continue; }
+    throw new Error(`I don't understand “${c}”.`);
+  }
+  if (depth) throw new Error("An absolute value bar | is missing.");
+  return out;
+}
+function compile(src) {
+  if (!String(src).trim()) throw new Error("Type an expression first.");
+  const tokens = tokenize(src); let i = 0; const used = new Set();
+  const peek = () => tokens[i], next = () => tokens[i++];
+  const expect = t => { const k = next(); if (!k || k.t !== t) throw new Error(t === ")" ? "A closing bracket ) is missing." : t === "absclose" ? "An absolute value bar | is missing." : "Something is missing."); };
+  const startsPrimary = t => t && ["num", "var", "const", "fn", "(", "absopen"].includes(t.t);
+  function expr() { let n = term(); while (peek() && (peek().t === "+" || peek().t === "-")) { const op = next().t, r = term(), l = n; n = op === "+" ? v => l(v) + r(v) : v => l(v) - r(v); } return n; }
+  function term() {
+    let n = unary();
+    for (;;) {
+      const t = peek();
+      if (t && (t.t === "*" || t.t === "/")) { next(); const r = unary(), l = n; n = t.t === "*" ? v => l(v) * r(v) : v => l(v) / r(v); }
+      else if (startsPrimary(t)) { const r = power(), l = n; n = v => l(v) * r(v); }
+      else break;
+    }
+    return n;
+  }
+  function unary() { const t = peek(); if (t && t.t === "-") { next(); const u = unary(); return v => -u(v); } if (t && t.t === "+") { next(); return unary(); } return power(); }
+  function power() { const b = primary(); if (peek() && peek().t === "^") { next(); const e = unary(); return v => Math.pow(b(v), e(v)); } return b; }
+  function primary() {
+    const t = next();
+    if (!t) throw new Error("The expression ends too early.");
+    if (t.t === "num" || t.t === "const") { const c = t.v; return () => c; }
+    if (t.t === "var") { const k = t.v; used.add(k); return v => v[k]; }
+    if (t.t === "(") { const e = expr(); expect(")"); return e; }
+    if (t.t === "absopen") { const e = expr(); expect("absclose"); return v => Math.abs(e(v)); }
+    if (t.t === "fn") {
+      const f = FUNCS[t.v];
+      let a; if (peek() && peek().t === "(") { next(); a = expr(); expect(")"); } else a = power();
+      return v => f(a(v));
+    }
+    throw new Error(`Something is missing before “${t.t === "absclose" ? "|" : t.t}”.`);
+  }
+  const fn = expr();
+  if (i < tokens.length) throw new Error(tokens[i].t === ")" ? "There is an extra closing bracket )." : "I couldn't read the whole expression.");
+  return { f: (x, y) => fn({ x, y: y || 0 }), usesY: used.has("y"), usesX: used.has("x") };
+}
+function compileFx(src) {
+  const s = String(src).replace(/^\s*(y|f\s*\(\s*x\s*\)|g\s*\(\s*x\s*\))\s*=/i, "");
+  const c = compile(s);
+  if (c.usesY) throw new Error("Write it with x only, like y = 2x + 1.");
+  return x => c.f(x, 0);
+}
+// Linear coefficients of g(x) = p·x + q, or null if not linear
+function linCoef(g) {
+  const q = g(0), p = g(1) - q;
+  if (![q, p].every(Number.isFinite)) return null;
+  for (const x of [2.5, -3.7, 7.1, -11]) if (!(Math.abs(g(x) - (p * x + q)) < 1e-7 * (1 + Math.abs(p * x + q)))) return null;
+  return { p, q };
+}
+
+/* =====================================================================
+   Sets of real numbers (unions of intervals)
+   ===================================================================== */
+const iv = (a, ac, b, bc) => ({ a, ac: Number.isFinite(a) && ac, b, bc: Number.isFinite(b) && bc });
+const ALL = () => [iv(-Infinity, false, Infinity, false)];
+function normSet(S) {
+  const s = S.filter(I => I.a < I.b - 1e-12 || (Math.abs(I.a - I.b) < 1e-12 && I.ac && I.bc)).map(I => ({ ...I }))
+    .sort((p, q) => p.a - q.a || (q.ac - p.ac));
+  const out = [];
+  for (const I of s) {
+    const L = out[out.length - 1];
+    if (L && (I.a < L.b - 1e-12 || (Math.abs(I.a - L.b) < 1e-12 && (L.bc || I.ac)))) {
+      if (I.b > L.b + 1e-12) { L.b = I.b; L.bc = I.bc; } else if (Math.abs(I.b - L.b) < 1e-12) L.bc = L.bc || I.bc;
+    } else out.push(I);
+  }
+  return out;
+}
+function interSet(A, B) {
+  const out = [];
+  for (const I of A) for (const J of B) {
+    let a, ac, b, bc;
+    if (I.a > J.a + 1e-12) { a = I.a; ac = I.ac; } else if (J.a > I.a + 1e-12) { a = J.a; ac = J.ac; } else { a = I.a; ac = I.ac && J.ac; }
+    if (I.b < J.b - 1e-12) { b = I.b; bc = I.bc; } else if (J.b < I.b - 1e-12) { b = J.b; bc = J.bc; } else { b = I.b; bc = I.bc && J.bc; }
+    out.push({ a, ac, b, bc });
+  }
+  return normSet(out);
+}
+const unionSet = (A, B) => normSet([...A, ...B]);
+const isAll = S => S.length === 1 && S[0].a === -Infinity && S[0].b === Infinity;
+function setEq(A, B, lenient = false) {
+  A = normSet(A); B = normSet(B);
+  if (A.length !== B.length) return false;
+  return A.every((I, i) => {
+    const J = B[i];
+    if (!sameNum(I.a, J.a) || !sameNum(I.b, J.b)) return false;
+    if (lenient) return true;
+    return (!Number.isFinite(I.a) || I.ac === J.ac) && (!Number.isFinite(I.b) || I.bc === J.bc);
+  });
+}
+function setToInterval(S) {
+  S = normSet(S);
+  if (!S.length) return "∅";
+  return S.map(I => (Math.abs(I.a - I.b) < 1e-12 ? `{${fmt(I.a)}}` : `${I.ac ? "[" : "("}${fmt(I.a)}, ${fmt(I.b)}${I.bc ? "]" : ")"}`)).join(" ∪ ");
+}
+function setToIneq(S, v = "x") {
+  S = normSet(S);
+  if (!S.length) return "no solution";
+  if (isAll(S)) return "all real numbers";
+  return S.map(I => {
+    if (Math.abs(I.a - I.b) < 1e-12) return `${v} = ${fmt(I.a)}`;
+    if (I.a === -Infinity) return `${v} ${I.bc ? "≤" : "<"} ${fmt(I.b)}`;
+    if (I.b === Infinity) return `${v} ${I.ac ? "≥" : ">"} ${fmt(I.a)}`;
+    return `${fmt(I.a)} ${I.ac ? "≤" : "<"} ${v} ${I.bc ? "≤" : "<"} ${fmt(I.b)}`;
+  }).join(" or ");
+}
+const setBoth = (S, v = "x") => `${setToIneq(S, v)} &nbsp;·&nbsp; ${setToInterval(S)}`;
+const normOps = s => String(s).replace(/<=|=</g, "≤").replace(/>=|=>/g, "≥").replace(/[−–—]/g, "-");
+const FLIP = { "<": ">", ">": "<", "≤": "≥", "≥": "≤", "=": "=" };
+function rayFor(op, r) {
+  if (!Number.isFinite(r)) return op.includes("<") || op === "≤" ? (r === Infinity ? ALL() : []) : (r === -Infinity ? ALL() : []);
+  if (op === "<") return [iv(-Infinity, false, r, false)];
+  if (op === "≤") return [iv(-Infinity, false, r, true)];
+  if (op === ">") return [iv(r, false, Infinity, false)];
+  if (op === "≥") return [iv(r, true, Infinity, false)];
+  return [iv(r, true, r, true)];
+}
+
+// Reads a student's answer: interval notation, inequality notation, "all real numbers", "none"
+function parseSet(input) {
+  let s = normOps(input).toLowerCase().trim().replace(/\b[a-z]\s*\(\s*[a-z]\s*\)/g, "y").replace(/infinity|inf/g, "∞").replace(/\s+/g, " ");
+  if (!s) return { error: "Type an answer first." };
+  if (/^(all real( numbers)?|all reals|real numbers|ℝ|r|everything|all numbers|any real number|all x|all y)$/.test(s) || /^\(\s*-\s*∞\s*,\s*\+?\s*∞\s*\)$/.test(s)) return { set: ALL() };
+  if (/^(none|no solutions?|∅|\{\s*\}|empty( set)?|no real (numbers|solutions?)|nothing|never|no interval)$/.test(s)) return { set: [] };
+  if ((/[\[(]/.test(s) && s.includes(",")) || /^\{.*\}$/.test(s)) {
+    const parts = s.split(/∪|\bu\b|\bor\b/).map(p => p.trim()).filter(Boolean); const out = [];
+    for (const p of parts) {
+      let m = p.match(/^\{\s*([^{}]+)\s*\}$/);
+      if (m) { const vals = m[1].split(",").map(parseNum); if (vals.some(Number.isNaN)) return { error: `I couldn't read “${p}”.` }; vals.forEach(v => out.push(iv(v, true, v, true))); continue; }
+      m = p.match(/^([\[(])\s*([^,]+?)\s*,\s*([^,]+?)\s*([\])])$/);
+      if (!m) return { error: `I couldn't read “${p}”. Write intervals like (−2, 5] or [3, ∞).` };
+      const a = parseNum(m[2]), b = parseNum(m[3]);
+      if (Number.isNaN(a) || Number.isNaN(b)) return { error: `I couldn't read the numbers in “${p}”.` };
+      if (a > b) return { error: "In an interval, the smaller number comes first." };
+      if ((!Number.isFinite(a) && m[1] === "[") || (!Number.isFinite(b) && m[4] === "]")) return { wrong: true, msg: "∞ always gets a round bracket ( ), never [ ], because you can never reach it." };
+      out.push({ a, ac: m[1] === "[", b, bc: m[4] === "]" });
+    }
+    return { set: normSet(out) };
+  }
+  let res = [];
+  for (const orPart of s.split(/\bor\b|∪/).map(x => x.trim()).filter(Boolean)) {
+    let cur = ALL();
+    for (const piece of orPart.split(/\band\b|&|,/).map(x => x.trim()).filter(Boolean)) {
+      const r = parseChain(piece); if (r.error) return r; cur = interSet(cur, r.set);
+    }
+    res = unionSet(res, cur);
+  }
+  return { set: res };
+}
+function parseChain(p) {
+  const toks = p.split(/(≤|≥|<|>|=)/).map(t => t.trim());
+  if (toks.length < 3 || toks.length > 5) return { error: "Use an inequality like x > 3, interval notation like (3, ∞), or “all real numbers”." };
+  let set = ALL();
+  for (let i = 0; i + 2 < toks.length; i += 2) {
+    const L = toks[i], op = toks[i + 1], R = toks[i + 2];
+    const lv = /^[a-z]$/.test(L), rv = /^[a-z]$/.test(R);
+    if (lv === rv) return { error: `I couldn't read “${p}”. Put the variable on one side, like x ≥ −2.` };
+    const num = parseNum(lv ? R : L);
+    if (Number.isNaN(num)) return { error: `I couldn't read the number in “${p}”.` };
+    set = interSet(set, rayFor(lv ? op : FLIP[op], num));
+  }
+  return { set };
+}
+function parsePoints(input) {
+  const s = String(input).toLowerCase().replace(/[−–—]/g, "-").trim();
+  if (!s) return { error: "Type an answer first." };
+  if (/^(none|no x-?intercepts?|no y-?intercepts?|no intercepts?|no solution|∅|no real|there are none|does not exist|dne)/.test(s)) return { pts: [], none: true };
+  const pts = []; const re = /\(\s*([^,()]+?)\s*,\s*([^,()]+?)\s*\)/g; let m;
+  while ((m = re.exec(s))) {
+    const x = parseNum(m[1]), y = parseNum(m[2]);
+    if (Number.isNaN(x) || Number.isNaN(y)) return { error: `I couldn't read ${m[0]}.` };
+    pts.push([x, y]);
+  }
+  if (pts.length) return { pts };
+  const nums = s.replace(/[xy]\s*=\s*/g, "").split(/[,;]|\band\b|\bor\b/).map(t => t.trim()).filter(Boolean).map(parseNum);
+  if (!nums.length || nums.some(Number.isNaN)) return { error: "Write points like (2, 0). Separate two points with a comma." };
+  return { nums };
+}
+// Line in any form → A·x + B·y + C = 0
+function parseLine(input) {
+  const s = normOps(input).replace(/\s+/g, "");
+  const parts = s.split("=");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return { error: "Write an equation with one = sign, like y = 2x + 1." };
+  let L, R;
+  try { L = compile(parts[0]); R = compile(parts[1]); } catch (e) { return { error: e.message }; }
+  const G = (x, y) => L.f(x, y) - R.f(x, y);
+  const C = G(0, 0), A = G(1, 0) - C, B = G(0, 1) - C;
+  if (![A, B, C].every(Number.isFinite)) return { error: "That isn't a straight-line equation." };
+  for (const [x, y] of [[2, 3], [-1.5, 4], [3.7, -2.2], [-4, -5]]) if (!(Math.abs(G(x, y) - (A * x + B * y + C)) < 1e-6 * (1 + Math.abs(G(x, y))))) return { error: "That isn't a straight-line equation." };
+  if (Math.abs(A) < 1e-12 && Math.abs(B) < 1e-12) return { error: "That equation needs an x or a y." };
+  return { A, B, C };
+}
+function sameLine(p, q) {
+  const n = v => { const k = Math.hypot(v.A, v.B); return [v.A / k, v.B / k, v.C / k]; };
+  const a = n(p), b = n(q), s = Math.sign(a[0] * b[0] + a[1] * b[1]) || 1;
+  return a.every((x, i) => Math.abs(x - s * b[i]) < 1e-6);
+}
+function lineInfo(L) { // slope-intercept description
+  if (Math.abs(L.B) < 1e-12) return { vertical: true, x0: -L.C / L.A, m: "undefined", eq: `x = ${fmt(-L.C / L.A)}` };
+  const m = -L.A / L.B, b = -L.C / L.B;
+  return { vertical: false, m, b, eq: lineEq(m, b) };
+}
+const fromSlope = (m, b) => ({ A: -m, B: 1, C: -b });
+
+
+
+/* =====================================================================
+   Small helpers
+   ===================================================================== */
+const E = s => `<span class="eq">${s}</span>`;
+const dec = v => (+(+v).toFixed(2)).toString().replace("-", MINUS);
+const money = v => (v < 0 ? MINUS : "") + "$" + Math.abs(v).toFixed(2);
+const NAMES = ["Amara", "Jasmine", "Kofi", "Malik", "Nia", "Tunde", "Zara", "Imani", "Jaden", "Ayana", "Omar", "Lina", "Selam", "Dawit"];
+const tableHTML = (head, rows, cls = []) => `<table class="tbl"><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr>${rows.map((r, i) => `<tr>${r.map(c => `<td class="${cls[i] || ""}">${c}</td>`).join("")}</tr>`).join("")}</table>`;
+const plural = (n, one, many) => (Math.abs(n) === 1 ? one : many);
+const cap = s => s[0].toUpperCase() + s.slice(1);
+const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+/* =====================================================================
+   Chart — fixed window graphs with independent x / y scales
+   ===================================================================== */
+class Chart {
+  constructor(canvas, opts = {}) {
+    this.c = canvas; this.ctx = canvas.getContext("2d"); this.layers = () => {};
+    this.set(opts, false);
+    this.ro = new ResizeObserver(() => this.render()); this.ro.observe(canvas);
+  }
+  set(o = {}, draw = true) {
+    this.x = o.x || [-10, 10]; this.y = o.y || [-10, 10]; this.xl = o.xl || "x"; this.yl = o.yl || "y";
+    this.square = !!o.square; this.maxH = o.maxH || 440; this.xstep = o.xstep || null; this.ystep = o.ystep || null;
+    if (draw) this.render();
+  }
+  destroy() { this.ro.disconnect(); }
+  get L() { return 48; } get R() { return 16; } get T() { return 26; } get B() { return 42; }
+  X(x) { return this.L + (x - this.x[0]) / (this.x[1] - this.x[0]) * (this.W - this.L - this.R); }
+  Y(y) { return this.T + (this.y[1] - y) / (this.y[1] - this.y[0]) * (this.H - this.T - this.B); }
+  step(span, px) { const c = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000]; return c.find(s => s / span * px >= 30) || 1000; }
+  render() {
+    const W = this.c.clientWidth; if (!W) return;
+    let H = this.square ? Math.min(W - this.L - this.R + this.T + this.B, this.maxH + 60) : Math.min(Math.round(W * 0.68), this.maxH);
+    this.W = W; this.H = H; const dpr = window.devicePixelRatio || 1;
+    this.c.style.height = H + "px"; this.c.width = Math.round(W * dpr); this.c.height = Math.round(H * dpr);
+    const ctx = this.ctx; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+    this.grid(); this.layers(this);
+  }
+  grid() {
+    const ctx = this.ctx, [x0, x1] = this.x, [y0, y1] = this.y;
+    let xs = this.xstep || this.step(x1 - x0, this.W - this.L - this.R), ys = this.ystep || this.step(y1 - y0, this.H - this.T - this.B);
+    while (xs / (x1 - x0) * (this.W - this.L - this.R) < 24) xs *= 2;
+    while (ys / (y1 - y0) * (this.H - this.T - this.B) < 18) ys *= 2;
+    ctx.lineWidth = 1; ctx.font = "12px system-ui, sans-serif"; ctx.fillStyle = "#5b6b7c";
+    const nf = v => (+v.toFixed(2)).toString().replace("-", MINUS);
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (let v = Math.ceil(x0 / xs - 1e-9) * xs; v <= x1 + 1e-9; v += xs) { const X = Math.round(this.X(v)) + .5; ctx.strokeStyle = "#e8edf4"; ctx.beginPath(); ctx.moveTo(X, this.T); ctx.lineTo(X, this.H - this.B); ctx.stroke(); ctx.fillText(nf(v), X, this.H - this.B + 6); }
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let v = Math.ceil(y0 / ys - 1e-9) * ys; v <= y1 + 1e-9; v += ys) { const Y = Math.round(this.Y(v)) + .5; ctx.strokeStyle = "#e8edf4"; ctx.beginPath(); ctx.moveTo(this.L, Y); ctx.lineTo(this.W - this.R, Y); ctx.stroke(); ctx.fillText(nf(v), this.L - 6, Y); }
+    ctx.strokeStyle = "#1c2635"; ctx.lineWidth = 1.6;
+    const ax = x0 <= 0 && x1 >= 0 ? this.X(0) : this.L, ay = y0 <= 0 && y1 >= 0 ? this.Y(0) : this.H - this.B;
+    ctx.beginPath(); ctx.moveTo(this.L, ay); ctx.lineTo(this.W - this.R, ay); ctx.moveTo(ax, this.T); ctx.lineTo(ax, this.H - this.B); ctx.stroke();
+    ctx.fillStyle = "#1c2635"; ctx.font = "bold 13px system-ui, sans-serif"; ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "right"; ctx.fillText(this.xl, this.W - this.R, this.H - 6);
+    ctx.textAlign = "left"; ctx.fillText(this.yl, 6, 16);
+  }
+  clip(fn) { const ctx = this.ctx; ctx.save(); ctx.beginPath(); ctx.rect(this.L, this.T - 2, this.W - this.L - this.R, this.H - this.T - this.B + 4); ctx.clip(); fn(); ctx.restore(); }
+  curve(f, { color = "#2563eb", width = 3, from = -Infinity, to = Infinity, dash = null } = {}) {
+    this.clip(() => {
+      const ctx = this.ctx, a = Math.max(this.x[0], from), b = Math.min(this.x[1], to); if (a >= b) return;
+      ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.setLineDash(dash || []);
+      ctx.beginPath(); let pen = false; const n = Math.ceil(this.X(b) - this.X(a)) * 2 + 2;
+      for (let i = 0; i <= n; i++) { const x = a + (b - a) * i / n, y = f(x); if (!Number.isFinite(y)) { pen = false; continue; } const P = [this.X(x), this.Y(y)]; pen ? ctx.lineTo(...P) : ctx.moveTo(...P); pen = true; }
+      ctx.stroke(); ctx.setLineDash([]);
+    });
+  }
+  poly(pts, { color = "#2563eb", width = 3, dash = null } = {}) {
+    this.clip(() => { const ctx = this.ctx; ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.setLineDash(dash || []);
+      ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(this.X(x), this.Y(y)) : ctx.moveTo(this.X(x), this.Y(y)))); ctx.stroke(); ctx.setLineDash([]); });
+  }
+  seg(x1, y1, x2, y2, o = {}) { this.poly([[x1, y1], [x2, y2]], o); }
+  dot(x, y, { color = "#1c2635", open = false, r = 5.5, label = null, dx = 8, dy = -8, align = "left" } = {}) {
+    const ctx = this.ctx, X = this.X(x), Y = this.Y(y);
+    ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2);
+    if (open) { ctx.fillStyle = "#fff"; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = color; ctx.stroke(); } else { ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+    if (label) this.text(X + dx, Y + dy, label, color, align);
+  }
+  text(X, Y, s, color = "#1c2635", align = "left") {
+    const ctx = this.ctx; ctx.font = "bold 13px system-ui, sans-serif"; ctx.textAlign = align; ctx.textBaseline = "alphabetic";
+    ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.strokeText(s, X, Y); ctx.fillStyle = color; ctx.fillText(s, X, Y); ctx.textAlign = "left";
+  }
+  label(x, y, s, color, align) { this.text(this.X(x), this.Y(y), s, color, align); }
+  band(a, b, color, alpha = 0.14) { const ctx = this.ctx; a = Math.max(a, this.x[0]); b = Math.min(b, this.x[1]); if (a >= b) return; ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fillRect(this.X(a), this.T, this.X(b) - this.X(a), this.H - this.T - this.B); ctx.globalAlpha = 1; }
+  hband(a, b, color, alpha = 0.14) { const ctx = this.ctx; a = Math.max(a, this.y[0]); b = Math.min(b, this.y[1]); if (a >= b) return; ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fillRect(this.L, this.Y(b), this.W - this.L - this.R, this.Y(a) - this.Y(b)); ctx.globalAlpha = 1; }
+  vline(x, o = {}) { this.seg(x, this.y[0], x, this.y[1], { width: 1.5, color: "#8a94a6", dash: [6, 5], ...o }); }
+  hline(y, o = {}) { this.seg(this.x[0], y, this.x[1], y, { width: 1.5, color: "#8a94a6", dash: [6, 5], ...o }); }
+}
+
+/* =====================================================================
+   Piecewise-linear graphs and statement engine
+   ===================================================================== */
+function PL(pts) {
+  const f = x => {
+    if (x < pts[0][0] - 1e-9 || x > pts[pts.length - 1][0] + 1e-9) return NaN;
+    for (let i = 1; i < pts.length; i++) { const [x1, y1] = pts[i - 1], [x2, y2] = pts[i]; if (x <= x2 + 1e-12) return y1 + (y2 - y1) * (x - x1) / (x2 - x1); }
+    return pts[pts.length - 1][1];
+  };
+  return { pts, f, a: pts[0][0], b: pts[pts.length - 1][0] };
+}
+const inner = (a, b, n = 160) => Array.from({ length: n - 1 }, (_, i) => a + (b - a) * (i + 1) / n);
+const slopeAt = (F, x) => (F.f(x + 1e-6) - F.f(x - 1e-6)) / 2e-6;
+const allIn = (a, b, pred) => inner(a, b).every(pred);
+function runs(F, sign) { // maximal open intervals where slope has this sign
+  const out = []; const P = F.pts;
+  for (let i = 1; i < P.length; i++) {
+    const s = Math.sign(P[i][1] - P[i - 1][1]);
+    if (s === sign) { const L = out[out.length - 1]; if (L && near(L[1], P[i - 1][0])) L[1] = P[i][0]; else out.push([P[i - 1][0], P[i][0]]); }
+  }
+  return out;
+}
+function plCandidates(F, fn = "f", v = "x", style = "math") {
+  const P = F.pts, ys = P.map(p => p[1]), maxY = Math.max(...ys), minY = Math.min(...ys);
+  const uniqMax = ys.filter(y => y === maxY).length === 1, uniqMin = ys.filter(y => y === minY).length === 1;
+  const C = { max: [], min: [], inc: [], dec: [], pos: [], neg: [], val: [], dom: [] };
+  const story = style === "story";
+  const iv2 = (a, b) => (story ? `from age ${a} to age ${b}` : `when ${fmt(a)} < ${v} < ${fmt(b)}`);
+  for (const [x, y] of P) {
+    C.max.push({ t: story ? `Their best (most positive) experience was at age ${x}.` : `has a maximum at ${pt(x, y)}`, ok: y === maxY && uniqMax });
+    C.min.push({ t: story ? `Their worst (most negative) experience was at age ${x}.` : `has a minimum at ${pt(x, y)}`, ok: y === minY && uniqMin });
+  }
+  for (let i = 1; i < P.length; i++) for (let j = i; j < Math.min(P.length, i + 2); j++) {
+    const a = P[i - 1][0], b = P[j][0];
+    const inc = allIn(a, b, x => slopeAt(F, x) > 0), decr = allIn(a, b, x => slopeAt(F, x) < 0);
+    C.inc.push({ t: story ? `Their experiences got better ${iv2(a, b)}.` : `is increasing ${iv2(a, b)}`, ok: inc });
+    C.dec.push({ t: story ? `Their experiences got worse ${iv2(a, b)}.` : `is decreasing ${iv2(a, b)}`, ok: decr });
+  }
+  for (let a = Math.ceil(F.a); a < F.b; a++) for (let len = 1; len <= 4 && a + len <= F.b; len++) {
+    const b = a + len;
+    const pos = allIn(a, b, x => F.f(x) > 0), neg = allIn(a, b, x => F.f(x) < 0);
+    if (story) {
+      if (pos || Math.random() < .3) C.pos.push({ t: `They had positive experiences between ages ${a} and ${b}.`, ok: pos });
+      if (neg || Math.random() < .3) C.neg.push({ t: `They had negative experiences between ages ${a} and ${b}.`, ok: neg });
+    } else {
+      if (pos || Math.random() < .3) C.pos.push({ t: `is positive ${iv2(a, b)}`, ok: pos });
+      if (neg || Math.random() < .3) C.neg.push({ t: `is negative ${iv2(a, b)}`, ok: neg });
+    }
+  }
+  if (!story) for (let x = Math.ceil(F.a); x <= F.b; x++) { const y = F.f(x); if (near(y, Math.round(y))) { C.val.push({ t: `${fn}(${fmt(x)}) = ${fmt(y)}`, ok: true }); C.val.push({ t: `${fn}(${fmt(x)}) = ${fmt(y + pick([-1, 1, 2]))}`, ok: false }); } }
+  if (story) { C.dom.push({ t: `The graph shows ages ${F.a} to ${F.b}.`, ok: true }); C.dom.push({ t: `The graph shows ages ${F.a - 1} to ${F.b + 2}.`, ok: false }); }
+  return C;
+}
+function pickStatements(C, n = 5) {
+  const types = shuffle(Object.keys(C).filter(k => C[k].length));
+  let wantTrue = rnd(1, 3); const chosen = [];
+  for (const t of types) {
+    if (chosen.length >= n) break;
+    const needTrue = wantTrue > 0 && (Math.random() < 0.6 || n - chosen.length <= wantTrue);
+    const pool = shuffle(C[t].filter(s => s.ok === needTrue && !chosen.some(c => c.t === s.t)));
+    const s = pool[0] || shuffle(C[t].filter(s => !chosen.some(c => c.t === s.t)))[0];
+    if (!s) continue;
+    chosen.push(s); if (s.ok) wantTrue--;
+  }
+  if (!chosen.some(s => s.ok)) { const all = Object.values(C).flat().filter(s => s.ok && !chosen.some(c => c.t === s.t)); if (all.length) chosen[0] = pick(all); }
+  return chosen.slice(0, n);
+}
+function multiQ(stmts, prefix) {
+  const letters = "ABCDEF";
+  const correct = stmts.map((s, i) => (s.ok ? i : -1)).filter(i => i >= 0);
+  return { choicesMulti: stmts.map((s, i) => `${letters[i]}. ${prefix ? prefix + " " : ""}${s.t}`), correct, input: "multi",
+    check: v => ({ ok: v.length === correct.length && v.every((x, i) => x === correct[i]) }), ans: correct.map(i => letters[i]).join(", "),
+    stepsExtra: stmts.map((s, i) => `${letters[i]}: ${s.ok ? '<b class="ok">true</b>' : '<b class="bad">false</b>'} — ${prefix ? prefix + " " : ""}${s.t}`) };
+}
+
+/* =====================================================================
+   Answer checkers
+   ===================================================================== */
+function cleanNum(v) {
+  return String(v).trim().replace(/^(at\s+)?age\s*/i, "").replace(/[$,]/g, "").replace(/^[a-z]\s*\(\s*[−\-]?[\d.]+\s*\)\s*=\s*/i, "").replace(/^[a-z]\s*=\s*/i, "")
+    .replace(/\s*(dollars?|miles? per hour|mph|miles?|mi|hours?|hrs?|minutes?|mins?|ounces?|oz|pounds?|lbs?|gallons?|years?|per\s+\w+|units?)\.?\s*$/i, "");
+}
+function checkNum(v, target, msg) {
+  const t = cleanNum(v);
+  if (/\(.*,.*\)/.test(t)) return { ok: false, invalid: true, msg: msg || "Type one number, not a point." };
+  const n = parseNum(t);
+  if (Number.isNaN(n)) return { ok: false, invalid: true, msg: "Type a number, like 12, −3, 2.5 or 3/4." };
+  return { ok: Math.abs(n - target) <= 0.006 + 1e-9 };
+}
+function checkNums(v, want) {
+  const r = parsePoints(String(v).replace(/[$]/g, ""));
+  if (r.error) return { ok: false, invalid: true, msg: "Type the numbers separated by a comma, like 12, 30." };
+  const got = (r.pts ? r.pts.map(p => p[0]) : r.nums || []).slice().sort((a, b) => a - b), w = want.slice().sort((a, b) => a - b);
+  if (got.length !== w.length) return { ok: false, msg: got.length < w.length ? `There ${w.length === 2 ? "are two answers" : "are more answers"}.` : "" };
+  return { ok: got.every((g, i) => Math.abs(g - w[i]) < 0.006) };
+}
+function checkPoint(v, x, y) {
+  const r = parsePoints(v);
+  if (r.error) return { ok: false, invalid: true, msg: r.error };
+  if (!r.pts || r.pts.length !== 1) return { ok: false, invalid: true, msg: "Write one point, like (2, −3)." };
+  return { ok: Math.abs(r.pts[0][0] - x) < .006 && Math.abs(r.pts[0][1] - y) < .006, msg: Math.abs(r.pts[0][0] - y) < .006 && Math.abs(r.pts[0][1] - x) < .006 ? "Check the order: (x, y)." : "" };
+}
+function checkSet(v, target, lenient = false) {
+  const r = parseSet(v);
+  if (r.error) return { ok: false, invalid: true, msg: r.error };
+  if (r.wrong) return { ok: false, msg: r.msg };
+  if (setEq(r.set, target, lenient)) return { ok: true };
+  if (setEq(r.set, target, true)) return { ok: false, msg: "The numbers are right. Check ≤ / < (closed dot = included, open dot = not included)." };
+  return { ok: false };
+}
+function checkFn(v, target, letter = "x", xs = [-3, -1, 0, 1, 2, 3, 5, 7]) {
+  let s = String(v).trim().replace(/^[a-z]\s*\(\s*[a-z]\s*\)\s*=\s*/i, "").replace(/^y\s*=\s*/i, "");
+  if (!s) return { ok: false, invalid: true, msg: "Type an expression." };
+  if (letter !== "x" && letter !== "n" && letter !== "t") s = s.replace(new RegExp(`(?<![a-z])${letter}(?![a-z])`, "gi"), "x");
+  let c; try { c = compile(s); } catch (e) { return { ok: false, invalid: true, msg: e.message }; }
+  if (c.usesY) return { ok: false, invalid: true, msg: `Use ${letter} as the variable.` };
+  let tested = 0;
+  for (const x of xs) { const b = target(x); if (!Number.isFinite(b)) continue; const a = c.f(x, 0); tested++; if (!Number.isFinite(a) || Math.abs(a - b) > 1e-6 * (1 + Math.abs(b))) return { ok: false }; }
+  return { ok: tested > 0 };
+}
+
+/* =====================================================================
+   Units, sections, lessons
+   ===================================================================== */
+const SECTIONS = [
+  { id: "A", name: "What is a function?", icon: "🧩", color: "#7c3aed", lessons: [1, 2, 3] },
+  { id: "B", name: "Graphs tell stories", icon: "📈", color: "#2563eb", lessons: [4, 5, 6, 7] },
+  { id: "C", name: "Domain and range", icon: "↔️", color: "#0d9488", lessons: [8, 9, 10] },
+  { id: "D", name: "Piecewise and step functions", icon: "🪜", color: "#ea580c", lessons: [11, 12] },
+  { id: "E", name: "Sequences", icon: "🔢", color: "#db2777", lessons: [13, 14] },
+  { id: "F", name: "Absolute value functions", icon: "✔️", color: "#16a34a", lessons: [15, 16] },
+  { id: "G", name: "Telling stories and inverses", icon: "🔁", color: "#ca8a04", lessons: [17, 18, 19] },
+];
+const secOf = n => SECTIONS.find(s => s.lessons.includes(n));
+const L = {};
+
+L[1] = { title: "Functions and relations", key: [
+  "A <b>relation</b> is any set of input–output pairs.",
+  "A <b>function</b> is a relation that gives <b>exactly one output</b> for each input.",
+  "To test a table, look for an input that appears more than once with <b>different</b> outputs. If you find one, it is <b>not</b> a function.",
+  "Different inputs may share the same output. For example, 2² = 4 and (−2)² = 4. That is still a function."],
+  vocab: [["Input", "the value you put in (independent variable)"], ["Output", "the value you get out (dependent variable)"], ["Relation", "any set of input–output pairs"], ["Function", "each input has exactly one output"]],
+  example: `Rule: <i>take a number and subtract 1</i>. ${tableHTML(["Input", "Output"], [[1, 0], [2, 1], [2, 1], [4, 3]])} The input 2 appears twice, but both times the output is 1, so this <b>is</b> a function.` };
+L[2] = { title: "Function notation", key: [
+  "<span class=eq>f(4) = 9</span> is read “f of 4 equals 9”: the <b>input</b> is 4 and the <b>output</b> is 9.",
+  "The letter inside the brackets is the independent variable. f(x) is the dependent variable.",
+  "In a story, explain what both numbers mean, with units.",
+  "f(x) does <b>not</b> mean f times x. It is the name of the output."],
+  vocab: [["f(x)", "the output of f when the input is x"], ["Evaluate", "find the output for a given input"], ["Independent variable", "the input"], ["Dependent variable", "the output"]],
+  example: `A smoothie costs $3.25 plus $0.75 per add-in, so <span class=eq>s(a) = 3.25 + 0.75a</span>.<br><span class=eq>s(2) = 4.75</span> means <b>a smoothie with 2 add-ins costs $4.75</b>.` };
+L[3] = { title: "Descriptions, tables and equations", key: [
+  "One function can be shown as a <b>description</b>, a <b>table</b>, an <b>equation</b> or a <b>graph</b>.",
+  "“Start amount plus rate per item” becomes <span class=eq>f(x) = start + rate · x</span>.",
+  "In a table, the output when x = 0 is the start amount. The change for each +1 in x is the rate.",
+  "To evaluate, replace the variable with the number and calculate."],
+  vocab: [["Start value", "the output when the input is 0"], ["Rate", "how much the output changes for each 1 added to the input"]],
+  example: `A bowl of ice cream costs $1.75 plus $2.25 per scoop.<br><span class=eq>b(x) = 1.75 + 2.25x</span> and <span class=eq>b(3) = 1.75 + 2.25(3) = 8.50</span>, so 3 scoops cost $8.50.` };
+L[4] = { title: "Graphs tell stories", key: [
+  "Each point on a graph is (input, output). On a time graph, it tells you what was happening at that time.",
+  "A <b>horizontal</b> piece means the output did not change (for example, someone stayed in one place).",
+  "<span class=eq>h(1) > h(3)</span> means the output at 1 is bigger than the output at 3.",
+  "A graph can't show everything. A height-over-time graph can't tell you how much fun the riders had."],
+  vocab: [["Horizontal segment", "the output stays the same"], ["Going up", "the output is increasing"], ["Going down", "the output is decreasing"]],
+  example: `If d(t) is a walker's distance from home and <span class=eq>d(15) = d(20)</span> on a flat part of the graph, the walker stayed in one place between 15 and 20 minutes.` };
+L[5] = { title: "Key features of graphs", key: [
+  "<b>Maximum</b>: the highest point. <b>Minimum</b>: the lowest point.",
+  "<b>Positive</b>: the x-values where the graph is above the x-axis. <b>Negative</b>: below it.",
+  "<b>Increasing</b>: the x-values where the graph goes up as you read left to right. <b>Decreasing</b>: it goes down.",
+  "Answer with <b>x-values</b> (intervals like −1 < x < 3), not with points."],
+  vocab: [["Maximum", "highest point (x, y)"], ["Minimum", "lowest point (x, y)"], ["Positive / negative", "above / below the x-axis"], ["Increasing / decreasing", "going up / down from left to right"]],
+  example: `A graph rises from (−1, −3) to (3, 1). It is <b>increasing when −1 < x < 3</b>, and it crosses the x-axis at x = 2, so it is <b>positive when x > 2</b> on that part.` };
+L[6] = { title: "Average rate of change", key: [
+  "Average rate of change from a to b = <span class=eq>(f(b) − f(a)) ÷ (b − a)</span>.",
+  "It is the <b>slope</b> of the straight line joining the two points.",
+  "Its units are output units per input unit, such as miles per hour.",
+  "A function can change at different rates over different intervals."],
+  vocab: [["Interval", "the part of the graph between two inputs"], ["Average rate of change", "change in output ÷ change in input"]],
+  example: `A car is 5 miles away at 0.25 hours and 140 miles away at 2.25 hours.<br>(140 − 5) ÷ (2.25 − 0.25) = 135 ÷ 2 = <b>67.5 miles per hour</b>.` };
+L[7] = { title: "Comparing functions", key: [
+  "<span class=eq>f(t) = g(t)</span> where the two graphs meet.",
+  "<span class=eq>f(t) > g(t)</span> where the graph of f is <b>above</b> the graph of g.",
+  "You can also compare maximums, minimums, where each is increasing, and rates of change.",
+  "Use the same input for both functions when you compare outputs."],
+  vocab: [["Intersection", "where f(t) = g(t)"], ["f(t) > g(t)", "f's graph is higher at t"]],
+  example: `Two buses: if f(8) = 4 and g(8) = 2, then <span class=eq>f(8) > g(8)</span>, so bus f was farther from school at 8 minutes.` };
+L[8] = { title: "Domain and range in context", key: [
+  "<b>Domain</b>: all possible inputs. <b>Range</b>: all possible outputs.",
+  "The situation decides what makes sense. You can't buy −2 tires or 1.5 tires.",
+  "<b>Discrete</b>: only separate values (like whole numbers). <b>Continuous</b>: every number in an interval (no gaps).",
+  "A discrete graph is separate dots. A continuous graph is a connected line or curve."],
+  vocab: [["Domain", "possible inputs"], ["Range", "possible outputs"], ["Discrete", "separate values only"], ["Continuous", "all values in an interval"]],
+  example: `Frozen yogurt costs <span class=eq>f(w) = 3 + 0.5w</span> for w ounces. Any weight greater than 0 works (like 2.5 oz), so the domain is <b>all numbers greater than 0</b>, which is continuous.` };
+L[9] = { title: "Domain and range as inequalities", key: [
+  "Read the <b>domain</b> from left to right (x-values). Read the <b>range</b> from bottom to top (y-values).",
+  "Write them as compound inequalities: <span class=eq>0 ≤ t ≤ 15</span> means t ≥ 0 <b>and</b> t ≤ 15.",
+  "A closed dot ● means the value is included (≤). An open dot ○ means it is not included (<).",
+  "Write the range with the output name, like <span class=eq>−9 ≤ h(t) ≤ 18</span>."],
+  vocab: [["Compound inequality", "two inequalities joined by and / or"], ["≤ vs <", "included vs not included"]],
+  example: `A graph runs from (−3, 2) to (4, 5) and its lowest point is (0, −2).<br>Domain: <span class=eq>−3 ≤ x ≤ 4</span>. Range: <span class=eq>−2 ≤ f(x) ≤ 5</span>.` };
+L[10] = { title: "Restricting domain and range", key: [
+  "To show only part of a graph, <b>restrict</b> the domain and range.",
+  "For the piece between two points, the domain uses their <b>x-values</b> and the range uses their <b>y-values</b>.",
+  "Put the smaller number first: <span class=eq>1 ≤ h(x) ≤ 7</span>, even if the graph goes downhill."],
+  vocab: [["Restrict", "keep only some of the inputs or outputs"]],
+  example: `To keep h(x) from (−3, 7) to (6, 1): domain <span class=eq>−3 ≤ x ≤ 6</span>, range <span class=eq>1 ≤ h(x) ≤ 7</span>.` };
+L[11] = { title: "Piecewise-defined functions", key: [
+  "A <b>piecewise-defined function</b> uses different rules on different intervals of its domain.",
+  "To evaluate f(a), first find the interval that contains a, then use <b>that</b> rule.",
+  "On the graph, a closed dot means the boundary belongs to that piece. An open dot means it doesn't.",
+  "Each input still has only one output, so the pieces never overlap."],
+  vocab: [["Piece", "one rule with its own interval"], ["Boundary", "where one piece ends and the next begins"]],
+  example: `<span class="pw"><span>f(x) =</span><span class="brace" style="font-size:2.6em">{</span><table><tr><td>2x,</td><td>0 ≤ x ≤ 10</td></tr><tr><td>24,</td><td>x > 10</td></tr></table></span><br>f(4): 4 is in 0 ≤ x ≤ 10, so f(4) = 2(4) = 8. f(15): 15 > 10, so f(15) = 24.` };
+L[12] = { title: "Step functions", key: [
+  "A <b>step function</b> is a piecewise function where every piece is flat (a constant).",
+  "Prices that depend on ranges (weights, hours, ages) are step functions.",
+  "Each condition gets its own interval. ≥ / ≤ includes the boundary; > / < does not.",
+  "On the graph, each step ends with an open or closed dot to show which price the boundary gets."],
+  vocab: [["Step function", "piecewise function made of horizontal pieces"]],
+  example: `Pumpkins: under 5 lb $10; from 5 lb up to (not including) 15 lb $20; 15 lb or more $30.<br>A 5-lb pumpkin costs <b>$20</b>, because 5 ≤ x < 15.` };
+L[13] = { title: "Sequences defined recursively", key: [
+  "A <b>sequence</b> is a list of terms. With function notation, f(n) is the n-th term.",
+  "A <b>recursive</b> definition gives the first term and a rule using the previous term, f(n − 1).",
+  "Arithmetic: add the same number each time, <span class=eq>f(n) = f(n − 1) + d</span>.",
+  "Geometric: multiply by the same number each time, <span class=eq>f(n) = r · f(n − 1)</span>."],
+  vocab: [["Term", "one number in the sequence"], ["Recursive", "each term uses the term before it"], ["Common difference d", "added each time"], ["Common ratio r", "multiplied each time"]],
+  example: `32, 16, 8, 4, …: <span class=eq>f(1) = 32</span>, <span class=eq>f(n) = 0.5 · f(n − 1)</span> for n ≥ 2.` };
+L[14] = { title: "Explicit and recursive definitions", key: [
+  "An <b>explicit</b> definition gives f(n) directly from n, so you can jump to any term.",
+  "Arithmetic: <span class=eq>f(n) = a + d(n − 1)</span>, where a is the first term.",
+  "Geometric: <span class=eq>f(n) = a · r<sup>n − 1</sup></span>.",
+  "Check your formula with n = 1, 2, 3 against the table."],
+  vocab: [["Explicit", "f(n) uses n only"], ["Recursive", "f(n) uses f(n − 1)"]],
+  example: `15, 12, 9, 6, …: recursive <span class=eq>a(1) = 15, a(n) = a(n − 1) − 3</span>; explicit <span class=eq>a(n) = 15 − 3(n − 1) = 18 − 3n</span>.` };
+L[15] = { title: "Absolute value as distance", key: [
+  "<span class=eq>|x − h|</span> is the <b>distance</b> between x and h on the number line, so it is never negative.",
+  "<span class=eq>f(x) = |x − h|</span> scores how far a guess x is from the target h.",
+  "Two different inputs can give the same output: one is below h, one is above h.",
+  "The graph is a V with its point at (h, 0)."],
+  vocab: [["Absolute value", "distance from 0, never negative"], ["|x − h|", "distance from x to h"]],
+  example: `Mystery number 30, score f(x) = |x − 30|. A guess of 25 scores <span class=eq>|25 − 30| = |−5| = 5</span>: 5 away.` };
+L[16] = { title: "Graphs of absolute value functions", key: [
+  "<span class=eq>f(x) = |x − h| + k</span> is a V-shape with its vertex at <b>(h, k)</b>.",
+  "Watch the sign: |x + 2| means h = −2.",
+  "With no minus sign in front, the vertex is the <b>minimum</b>. A minus in front flips the V, and the vertex becomes the maximum.",
+  "The table is symmetric around x = h: equal steps left and right give equal outputs."],
+  vocab: [["Vertex", "the corner point of the V"], ["Symmetry", "matching values on both sides of x = h"]],
+  example: `${tableHTML(["x", "−4", "−2", "0", "2"], [["f(x) = |x + 2| + 3", 5, 3, 5, 7]])}The minimum is at (−2, 3).` };
+L[17] = { title: "Graphs that tell your story", key: [
+  "Use key features to tell a story: the highest and lowest points, and where the graph rises, falls or stays the same.",
+  "Read the <b>scale</b> and <b>units</b> on each axis before you describe anything.",
+  "The domain shows the time span the story covers.",
+  "A graph is only part of a story. It can't tell you the feelings or reasons behind it."],
+  vocab: [["Maximum / minimum", "the best / worst moment"], ["Domain", "the span of time shown"]],
+  example: `If a graph of math experiences peaks at age 8 and dips to its lowest at age 12, the person's experiences got worse from 8 to 12 and better after 12.` };
+L[18] = { title: "Inverse functions with graphs", key: [
+  "Two functions are <b>inverses</b> if each one reverses the other's input-output pairs.",
+  "If (h, k) is on f, then <b>(k, h)</b> is on the inverse.",
+  "The graph of the inverse is the reflection of f over the line <b>y = x</b>.",
+  "Strategy: pick two points on f, swap the coordinates, then find the line through the new points."],
+  vocab: [["Inverse", "undoes the function"], ["y = x", "the mirror line between f and its inverse"]],
+  example: `f(x) = 2x + 4 passes through (−2, 0) and (0, 4). Swap: (0, −2) and (4, 0). The slope is 1/2 and the y-intercept is −2, so <span class=eq>g(x) = ½x − 2</span>.` };
+L[19] = { title: "Inverse functions with operations", key: [
+  "List what f does to x, in order.",
+  "The inverse <b>undoes</b> each step in <b>reverse order</b>, using the opposite operation.",
+  "f(x) = 3x + 9: first × 3, then + 9. Inverse: first − 9, then ÷ 3, so <span class=eq>g(x) = (x − 9) ÷ 3</span>.",
+  "Check: f(2) = 15 and g(15) = 2."],
+  vocab: [["Inverse operations", "+ and −, × and ÷"]],
+  example: `f(x) = x/2 + 4: ÷ 2, then + 4. Inverse: − 4, then × 2, so <span class=eq>g(x) = 2(x − 4)</span>.` };
+
+/* =====================================================================
+   Question generators (one per lesson)
+   ===================================================================== */
+const G = {};
+G[1] = hard => {
+  const kind = pick(["table", "table", "pairs", "which"]);
+  const rules = [x => x - 1, x => 2 * x, x => x * x, x => 3 * x + 1, x => Math.abs(x), x => 10 - x];
+  const rf = pick(rules);
+  const rows = shuffle([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6]).slice(0, 5).map(x => [x, rf(x)]);
+  const isF = kind === "which" ? false : Math.random() < 0.5;
+  let bad = null, o1, o2, dupSame = false;
+  if (!isF) { const i = rnd(0, 4); bad = rows[i][0]; o1 = rows[i][1]; do { o2 = o1 + nz(-5, 5); } while (o2 === o1); rows.splice(rnd(0, 5), 0, [bad, o2]); }
+  else if (Math.random() < 0.4) { const r = pick(rows); rows.splice(rnd(0, 5), 0, [r[0], r[1]]); dupSame = true; }
+  const fmtRows = rows.map(r => [fmt(r[0]), fmt(r[1])]);
+  const show = kind === "pairs" ? `<div class="eq" style="white-space:normal">{ ${rows.map(r => pt(r[0], r[1])).join(", ")} }</div>` : tableHTML(["Input", "Output"], fmtRows);
+  const why = isF ? [`Check each input: none of them has two different outputs.${dupSame ? " An input that appears twice has the same output both times, which is fine." : ""}`, "So it <b>is</b> a function."]
+    : [`The input ${fmt(bad)} has two different outputs: ${fmt(o1)} and ${fmt(o2)}.`, "So it is <b>not</b> a function."];
+  if (kind === "which") return { q: `This relation is <b>not</b> a function. Which input has more than one output? ${show}`, input: "number", ph: "the input", check: v => checkNum(v, bad), ans: fmt(bad), hint: "Look for an input that appears twice. Do its outputs match?", steps: why };
+  const correct = isF ? "Yes, it is a function" : "No, it is not a function";
+  return { q: `Is this relation a function? ${show}`, input: "choice", choices: ["Yes, it is a function", "No, it is not a function"], correct, check: v => ({ ok: v === correct }), ans: correct, hint: "A function gives each input exactly one output. Look for repeated inputs.", steps: why };
+};
+const CTX2 = [
+  { f: "s", v: "a", what: "a smoothie", unit: "add-in", units: "add-ins", base: 3.25, rate: 0.75 },
+  { f: "t", v: "m", what: "a taxi ride", unit: "mile", units: "miles", base: 3.5, rate: 2.25 },
+  { f: "g", v: "m", what: "a gym membership", unit: "month", units: "months", base: 25, rate: 30 },
+  { f: "b", v: "g", what: "a bowling night", unit: "game", units: "games", base: 4.5, rate: 5.25 },
+  { f: "p", v: "h", what: "parking", unit: "hour", units: "hours", base: 2, rate: 1.5 },
+  { f: "c", v: "x", what: "an ice cream cone", unit: "scoop", units: "scoops", base: 2.5, rate: 1.75 },
+  { f: "w", v: "x", what: "a waffle cone", unit: "scoop", units: "scoops", base: 3.5, rate: 2.25 },
+];
+const eq2 = C => `${C.f}(${C.v}) = ${dec(C.rate)}${C.v} + ${dec(C.base)}`;
+G[2] = hard => {
+  const C = pick(CTX2), kind = pick(["eval", "eval", "interp", "solve", "notation"]), k = rnd(1, 7), val = C.base + C.rate * k;
+  const intro = `${E(eq2(C))} gives the cost in dollars of ${C.what} with ${C.v} ${C.units}.`;
+  const ev = [`Replace ${C.v} with ${k}: ${E(`${C.f}(${k}) = ${dec(C.rate)}(${k}) + ${dec(C.base)}`)}`, `${E(`= ${dec(C.rate * k)} + ${dec(C.base)} = ${dec(val)}`)}`];
+  if (kind === "eval") return { q: `${intro} What is ${E(`${C.f}(${k})`)}?`, input: "number", ph: "a number", check: v => checkNum(v, val), ans: dec(val), hint: `Put ${k} in place of ${C.v} and calculate.`, steps: ev };
+  if (kind === "solve") return { q: `${intro} For how many ${C.units} is ${E(`${C.f}(${C.v}) = ${dec(val)}`)}?`, input: "number", ph: `number of ${C.units}`, check: v => checkNum(v, k), ans: String(k), hint: "Subtract the starting amount, then divide by the rate.",
+    steps: [`${E(`${dec(C.rate)}${C.v} + ${dec(C.base)} = ${dec(val)}`)}`, `${E(`${dec(C.rate)}${C.v} = ${dec(val - C.base)}`)}`, `${E(`${C.v} = ${dec(val - C.base)} ÷ ${dec(C.rate)} = ${k}`)}`] };
+  const sentence = `${cap(C.what)} with ${k} ${plural(k, C.unit, C.units)} costs ${money(val)}`;
+  if (kind === "interp") {
+    const correct = sentence + ".";
+    const ch = shuffle([correct, `${cap(C.what)} with ${dec(val)} ${C.units} costs ${money(k)}.`, `${C.f} times ${k} equals ${dec(val)}.`, `Each ${C.unit} costs ${money(val)}.`]);
+    return { q: `${intro} What does ${E(`${C.f}(${k}) = ${dec(val)}`)} mean?`, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "The number inside the brackets is the input; the number after = is the output.", steps: [`Input ${k} = number of ${C.units}. Output ${dec(val)} = the cost in dollars.`] };
+  }
+  const correct = `${C.f}(${k}) = ${dec(val)}`;
+  const ch = shuffle([correct, `${C.f}(${dec(val)}) = ${k}`, `${C.f} = ${k} · ${dec(val)}`, `${k}(${C.f}) = ${dec(val)}`]);
+  return { q: `${intro} Which statement means “${sentence.toLowerCase()}”?`, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "Write it as f(input) = output.", steps: [`The input is ${k} ${C.units}, the output is ${dec(val)} dollars: ${E(correct)}.`] };
+};
+G[3] = hard => {
+  const C = pick(CTX2), kind = pick(["write", "write", "table", "evaldesc"]);
+  const desc = `${cap(C.what)} costs ${money(C.base)} plus ${money(C.rate)} per ${C.unit}.`;
+  const right = `${C.f}(${C.v}) = ${dec(C.base)} + ${dec(C.rate)}${C.v}`;
+  if (kind === "write") return { q: `${desc} Write an equation for ${E(`${C.f}(${C.v})`)}, the cost of ${C.what} with ${C.v} ${C.units}.`, input: "fn", ph: `like ${C.f}(${C.v}) = 2 + 3${C.v}`, check: v => checkFn(v, x => C.base + C.rate * x, C.v), ans: right,
+    hint: "Start amount + (cost per item) × number of items.", steps: [`Start amount: ${dec(C.base)}. Rate: ${dec(C.rate)} per ${C.unit}.`, E(right)] };
+  if (kind === "evaldesc") { const k = rnd(2, 8), val = C.base + C.rate * k; return { q: `${desc} How much does ${C.what} with ${k} ${C.units} cost? (This is ${E(`${C.f}(${k})`)}.)`, input: "number", ph: "dollars", check: v => checkNum(v, val), ans: money(val), hint: "Start amount + rate × number of items.", steps: [`${E(`${C.f}(${k}) = ${dec(C.base)} + ${dec(C.rate)}(${k}) = ${dec(val)}`)}`] }; }
+  const rows = [0, 1, 2, 3].map(x => [x, dec(C.base + C.rate * x)]);
+  const correct = right;
+  const ch = shuffle([correct, `${C.f}(${C.v}) = ${dec(C.rate)} + ${dec(C.base)}${C.v}`, `${C.f}(${C.v}) = ${dec(C.base + C.rate)}${C.v}`, `${C.f}(${C.v}) = ${dec(C.base)} + ${dec(C.rate * 2)}${C.v}`]);
+  return { q: `Which equation matches this table? ${tableHTML([C.v, `${C.f}(${C.v})`], rows)}`, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "The output at 0 is the start value. How much does the output grow for each +1?", steps: [`At ${C.v} = 0 the output is ${dec(C.base)} (start).`, `Each step adds ${dec(C.rate)} (rate).`, E(correct)] };
+};
+function storyPL() {
+  for (;;) {
+    const ts = [0]; let t = 0;
+    while (t < 80) { t = Math.min(80, t + pick([10, 10, 20])); ts.push(t); }
+    if (ts.length < 5 || ts.length > 8) continue;
+    const ys = [0]; let flat = false;
+    for (let i = 1; i < ts.length; i++) {
+      if (i === ts.length - 1) { ys.push(0); break; }
+      const prev = ys[i - 1], prevFlat = i > 1 && ys[i - 1] === ys[i - 2];
+      if (!prevFlat && prev > 0 && Math.random() < 0.55) { ys.push(prev); flat = true; }
+      else { let y; do { y = rnd(1, 6); } while (y === prev); ys.push(y); }
+    }
+    if (!flat || Math.max(...ys) < 2) continue;
+    return PL(ts.map((x, i) => [x, ys[i]]));
+  }
+}
+G[4] = hard => {
+  const F = storyPL(), who = pick(NAMES), kind = pick(["read", "flat", "compare", "max", "meaning"]);
+  const draw = c => { c.poly(F.pts, { color: "#2563eb" }); };
+  const chart = { x: [0, 80], y: [0, 7], xl: "Time (min)", yl: "Distance from home (mi)", xstep: 10, ystep: 1 };
+  const intro = `The graph shows ${who}'s distance from home, d(t), in miles, after t minutes.`;
+  const P = F.pts;
+  if (kind === "read") { const p = pick(P.slice(1, -1)); return { q: `${intro} What is ${E(`d(${p[0]})`)}?`, chart, draw, input: "number", ph: "miles", check: v => checkNum(v, p[1]), ans: `${p[1]} miles`, hint: `Find t = ${p[0]} on the horizontal axis, go up to the graph, then read across.`, steps: [`At t = ${p[0]} the graph is at height ${p[1]}, so ${E(`d(${p[0]}) = ${p[1]}`)}.`] }; }
+  if (kind === "max") { const m = Math.max(...P.map(p => p[1])); return { q: `${intro} What was the greatest distance ${who} was from home?`, chart, draw, input: "number", ph: "miles", check: v => checkNum(v, m), ans: `${m} miles`, hint: "Find the highest point of the graph.", steps: [`The highest point has d = ${m}.`] }; }
+  if (kind === "meaning") { const t = pick([15, 25, 35, 45, 50, 65]); const correct = `${who}'s distance from home after ${t} minutes`;
+    const ch = shuffle([correct, `the time when ${who} was ${t} miles from home`, `${who}'s speed after ${t} minutes`, `how long ${who} stayed in one place`]);
+    return { q: `${intro} What does ${E(`d(${t})`)} represent?`, chart, draw, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "t is the input (time). d(t) is the output.", steps: [`The input ${t} is the time in minutes. d(${t}) is the output: the distance from home in miles.`] }; }
+  if (kind === "flat") {
+    const flats = []; for (let i = 1; i < P.length; i++) if (P[i][1] === P[i - 1][1] && P[i][1] > 0) flats.push([P[i - 1][0], P[i][0]]);
+    const [a, b] = pick(flats); const a1 = a + (Math.random() < .5 ? 0 : 5), b1 = b - (Math.random() < .5 ? 0 : 5) <= a1 ? b : b - (Math.random() < .5 ? 0 : 5);
+    const correct = `${who} stayed the same distance from home (stopped somewhere) between ${a1} and ${b1} minutes.`;
+    const ch = shuffle([correct, `${who} was at home between ${a1} and ${b1} minutes.`, `${who} traveled ${b1 - a1} miles.`, `${who} was moving away from home the whole time.`]);
+    return { q: `${intro} What does ${E(`d(${a1}) = d(${b1})`)} tell you here?`, chart, draw, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "Look at the graph between those two times. Is it going up, down, or flat?", steps: [`Between ${a} and ${b} minutes the graph is flat at ${F.f(a)} miles.`, "The distance did not change, so they stayed in one place."] };
+  }
+  let t1, t2; do { t1 = pick(P)[0]; t2 = pick(P)[0]; } while (F.f(t1) === F.f(t2));
+  const correct = F.f(t1) > F.f(t2) ? `At ${t1} minutes` : `At ${t2} minutes`;
+  return { q: `${intro} Was ${who} farther from home at ${t1} minutes or at ${t2} minutes?`, chart, draw, input: "choice", choices: [`At ${t1} minutes`, `At ${t2} minutes`], correct, check: v => ({ ok: v === correct }), ans: correct, hint: "Compare d(t) at both times: higher on the graph = farther.", steps: [`${E(`d(${t1}) = ${F.f(t1)}`)} and ${E(`d(${t2}) = ${F.f(t2)}`)}.`] };
+};
+function keyPL() {
+  for (;;) {
+    const xs = [rnd(-7, -5)]; while (xs[xs.length - 1] < 4) xs.push(xs[xs.length - 1] + rnd(2, 4));
+    if (xs[xs.length - 1] > 7) continue;
+    const ys = [rnd(-4, 4)]; let dir = pick([1, -1]);
+    for (let i = 1; i < xs.length; i++) { let y = ys[i - 1] + dir * rnd(2, 6); y = Math.max(-6, Math.min(6, y)); if (y === ys[i - 1]) y = ys[i - 1] + (dir > 0 ? -2 : 2); ys.push(y); dir = -dir; }
+    if (Math.max(...ys) <= 0 || Math.min(...ys) >= 0) continue;
+    return PL(xs.map((x, i) => [x, ys[i]]));
+  }
+}
+const keyChart = { x: [-8, 8], y: [-7, 7], xl: "x", yl: "f(x)", square: true, xstep: 1, ystep: 1, maxH: 400 };
+const drawPLdots = (F, color = "#2563eb") => c => { c.poly(F.pts, { color }); c.dot(F.pts[0][0], F.pts[0][1], { color }); c.dot(F.b, F.pts[F.pts.length - 1][1], { color }); };
+G[5] = hard => {
+  const F = keyPL(), kind = pick(["multi", "multi", "inc", "max"]), draw = drawPLdots(F);
+  if (kind === "multi") { const M = multiQ(pickStatements(plCandidates(F)), ""); return { q: "Select <b>all</b> the statements that are true for f(x), graphed below.", chart: keyChart, draw, ...M, hint: "Check each one on the graph. Positive/negative: above/below the x-axis. Increasing/decreasing: up/down from left to right.", steps: M.stepsExtra }; }
+  if (kind === "inc") {
+    const dir = pick(["increasing", "decreasing"]), R = runs(F, dir === "increasing" ? 1 : -1), S = normSet(R.map(([a, b]) => iv(a, false, b, false)));
+    return { q: `On what interval(s) is f(x) <b>${dir}</b>? Use x-values.`, chart: keyChart, draw, input: "set", ph: "like −2 < x < 3   (use “or” for two intervals)", check: v => checkSet(v, S, true), ans: setToIneq(S), ansPlain: setToIneq(S),
+      hint: "Read left to right. Find where the graph goes " + (dir === "increasing" ? "up" : "down") + ", and write the x-values where that starts and stops.", steps: [`The graph goes ${dir === "increasing" ? "up" : "down"} ${R.map(([a, b]) => `from x = ${a} to x = ${b}`).join(" and ")}.`, `Answer: ${setToIneq(S)}`] };
+  }
+  const which = pick(["maximum", "minimum"]), ys = F.pts.map(p => p[1]), m = which === "maximum" ? Math.max(...ys) : Math.min(...ys), p = F.pts.find(q => q[1] === m);
+  return { q: `What is the <b>${which}</b> value of f(x)?`, chart: keyChart, draw, input: "number", ph: "the y-value", check: v => checkNum(v, m, `Give just the ${which} value (the y-value).`), ans: fmt(m), hint: `Find the ${which === "maximum" ? "highest" : "lowest"} point; its y-value is the ${which}.`, steps: [`The ${which === "maximum" ? "highest" : "lowest"} point is ${pt(p[0], p[1])}, so the ${which} value is ${fmt(m)}.`] };
+};
+G[6] = hard => {
+  const kind = pick(["trip", "trip", "table", "eq"]);
+  if (kind === "trip") {
+    const x1 = 0.25 * rnd(1, 6), w = pick([1, 1.5, 2, 2.5]), rate = pick([20, 30, 40, 50, 60]), x2 = x1 + w, y1 = rnd(1, 8) * 5, y2 = y1 + rate * w;
+    const who = pick(NAMES), top = Math.ceil((y2 + 20) / 40) * 40, xend = Math.ceil(x2 + 0.5);
+    const pts = [[0, 0], [x1, y1], [x2, y2], [xend, Math.min(top - 5, y2 + rnd(0, 2) * 10)]];
+    return { q: `The graph shows how far ${who} traveled. What was ${who}'s <b>average rate of change</b> from ${dec(x1)} to ${dec(x2)} hours (in miles per hour)?`,
+      chart: { x: [0, xend], y: [0, top], xl: "Time (hr)", yl: "Distance traveled (mi)" }, draw: c => { c.poly(pts, { color: "#2563eb" }); c.dot(x1, y1, { label: pt(x1, y1) }); c.dot(x2, y2, { label: pt(x2, y2) }); },
+      reveal: c => c.seg(x1, y1, x2, y2, { color: "#e66414", width: 2.5, dash: [7, 5] }),
+      input: "number", ph: "miles per hour", check: v => checkNum(v, rate), ans: `${rate} miles per hour`, hint: "(change in distance) ÷ (change in time).",
+      steps: [`Change in distance: ${dec(y2)} − ${dec(y1)} = ${dec(y2 - y1)} miles.`, `Change in time: ${dec(x2)} − ${dec(x1)} = ${dec(w)} hours.`, `${dec(y2 - y1)} ÷ ${dec(w)} = <b>${rate}</b> miles per hour.`] };
+  }
+  const a = pick([1, -1, 2]), b = rnd(-4, 4), c0 = rnd(-5, 5), f = x => a * x * x + b * x + c0;
+  let x1 = rnd(-3, 2), x2 = x1 + rnd(1, 4);
+  const r = (f(x2) - f(x1)) / (x2 - x1);
+  const fs = `f(x) = ${poly([[a, "x²"], [b, "x"], [c0, ""]])}`;
+  const show = kind === "table" ? `${tableHTML(["x", ...Array.from({ length: 7 }, (_, i) => fmt(x1 - 1 + i))], [["f(x)", ...Array.from({ length: 7 }, (_, i) => fmt(f(x1 - 1 + i)))]])}` : E(fs);
+  return { q: `Find the average rate of change of ${kind === "table" ? "the function in the table" : E(fs)} from x = ${fmt(x1)} to x = ${fmt(x2)}. ${kind === "table" ? show : ""}`, input: "number", ph: "a number", check: v => checkNum(v, r), ans: fmt(r),
+    hint: "(f(b) − f(a)) ÷ (b − a).", steps: [`f(${fmt(x2)}) = ${fmt(f(x2))} and f(${fmt(x1)}) = ${fmt(f(x1))}.`, `(${fmt(f(x2))} − ${fmt(f(x1))}) ÷ (${fmt(x2)} − ${fmt(x1)}) = ${fmt(f(x2) - f(x1))} ÷ ${fmt(x2 - x1)} = <b>${fmt(r)}</b>`] };
+};
+function busPL() {
+  const ts = [0]; let t = 0; while (t < 18) { t = Math.min(18, t + pick([2, 2, 4])); ts.push(t); }
+  const ys = ts.map((x, i) => (i === 0 ? 0 : rnd(0, 6)));
+  return PL(ts.map((x, i) => [x, ys[i]]));
+}
+G[7] = hard => {
+  let f, g; do { f = busPL(); g = busPL(); } while ([4, 6, 8, 10, 12, 14, 16].every(t => f.f(t) !== g.f(t)));
+  const C = { eq: [], gt: [], lt: [], gv: [], max: [], dec: [] };
+  for (let t = 2; t <= 18; t += 2) {
+    const a = f.f(t), b = g.f(t);
+    C.eq.push({ t: `f(${t}) = g(${t})`, ok: near(a, b) });
+    C.gt.push({ t: `f(${t}) > g(${t})`, ok: a > b + 1e-9 });
+    C.lt.push({ t: `f(${t}) < g(${t})`, ok: a < b - 1e-9 });
+    C.gv.push({ t: `g(${t}) = ${fmt(b)}`, ok: true }); C.gv.push({ t: `g(${t}) = ${fmt(b + pick([-1, 1]))}`, ok: false });
+  }
+  const mf = Math.max(...f.pts.map(p => p[1])), mg = Math.max(...g.pts.map(p => p[1]));
+  C.max.push({ t: "f(t) and g(t) have the same maximum", ok: mf === mg });
+  for (let a = 0; a < 18; a += 2) C.dec.push({ t: `f(t) and g(t) are both decreasing from ${a} to ${a + 2} minutes`, ok: allIn(a, a + 2, x => slopeAt(f, x) < 0 && slopeAt(g, x) < 0) });
+  const M = multiQ(pickStatements(C), "");
+  return { q: "f(t) and g(t) show how far two buses are from school (miles) after t minutes. Select <b>all</b> the true statements.", chart: { x: [0, 18], y: [0, 6], xl: "Time (min)", yl: "Distance from school (mi)", xstep: 2, ystep: 1 },
+    draw: c => { c.poly(f.pts, { color: "#2563eb" }); c.poly(g.pts, { color: "#e66414", dash: [8, 5] }); c.label(f.b - .3, f.pts[f.pts.length - 1][1] + .35, "f(t)", "#2563eb", "right"); c.label(g.b - .3, g.pts[g.pts.length - 1][1] - .35, "g(t)", "#e66414", "right"); },
+    ...M, hint: "For each statement, find the time on the horizontal axis and compare the heights of the two graphs.", steps: M.stepsExtra };
+};
+const CTX8 = [
+  { d: "A mechanic charges $50 for labor plus $100 for each tire. r(t) = 50 + 100t is the cost of t tires.", disc: true, min: 1, minI: true, desc: "whole numbers 1, 2, 3, …", why: "You can only buy a whole number of tires, and at least 1." },
+  { d: "Frozen yogurt costs $3 plus $0.50 per ounce. f(w) = 3 + 0.5w is the cost of w ounces.", disc: false, min: 0, minI: false, desc: "all numbers greater than 0", why: "Any weight more than 0 ounces makes sense, like 2.5 ounces." },
+  { d: "Concert tickets cost $35 each. c(n) = 35n is the cost of n tickets.", disc: true, min: 1, minI: true, desc: "whole numbers 1, 2, 3, …", why: "You buy whole tickets, at least 1." },
+  { d: "A 300-gallon tank drains 15 gallons per minute. g(m) = 300 − 15m gallons are left after m minutes, until it is empty.", disc: false, min: 0, minI: true, max: 20, maxI: true, desc: "all numbers from 0 to 20", why: "Time can be any number from 0 minutes until it is empty at 20 minutes." },
+  { d: "A taxi charges $3.50 plus $2.25 per mile. t(d) = 3.5 + 2.25d is the cost of a d-mile ride.", disc: false, min: 0, minI: false, desc: "all numbers greater than 0", why: "A ride can be any distance greater than 0, like 3.4 miles." },
+  { d: "A class trip costs $8 per student. b(s) = 8s is the total cost for s students.", disc: true, min: 1, minI: true, desc: "whole numbers 1, 2, 3, …", why: "You count whole students, at least 1." },
+  { d: "A box holds books that weigh 2 pounds each. w(b) = 2b is the weight of b books; the box may be empty.", disc: true, min: 0, minI: true, desc: "whole numbers 0, 1, 2, 3, …", why: "You count whole books, and an empty box (0 books) is allowed." },
+];
+const inDom = (C, x) => (C.disc ? Number.isInteger(x) : true) && (C.minI ? x >= C.min : x > C.min) && (C.max == null || (C.maxI ? x <= C.max : x < C.max));
+G[8] = hard => {
+  const C = pick(CTX8), kind = pick(["type", "values", "values", "describe"]);
+  if (kind === "type") { const correct = C.disc ? "Discrete" : "Continuous"; return { q: `${C.d} Is the domain discrete or continuous?`, input: "choice", choices: ["Discrete", "Continuous"], correct, check: v => ({ ok: v === correct }), ans: correct, hint: "Can the input be any value in between (like 2.5), or only separate values?", steps: [C.why, `So the domain is <b>${correct.toLowerCase()}</b>.`] }; }
+  if (kind === "describe") {
+    const pool = ["whole numbers 1, 2, 3, …", "whole numbers 0, 1, 2, 3, …", "all numbers greater than 0", "all numbers from 0 to 20", "all real numbers"];
+    const ch = shuffle([C.desc, ...shuffle(pool.filter(p => p !== C.desc)).slice(0, 3)]);
+    return { q: `${C.d} Which describes the domain?`, input: "choice", choices: ch, correct: C.desc, check: v => ({ ok: v === C.desc }), ans: C.desc, hint: "Which inputs make sense in the situation?", steps: [C.why] };
+  }
+  const cands = shuffle([-2, 0, 1, 1.5, 3, 4, 2.5, 12, -0.5, 25]).slice(0, 5).sort((a, b) => a - b);
+  const stmts = cands.map(x => ({ t: fmt(x), ok: inDom(C, x) }));
+  if (!stmts.some(s => s.ok)) stmts[stmts.length - 1] = { t: "3", ok: inDom(C, 3) };
+  const M = multiQ(stmts, "");
+  return { q: `${C.d} Select <b>all</b> the values that are in the domain.`, ...M, hint: "Would that input make sense in the story?", steps: [C.why, ...M.stepsExtra] };
+};
+function closedPL() {
+  for (;;) {
+    const xs = [rnd(-7, -3)]; while (xs[xs.length - 1] < 2) xs.push(xs[xs.length - 1] + rnd(2, 4));
+    if (xs[xs.length - 1] > 7) continue;
+    const ys = xs.map(() => rnd(-5, 6));
+    if (ys.some((y, i) => i && y === ys[i - 1])) continue;
+    return PL(xs.map((x, i) => [x, ys[i]]));
+  }
+}
+G[9] = hard => {
+  const F = closedPL(), which = pick(["domain", "range"]), P = F.pts;
+  const c1 = hard ? Math.random() < .5 : true, c2 = hard ? Math.random() < .5 : true;
+  const incl = P.map((p, i) => (i === 0 ? c1 : i === P.length - 1 ? c2 : true));
+  const ys = P.map(p => p[1]), lo = Math.min(...ys), hi = Math.max(...ys);
+  const loI = P.some((p, i) => p[1] === lo && incl[i]), hiI = P.some((p, i) => p[1] === hi && incl[i]);
+  const S = which === "domain" ? [iv(F.a, c1, F.b, c2)] : [iv(lo, loI, hi, hiI)], v = which === "domain" ? "x" : "f(x)";
+  return { q: `What is the <b>${which}</b> of f(x)? Write it as a compound inequality.`, chart: keyChart,
+    draw: c => { c.poly(P, { color: "#0d9488" }); c.dot(P[0][0], P[0][1], { color: "#0d9488", open: !c1 }); c.dot(F.b, P[P.length - 1][1], { color: "#0d9488", open: !c2 }); },
+    reveal: c => (which === "domain" ? c.band(F.a, F.b, "#e66414", .12) : c.hband(lo, hi, "#7c3aed", .12)),
+    input: "set", ph: which === "domain" ? "like −3 ≤ x ≤ 4" : "like −2 ≤ f(x) ≤ 5", check: v => checkSet(v, S), ans: setToIneq(S, v), ansPlain: setToIneq(S, v),
+    hint: which === "domain" ? "Read the x-values from the left end to the right end." : "Read the y-values from the lowest point to the highest point.",
+    steps: which === "domain" ? [`The graph starts at x = ${F.a} (${c1 ? "closed dot: included" : "open dot: not included"}) and ends at x = ${F.b} (${c2 ? "closed dot: included" : "open dot: not included"}).`, `Domain: ${setToIneq(S, v)}`]
+      : [`Lowest y-value: ${lo}${loI ? "" : " (not included)"}. Highest y-value: ${hi}${hiI ? "" : " (not included)"}.`, `Range: ${setToIneq(S, v)}`] };
+};
+G[10] = hard => {
+  let m, b, x1, x2;
+  do { m = pick([-2, -1, -0.5, 0.5, 1, 2, -1.5, 1.5]); b = rnd(-3, 4); x1 = rnd(-6, 0); x2 = x1 + rnd(3, 8); } while (![x1, x2].every(x => Number.isInteger(m * x + b) && Math.abs(m * x + b) <= 7) || x2 > 7);
+  const y1 = m * x1 + b, y2 = m * x2 + b, which = pick(["domain", "range"]), v = which === "domain" ? "x" : "h(x)";
+  const S = which === "domain" ? [iv(x1, true, x2, true)] : [iv(Math.min(y1, y2), true, Math.max(y1, y2), true)];
+  return { q: `Write a <b>${which}</b> that restricts the graph of h(x) to the part from ${pt(x1, y1)} to ${pt(x2, y2)}.`, chart: keyChart,
+    draw: c => { c.curve(x => m * x + b, { color: "#94a3b8", width: 2 }); c.dot(x1, y1, { label: pt(x1, y1), color: "#0d9488" }); c.dot(x2, y2, { label: pt(x2, y2), color: "#0d9488" }); },
+    reveal: c => c.seg(x1, y1, x2, y2, { color: "#0d9488", width: 4 }),
+    input: "set", ph: which === "domain" ? "like −3 ≤ x ≤ 6" : "like 1 ≤ h(x) ≤ 7", check: v => checkSet(v, S), ans: setToIneq(S, v), ansPlain: setToIneq(S, v),
+    hint: which === "domain" ? "Use the x-values of the two points." : "Use the y-values of the two points, smaller first.", steps: [`${which === "domain" ? "x-values" : "y-values"}: ${which === "domain" ? `${x1} and ${x2}` : `${fmt(y1)} and ${fmt(y2)}`}.`, `${cap(which)}: ${setToIneq(S, v)}`] };
+};
+function condStr(p, v = "x") {
+  const lo = p.lo, hi = p.hi;
+  if (lo === -Infinity) return `${v} ${p.hiI ? "≤" : "<"} ${fmt(hi)}`;
+  if (hi === Infinity) return `${v} ${p.loI ? "≥" : ">"} ${fmt(lo)}`;
+  return `${fmt(lo)} ${p.loI ? "≤" : "<"} ${v} ${p.hiI ? "≤" : "<"} ${fmt(hi)}`;
+}
+const inPiece = (p, x) => (x > p.lo || (p.loI && near(x, p.lo))) && (x < p.hi || (p.hiI && near(x, p.hi)));
+const pwEval = (PW, x) => { const p = PW.find(q => inPiece(q, x)); return p ? p.f(x) : NaN; };
+function pwHTML(PW, name = "f", active = -1) {
+  return `<span class="pw"><span>${name}(x) =</span><span class="brace" style="font-size:${1.25 * PW.length}em">{</span><table>${PW.map((p, i) => `<tr class="${i === active ? "on" : ""}"><td>${p.e},</td><td>${condStr(p)}</td></tr>`).join("")}</table></span>`;
+}
+function drawPW(c, PW, color = "#ea580c") {
+  PW.forEach(p => {
+    c.curve(p.f, { color, from: p.lo, to: p.hi });
+    if (Number.isFinite(p.lo)) c.dot(p.lo, p.f(p.lo), { color, open: !p.loI });
+    if (Number.isFinite(p.hi)) c.dot(p.hi, p.f(p.hi), { color, open: !p.hiI });
+  });
+}
+function rPW(hard) {
+  const T = pick(hard ? [1, 2, 3, 4] : [1, 2, 3]);
+  if (T === 1) { const c = pick([3, 4, 5]), m = pick([1, 2]), k = rnd(1, 9); return [{ e: m === 1 ? "x" : `${m}x`, f: x => m * x, lo: 0, loI: true, hi: c, hiI: true }, { e: `${k}`, f: () => k, lo: c, loI: false, hi: Infinity }]; }
+  if (T === 2) { const c = rnd(-2, 3), a = rnd(-3, 3), b = rnd(-4, 6); return [{ e: poly([[1, "x"], [a, ""]]), f: x => x + a, lo: -Infinity, hi: c, hiI: false }, { e: `${fmt(b)}`, f: () => b, lo: c, loI: true, hi: Infinity }]; }
+  if (T === 3) { const c = rnd(2, 4), k = rnd(1, 5); return [{ e: "−x", f: x => -x, lo: -Infinity, hi: 0, hiI: false }, { e: `${k}`, f: () => k, lo: 0, loI: true, hi: c, hiI: false }, { e: "x − 1", f: x => x - 1, lo: c, loI: true, hi: Infinity }]; }
+  return [{ e: "2x + 1", f: x => 2 * x + 1, lo: -Infinity, hi: -1, hiI: true }, { e: "x²", f: x => x * x, lo: -1, loI: false, hi: 2, hiI: false }, { e: "4", f: () => 4, lo: 2, loI: true, hi: Infinity }];
+}
+G[11] = hard => {
+  const PW = rPW(hard), kind = pick(["eval", "eval", "which"]);
+  const bounds = PW.flatMap(p => [p.lo, p.hi]).filter(Number.isFinite);
+  const opts = [...bounds, ...bounds.map(b => b + 1), ...bounds.map(b => b - 1), ...bounds.map(b => b + 3)].filter(x => PW.some(p => inPiece(p, x)) && x >= -6 && x <= 12);
+  const x = pick(opts), p = PW.find(q => inPiece(q, x)), y = p.f(x);
+  const chart = { x: [-6, 12], y: [-6, 12], xl: "x", yl: "f(x)", xstep: 2, ystep: 2 };
+  const steps = [`${fmt(x)} is in the interval ${E(condStr(p))}.`, `Use that rule: ${E(`f(${fmt(x)}) = ${p.e.replace(/x/g, `(${fmt(x)})`)} = ${fmt(y)}`)}`];
+  if (kind === "which") { const ch = PW.map(q => `${q.e}   (when ${condStr(q)})`), correct = `${p.e}   (when ${condStr(p)})`; return { q: `Which rule do you use to find ${E(`f(${fmt(x)})`)}? ${pwHTML(PW)}`, chart, draw: c => drawPW(c, PW), input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: `Which interval contains x = ${fmt(x)}? Watch < and ≤.`, steps }; }
+  return { q: `Evaluate ${E(`f(${fmt(x)})`)}. ${pwHTML(PW)}`, chart, draw: c => drawPW(c, PW), input: "number", ph: "a number", check: v => checkNum(v, y), ans: fmt(y), hint: `First find which piece's interval contains ${fmt(x)}.`, steps };
+};
+const STEPCTX = [{ thing: "pumpkin", u: "pounds", v: "weight (lb)" }, { thing: "package to ship", u: "pounds", v: "weight (lb)" }, { thing: "day of parking", u: "hours", v: "time (hr)" }, { thing: "bag of rice", u: "kilograms", v: "mass (kg)" }];
+G[12] = hard => {
+  const C = pick(STEPCTX), t1 = rnd(3, 6), t2 = t1 + rnd(4, 8), p1 = pick([5, 8, 10]), p2 = p1 + pick([5, 10]), p3 = p2 + pick([5, 10]);
+  const PW = [{ e: `${p1}`, f: () => p1, lo: 0, loI: false, hi: t1, hiI: false }, { e: `${p2}`, f: () => p2, lo: t1, loI: true, hi: t2, hiI: false }, { e: `${p3}`, f: () => p3, lo: t2, loI: true, hi: Infinity }];
+  const rules = `<ul style="margin:6px 0"><li>Less than ${t1} ${C.u}: $${p1}</li><li>At least ${t1} but less than ${t2} ${C.u}: $${p2}</li><li>${t2} ${C.u} or more: $${p3}</li></ul>`;
+  const chart = { x: [0, t2 + 6], y: [0, p3 + 10], xl: cap(C.v), yl: "Price ($)" };
+  const kind = pick(["price", "price", "cond", "dot"]), draw = c => drawPW(c, PW);
+  if (kind === "price") { const x = pick([t1 - 1, t1, t1 + 1, t2 - 1, t2, t2 + 2]), y = pwEval(PW, x); return { q: `Prices for a ${C.thing}: ${rules} What is the price for ${x} ${C.u}?`, chart, draw, input: "number", ph: "dollars", check: v => checkNum(v, y), ans: money(y), hint: "Be careful at the boundaries: “at least” includes the number, “less than” doesn't.", steps: [`${x} fits “${x < t1 ? `less than ${t1}` : x < t2 ? `at least ${t1} but less than ${t2}` : `${t2} or more`}”, so the price is $${y}.`] }; }
+  if (kind === "cond") { const correct = `${t1} ≤ x < ${t2}`; const ch = shuffle([correct, `${t1} < x ≤ ${t2}`, `${t1} < x < ${t2}`, `${t1} ≤ x ≤ ${t2}`]); return { q: `Prices for a ${C.thing}: ${rules} Which condition goes with the $${p2} piece?`, chart, draw, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "“At least” means ≥ (included). “Less than” means < (not included).", steps: [`“At least ${t1}” → x ≥ ${t1}. “Less than ${t2}” → x < ${t2}.`, E(correct)] }; }
+  const end = Math.random() < .5, correct = end ? "Open dot (not included)" : "Closed dot (included)";
+  return { q: `Prices for a ${C.thing}: ${rules} On the graph, what kind of dot goes at x = ${t1} on the ${end ? `$${p1} piece (where it ends)` : `$${p2} piece (where it starts)`}?`, chart, draw: c => { c.seg(0, p1, t1, p1, { color: "#ea580c" }); c.seg(t1, p2, t2, p2, { color: "#ea580c" }); c.seg(t2, p3, t2 + 6, p3, { color: "#ea580c" }); },
+    reveal: draw, input: "choice", choices: ["Open dot (not included)", "Closed dot (included)"], correct, check: v => ({ ok: v === correct }), ans: correct, hint: `At exactly ${t1} ${C.u}, which price do you pay?`, steps: [`At exactly ${t1} ${C.u} the price is $${p2}.`, end ? `So the $${p1} piece does not include x = ${t1}: open dot.` : `So the $${p2} piece includes x = ${t1}: closed dot.`] };
+};
+function rSeq(hard) {
+  if (Math.random() < 0.55) { const a = rnd(-6, 15), d = nz(-6, 7); return { type: "a", a, d, t: n => a + d * (n - 1), rec: `f(1) = ${fmt(a)},  f(n) = f(n − 1) ${d < 0 ? "−" : "+"} ${Math.abs(d)}`, exp: `f(n) = ${poly([[d, "n"], [a - d, ""]])}`, expAlt: `f(n) = ${fmt(a)} ${d < 0 ? "−" : "+"} ${Math.abs(d)}(n − 1)` }; }
+  const [a, r] = pick([[2, 3], [3, 2], [1, 4], [64, 0.5], [81, 1 / 3], [5, 2], [1, -2], [100, 0.5], [4, 3]]);
+  const rs = toFrac(r)[1] !== 1 || r < 0 ? `(${fmt(r)})` : fmt(r);
+  return { type: "g", a, r, t: n => a * Math.pow(r, n - 1), rec: `f(1) = ${fmt(a)},  f(n) = ${rs} · f(n − 1)`, exp: `f(n) = ${fmt(a)} · ${rs}^(n − 1)`, expAlt: null };
+}
+const seqList = (S, k = 5) => Array.from({ length: k }, (_, i) => fmt(S.t(i + 1))).join(", ") + ", …";
+G[13] = hard => {
+  const S = rSeq(hard), kind = pick(["match", "match", "term", "next"]);
+  if (kind === "match") {
+    const wrong = S.type === "a" ? [`f(1) = ${fmt(S.t(2))},  f(n) = f(n − 1) ${S.d < 0 ? "−" : "+"} ${Math.abs(S.d)}`, `f(1) = ${fmt(S.a)},  f(n) = ${S.d} · f(n − 1)`, `f(1) = ${fmt(S.t(5))},  f(n) = f(n − 1) ${S.d < 0 ? "+" : "−"} ${Math.abs(S.d)}`]
+      : [`f(1) = ${fmt(S.t(2))},  f(n) = ${fmt(S.r)} · f(n − 1)`, `f(1) = ${fmt(S.a)},  f(n) = f(n − 1) + ${fmt(S.r)}`, `f(1) = ${fmt(S.a)},  f(n) = f(n − 1) · ${fmt(S.a)}`];
+    const ch = shuffle([S.rec, ...[...new Set(wrong)].filter(w => w !== S.rec)]);
+    return { q: `Which recursive definition matches the sequence ${E(seqList(S))}? (n ≥ 2 for the second rule)`, input: "choice", choices: ch, correct: S.rec, check: v => ({ ok: v === S.rec }), ans: S.rec, hint: "Check the first term, then check how you get from one term to the next.", steps: [`First term f(1) = ${fmt(S.a)}.`, S.type === "a" ? `Each term ${S.d > 0 ? "adds" : "subtracts"} ${Math.abs(S.d)}.` : `Each term is multiplied by ${fmt(S.r)}.`, E(S.rec)] };
+  }
+  const n = kind === "next" ? 6 : rnd(5, 7), val = S.t(n);
+  return { q: kind === "next" ? `What is the next term of ${E(seqList(S))}?` : `A sequence is defined by ${E(S.rec)} for n ≥ 2. What is ${E(`f(${n})`)}?`, input: "number", ph: "a number", check: v => checkNum(v, val), ans: fmt(val), hint: "Use the rule again and again, starting from f(1).",
+    steps: [Array.from({ length: n }, (_, i) => `f(${i + 1}) = ${fmt(S.t(i + 1))}`).join(", ")] };
+};
+G[14] = hard => {
+  const S = rSeq(hard), kind = pick(["write", "far", "match"]);
+  const rows = [1, 2, 3, 4].map(n => [n, fmt(S.t(n))]);
+  if (kind === "far") { const n = S.type === "a" ? rnd(10, 30) : rnd(6, 8), val = S.t(n); return { q: `${tableHTML(["n", "f(n)"], rows)} Use an explicit definition to find ${E(`f(${n})`)}.`, input: "number", ph: "a number", check: v => checkNum(v, val), ans: fmt(val), hint: S.type === "a" ? "f(n) = first term + d(n − 1)." : "f(n) = first term · r^(n − 1).", steps: [`${E(S.exp)}`, `f(${n}) = ${fmt(val)}`] }; }
+  if (kind === "write") return { q: `Write an <b>explicit</b> definition for this sequence. ${tableHTML(["n", "f(n)"], rows)}`, input: "fn", ph: S.type === "a" ? "like f(n) = 3n − 1" : "like f(n) = 2·3^(n − 1)", check: v => checkFn(v, S.t, "n", [1, 2, 3, 4, 5, 6]), ans: S.exp, ansPlain: S.exp.replace(/·/g, "*"),
+    hint: S.type === "a" ? `It is arithmetic: add ${S.d} each time. Use f(n) = ${fmt(S.a)} + ${S.d}(n − 1).` : `It is geometric: multiply by ${fmt(S.r)} each time. Use f(n) = ${fmt(S.a)} · ${fmt(S.r)}^(n − 1).`, steps: [S.type === "a" ? `Common difference ${S.d}: f(n) = ${fmt(S.a)} + ${S.d}(n − 1) = ${S.exp.slice(7)}` : `Common ratio ${fmt(S.r)}: ${S.exp}`] };
+  const correct = S.exp;
+  const wrong = S.type === "a" ? [`f(n) = ${poly([[S.d, "n"], [S.a, ""]])}`, `f(n) = ${poly([[S.a, "n"], [S.d, ""]])}`, `f(n) = ${fmt(S.a)} · ${S.d}^(n − 1)`] : [`f(n) = ${fmt(S.a)} · ${toFrac(S.r)[1] !== 1 || S.r < 0 ? `(${fmt(S.r)})` : fmt(S.r)}^n`, `f(n) = ${S.r < 0 ? `(${fmt(S.r)})` : fmt(S.r)} · ${fmt(S.a)}^(n − 1)`, `f(n) = ${fmt(S.a)} + ${fmt(S.r)}(n − 1)`];
+  const ch = shuffle([correct, ...[...new Set(wrong)].filter(w => w !== correct)]);
+  return { q: `Which explicit definition matches ${E(S.rec)}?`, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "Test n = 1 and n = 2 in each choice.", steps: [`Terms: ${seqList(S, 4)}`, `${E(correct)} gives f(1) = ${fmt(S.t(1))}, f(2) = ${fmt(S.t(2))}. ✓`] };
+};
+G[15] = hard => {
+  const h = rnd(20, 160), game = pick(["mystery", "candy"]), kind = pick(["eval", "eval", "interp", "guesses"]);
+  const intro = game === "mystery" ? `In a guessing game the mystery number is ${h}. A guess x scores ${E(`a(x) = |x − ${h}|`)}.` : `A jar holds ${h} candies. A guess of x candies scores ${E(`a(x) = |x − ${h}|`)}.`;
+  let g; do { g = h + nz(-25, 25); } while (Math.abs(g - h) === g); const s = Math.abs(g - h);
+  if (kind === "eval") return { q: `${intro} What is ${E(`a(${g})`)}?`, input: "number", ph: "a number", check: v => checkNum(v, s), ans: String(s), hint: "Subtract, then take the absolute value (it can't be negative).", steps: [`${E(`a(${g}) = |${g} − ${h}| = |${fmt(g - h)}| = ${s}`)}`] };
+  if (kind === "interp") { const correct = `A guess of ${g} is ${s} away from the correct number.`; const ch = shuffle([correct, `The correct number is ${s}.`, `A guess of ${s} is ${g} away from the correct number.`, `A guess of ${g} is ${s} too high.`]);
+    if (g > h) ch[ch.indexOf(`A guess of ${g} is ${s} too high.`)] = `A guess of ${g} is ${s} too low.`;
+    return { q: `${intro} What does ${E(`a(${g}) = ${s}`)} mean?`, input: "choice", choices: ch, correct, check: v => ({ ok: v === correct }), ans: correct, hint: "|x − h| is a distance, so it tells how far, not which direction.", steps: [`The input ${g} is the guess; the output ${s} is how far it is from ${h}.`] }; }
+  const t = rnd(2, 15);
+  return { q: `${intro} Which two guesses score ${E(`a(x) = ${t}`)}?`, input: "nums", ph: "like 25, 35", check: v => checkNums(v, [h - t, h + t]), ans: `${h - t} and ${h + t}`, ansPlain: `${h - t}, ${h + t}`, hint: `Which numbers are ${t} away from ${h}? One below, one above.`, steps: [`${h} − ${t} = ${h - t} and ${h} + ${t} = ${h + t}.`] };
+};
+G[16] = hard => {
+  const a = hard ? pick([1, 2, -1]) : 1, h = rnd(-5, 4), k = rnd(-4, 5), f = x => a * Math.abs(x - h) + k;
+  const fs = `f(x) = ${coefPrefix(a)}|${Math.abs(h) < 1e-12 ? "x" : `x ${h > 0 ? "−" : "+"} ${Math.abs(h)}`}|${plusK(k)}`;
+  const kind = pick(["vertex", "eval", "solve", "table"]), word = a > 0 ? "minimum" : "maximum";
+  const chart = { x: [-10, 10], y: [-10, 10], xl: "x", yl: "f(x)", square: true, maxH: 380 };
+  const draw = c => { c.curve(f, { color: "#16a34a" }); c.dot(h, k, { label: pt(h, k), color: "#16a34a" }); };
+  if (kind === "vertex") return { q: `What is the <b>${word}</b> point of ${E(fs)}?`, reveal: draw, chart, input: "point", ph: "like (−2, 3)", check: v => checkPoint(v, h, k), ans: pt(h, k), hint: "The vertex of |x − h| + k is (h, k). Watch the sign inside!", steps: [`|x ${h > 0 ? "−" : "+"} ${Math.abs(h)}| is 0 when x = ${h}.`, `Then f(${h}) = ${k}, so the vertex is ${pt(h, k)}${a > 0 ? ", the minimum" : ", the maximum (the V is upside down)"}.`] };
+  if (kind === "eval") { const x = h + nz(-4, 4); return { q: `For ${E(fs)}, what is ${E(`f(${x})`)}?`, reveal: draw, chart, input: "number", ph: "a number", check: v => checkNum(v, f(x)), ans: fmt(f(x)), hint: "Work inside the bars first, take the absolute value, then finish.", steps: [`f(${x}) = ${coefPrefix(a)}|${x} ${h > 0 ? "−" : "+"} ${Math.abs(h)}|${plusK(k)} = ${coefPrefix(a)}${Math.abs(x - h)}${plusK(k)} = ${fmt(f(x))}`] }; }
+  if (kind === "table") { const xs = [h - 2, h - 1, h, h + 1, h + 2], miss = pick([0, 1, 3, 4]);
+    return { q: `Complete the table for ${E(fs)}. What is the missing value? ${tableHTML(["x", ...xs.map(fmt)], [["f(x)", ...xs.map((x, i) => (i === miss ? "?" : fmt(f(x))))]])}`, reveal: draw, chart, input: "number", ph: "a number", check: v => checkNum(v, f(xs[miss])), ans: fmt(f(xs[miss])), hint: `The table is symmetric around x = ${h}.`, steps: [`f(${xs[miss]}) = ${fmt(f(xs[miss]))}. It matches f(${2 * h - xs[miss]}) on the other side of the vertex.`] }; }
+  const d = rnd(1, 5), val = k + a * d;
+  return { q: `For ${E(fs)}, which two inputs give ${E(`f(x) = ${fmt(val)}`)}?`, reveal: c => { draw(c); c.hline(val, { color: "#e66414" }); }, chart, input: "nums", ph: "like −3, 5", check: v => checkNums(v, [h - d, h + d]), ans: `${h - d} and ${h + d}`, ansPlain: `${h - d}, ${h + d}`,
+    hint: `First get the absolute value alone: |x − h| = ?`, steps: [`${coefPrefix(a)}|x ${h > 0 ? "−" : "+"} ${Math.abs(h)}| = ${fmt(val - k)}`, `|x ${h > 0 ? "−" : "+"} ${Math.abs(h)}| = ${d}`, `x = ${h} − ${d} = ${h - d} or x = ${h} + ${d} = ${h + d}`] };
+};
+function agePL() {
+  for (;;) {
+    const xs = [rnd(4, 6)]; while (xs[xs.length - 1] < 13) xs.push(xs[xs.length - 1] + rnd(1, 3));
+    if (xs[xs.length - 1] > 17) continue;
+    const ys = [rnd(-2, 3)]; let dir = pick([1, -1]);
+    for (let i = 1; i < xs.length; i++) { let y = ys[i - 1] + dir * rnd(2, 5); y = Math.max(-5, Math.min(5, y)); if (y === ys[i - 1]) y += dir > 0 ? -2 : 2; ys.push(y); dir = -dir; }
+    if (Math.max(...ys) <= 0 || Math.min(...ys) >= 0) continue;
+    return PL(xs.map((x, i) => [x, ys[i]]));
+  }
+}
+G[17] = hard => {
+  const F = agePL(), who = pick(NAMES), kind = pick(["multi", "multi", "best"]);
+  const chart = { x: [0, 18], y: [-6, 6], xl: "Age (years)", yl: "Math experiences (+ positive / − negative)", xstep: 1, ystep: 1 };
+  const draw = c => { c.hband(0, 6, "#16a34a", .06); c.hband(-6, 0, "#dc2626", .06); c.poly(F.pts, { color: "#ca8a04" }); c.dot(F.pts[0][0], F.pts[0][1], { color: "#ca8a04" }); c.dot(F.b, F.pts[F.pts.length - 1][1], { color: "#ca8a04" }); };
+  if (kind === "best") { const which = pick(["best", "worst"]), ys = F.pts.map(p => p[1]), m = which === "best" ? Math.max(...ys) : Math.min(...ys), p = F.pts.find(q => q[1] === m);
+    if (ys.filter(y => y === m).length === 1) return { q: `${who} graphed their math experiences over time. At what age was ${who}'s <b>${which}</b> math experience?`, chart, draw, input: "number", ph: "an age", check: v => checkNum(v, p[0]), ans: `age ${p[0]}`, hint: `The ${which} experience is the ${which === "best" ? "maximum" : "minimum"}: the ${which === "best" ? "highest" : "lowest"} point.`, steps: [`The ${which === "best" ? "highest" : "lowest"} point is at age ${p[0]}.`] }; }
+  const M = multiQ(pickStatements(plCandidates(F, "f", "x", "story")), "");
+  return { q: `${who} graphed their math experiences over time. Select <b>all</b> the true statements.`, chart, draw, ...M, hint: "Above the axis = positive experiences. Going up = getting better. The highest point = the best experience.", steps: M.stepsExtra };
+};
+G[18] = hard => {
+  const m = pick([2, 3, -2, 0.5, -0.5, -3, 1 / 3, 4]), b = rnd(-6, 6), fs = `f(x) = ${poly([[m, "x"], [b, ""]])}`, g = x => (x - b) / m;
+  const kind = pick(["swap", "eq", "eq"]);
+  const chart = { x: [-10, 10], y: [-10, 10], xl: "x", yl: "y", square: true, maxH: 380 };
+  const draw = c => { c.curve(x => x, { color: "#94a3b8", width: 1.5, dash: [6, 5] }); c.curve(x => m * x + b, { color: "#ca8a04" }); };
+  const reveal = c => { draw(c); c.curve(g, { color: "#7c3aed" }); };
+  if (kind === "swap") { let p; do { p = rnd(-4, 4); } while (!Number.isInteger(m * p + b)); const q = m * p + b;
+    return { q: `${E(fs)} passes through ${pt(p, q)}. Which point must be on the graph of its <b>inverse</b>?`, chart, draw: c => { draw(c); c.dot(p, q, { label: pt(p, q), color: "#ca8a04" }); }, reveal: c => { reveal(c); c.dot(q, p, { label: pt(q, p), color: "#7c3aed" }); }, input: "point", ph: "like (4, 0)", check: v => checkPoint(v, q, p), ans: pt(q, p), hint: "Swap the x- and y-values.", steps: [`Swap the coordinates: ${pt(p, q)} → ${pt(q, p)}.`] }; }
+  const ga = 1 / m, gb = -b / m, ans = `g(x) = ${poly([[ga, "x"], [gb, ""]])}`;
+  return { q: `Write an equation for the inverse of ${E(fs)}.`, chart, draw, reveal, input: "fn", ph: "like g(x) = ½x − 2", check: v => checkFn(v, g), ans, ansPlain: ans, hint: "Swap x and y in two points, or undo the operations in reverse order.",
+    steps: [`Write y = ${poly([[m, "x"], [b, ""]])} and swap: x = ${poly([[m, "y"], [b, ""]])}.`, `Solve for y: y = (x ${b < 0 ? "+" : "−"} ${Math.abs(b)}) ÷ ${fmt(m)}.`, `${E(ans)}`] };
+};
+G[19] = hard => {
+  const form = pick(["ax+b", "x/a+b", "a(x+b)", "(x-b)/a"]), a = pick([2, 3, 4, 5]), b = nz(-9, 9);
+  let fs, f, g, ops, inv, first;
+  const sb = (n) => (n < 0 ? `− ${Math.abs(n)}` : `+ ${n}`), sbInv = n => (n < 0 ? `+ ${Math.abs(n)}` : `− ${n}`);
+  if (form === "ax+b") { fs = `f(x) = ${a}x ${sb(b)}`; f = x => a * x + b; g = x => (x - b) / a; ops = [`multiply by ${a}`, b < 0 ? `subtract ${-b}` : `add ${b}`]; inv = `g(x) = (x ${sbInv(b)}) / ${a}`; }
+  else if (form === "x/a+b") { fs = `f(x) = x/${a} ${sb(b)}`; f = x => x / a + b; g = x => a * (x - b); ops = [`divide by ${a}`, b < 0 ? `subtract ${-b}` : `add ${b}`]; inv = `g(x) = ${a}(x ${sbInv(b)})`; }
+  else if (form === "a(x+b)") { fs = `f(x) = ${a}(x ${sb(b)})`; f = x => a * (x + b); g = x => x / a - b; ops = [b < 0 ? `subtract ${-b}` : `add ${b}`, `multiply by ${a}`]; inv = `g(x) = x/${a} ${sbInv(b)}`; }
+  else { fs = `f(x) = (x ${sb(-b)}) / ${a}`; f = x => (x - b) / a; g = x => a * x + b; ops = [b > 0 ? `subtract ${b}` : `add ${-b}`, `divide by ${a}`]; inv = `g(x) = ${a}x ${sb(b)}`; }
+  const undo = s => s.replace(/^multiply by/, "divide by*").replace(/^divide by(?!\*)/, "multiply by").replace("divide by*", "divide by").replace(/^add/, "subtract*").replace(/^subtract(?!\*)/, "add").replace("subtract*", "subtract");
+  const invOps = ops.slice().reverse().map(undo);
+  first = cap(invOps[0]);
+  const steps = [`f does: ${ops.join(", then ")}.`, `The inverse undoes them in reverse order: ${invOps.join(", then ")}.`, E(inv), `Check: f(2) = ${fmt(f(2))} and g(${fmt(f(2))}) = 2 ✓`];
+  if (Math.random() < 0.35) { const ch = shuffle([...new Set([first, cap(ops[0]), cap(ops[1]), cap(undo(ops[0]))])]); return { q: `${E(fs)}. What is the <b>first</b> step of its inverse, g(x)?`, input: "choice", choices: ch, correct: first, check: v => ({ ok: v === first }), ans: first, hint: "The inverse starts by undoing the LAST thing f did.", steps }; }
+  return { q: `Write the inverse of ${E(fs)}.`, input: "fn", ph: "like g(x) = (x − 9)/3", check: v => checkFn(v, g), ans: inv, ansPlain: inv, hint: "List what f does to x, then undo those steps in reverse order.", steps };
+};
+
+/* =====================================================================
+   Explore widgets
+   ===================================================================== */
+let charts = [];
+const newChart = (el, o) => { const c = new Chart(el, o); charts.push(c); return c; };
+const sliderHTML = (id, label, min, max, step, val) => `<div class="slider"><label for="${id}">${label}</label><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"><output id="${id}o"></output></div>`;
+const EX = {};
+EX[1] = el => {
+  const RULES = [["Subtract 1", x => [x - 1]], ["Double it", x => [2 * x]], ["Square it", x => [x * x]], ["Any bigger number (random)", x => [x + rnd(1, 9)]], ["Multiply OR divide by 2 (random)", x => [Math.random() < .5 ? 2 * x : x / 2]], ["Take the absolute value", x => [Math.abs(x)]]];
+  let ri = 0, rows = [];
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Function machine</h3><div class="chips" id="x1r">${RULES.map((r, i) => `<button class="chip${i ? "" : " on"}" data-i="${i}">${r[0]}</button>`).join("")}</div>
+    <div class="machine"><span class="box">input</span>➜<span class="box" id="x1name">${RULES[0][0]}</span>➜<span class="box">output</span></div>
+    <div class="row"><button class="btn primary" id="x1go">Put in 4 random inputs</button><button class="btn" id="x1rep">Repeat an input</button><button class="btn small" id="x1clr">Clear</button></div></div>
+    <div class="card"><h3>Input-output table</h3><div id="x1t"></div><div class="readout" id="x1v"></div></div></div>`;
+  const draw = () => {
+    const seen = {}; let bad = null;
+    rows.forEach(([x, y]) => { if (seen[x] !== undefined && seen[x] !== y) bad = x; if (seen[x] === undefined) seen[x] = y; });
+    $("x1t").innerHTML = rows.length ? tableHTML(["Input", "Output"], rows.map(r => [fmt(r[0]), fmt(r[1])]), rows.map(r => (r[0] === bad ? "bad" : ""))) : '<p class="muted">Press a button to send inputs through the machine.</p>';
+    $("x1v").innerHTML = !rows.length ? "" : bad !== null ? `❌ <b>Not a function</b>: the input ${fmt(bad)} gave two different outputs.` : `✅ So far it acts like a <b>function</b>: every input has one output.${RULES[ri][0].includes("random") ? " Try repeating an input!" : ""}`;
+  };
+  document.querySelectorAll("#x1r .chip").forEach(b => b.onclick = () => { ri = +b.dataset.i; rows = []; document.querySelectorAll("#x1r .chip").forEach(c => c.classList.toggle("on", c === b)); $("x1name").textContent = RULES[ri][0]; draw(); });
+  $("x1go").onclick = () => { for (let i = 0; i < 4; i++) { const x = rnd(-4, 8); rows.push([x, RULES[ri][1](x)[0]]); } draw(); };
+  $("x1rep").onclick = () => { const x = rows.length ? pick(rows)[0] : 4; rows.push([x, RULES[ri][1](x)[0]]); draw(); };
+  $("x1clr").onclick = () => { rows = []; draw(); };
+  draw();
+};
+EX[2] = el => {
+  let C = CTX2[0];
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Pick a situation</h3><div class="chips" id="x2c">${CTX2.slice(0, 6).map((c, i) => `<button class="chip${i ? "" : " on"}" data-i="${i}">${cap(c.what)}</button>`).join("")}</div>
+    <div class="readout" id="x2eq"></div>${sliderHTML("x2k", "Input", 0, 8, 1, 2)}</div><div class="card"><h3>Read it</h3><div id="x2out"></div></div></div>`;
+  const draw = () => {
+    const k = +$("x2k").value, val = C.base + C.rate * k; $("x2ko").textContent = `${k} ${plural(k, C.unit, C.units)}`;
+    $("x2eq").innerHTML = `${E(eq2(C))}<div class="muted">${C.v} = number of ${C.units}, ${C.f}(${C.v}) = cost in dollars</div>`;
+    $("x2out").innerHTML = `<div style="font-size:28px" class="eq">${C.f}(${k}) = ${dec(val)}</div><p>read: “${C.f} of ${k} equals ${dec(val)}”</p>
+      <p>${E(`${C.f}(${k}) = ${dec(C.rate)}(${k}) + ${dec(C.base)} = ${dec(val)}`)}</p><div class="readout">🗣️ ${cap(C.what)} with <b>${k} ${plural(k, C.unit, C.units)}</b> costs <b>${money(val)}</b>.</div>`;
+  };
+  document.querySelectorAll("#x2c .chip").forEach(b => b.onclick = () => { C = CTX2[+b.dataset.i]; document.querySelectorAll("#x2c .chip").forEach(c => c.classList.toggle("on", c === b)); draw(); });
+  $("x2k").oninput = draw; draw();
+};
+EX[3] = el => {
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Build a function</h3>${sliderHTML("x3b", "Start amount", 0, 10, 0.25, 1.75)}${sliderHTML("x3r", "Cost per scoop", 0.25, 5, 0.25, 2.25)}
+    <div class="readout" id="x3d"></div><div id="x3t"></div></div><div class="card"><h3>Graph</h3><canvas class="chart" id="x3c"></canvas></div></div>`;
+  const c = newChart($("x3c"), { x: [0, 6], y: [0, 40], xl: "Scoops, x", yl: "Cost ($), b(x)", xstep: 1 });
+  const draw = () => {
+    const b = +$("x3b").value, r = +$("x3r").value; $("x3bo").textContent = money(b); $("x3ro").textContent = money(r);
+    $("x3d").innerHTML = `<b>Words:</b> a bowl costs ${money(b)} plus ${money(r)} per scoop.<br><b>Equation:</b> ${E(`b(x) = ${dec(b)} + ${dec(r)}x`)}`;
+    $("x3t").innerHTML = tableHTML(["x", "0", "1", "2", "3", "4"], [["b(x)", ...[0, 1, 2, 3, 4].map(x => dec(b + r * x))]]);
+    c.layers = ch => { ch.curve(x => b + r * x, { color: "#7c3aed" }); [0, 1, 2, 3, 4].forEach(x => ch.dot(x, b + r * x, { color: "#7c3aed", r: 4.5 })); }; c.render();
+  };
+  $("x3b").oninput = draw; $("x3r").oninput = draw; draw();
+};
+EX[4] = el => {
+  let F = storyPL();
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>A walk to the library</h3><canvas class="chart" id="x4c"></canvas>${sliderHTML("x4t", "Time t", 0, 80, 1, 25)}<button class="btn small" id="x4n">New story</button></div>
+    <div class="card"><h3>What is happening?</h3><div id="x4o"></div></div></div>`;
+  const c = newChart($("x4c"), { x: [0, 80], y: [0, 7], xl: "Time (min)", yl: "Distance from home (mi)", xstep: 10, ystep: 1 });
+  const draw = () => {
+    const t = +$("x4t").value, d = F.f(t), s = slopeAt(F, Math.min(79.99, Math.max(.01, t)));
+    $("x4to").textContent = `${t} min`;
+    const doing = Math.abs(s) < 1e-9 ? (d === 0 ? "at home" : "staying in one place 🏛️") : s > 0 ? "moving away from home 🚶" : "coming back home 🏠";
+    $("x4o").innerHTML = `<div class="eq" style="font-size:26px">d(${t}) = ${dec(d)}</div><div class="readout">After <b>${t} minutes</b>, Jasmine is <b>${dec(d)} miles</b> from home and is <b>${doing}</b>.</div>
+      <p class="muted">The graph can't tell us <i>why</i> she stopped or how she felt. It only shows distance and time.</p>`;
+    c.layers = ch => { ch.poly(F.pts, { color: "#2563eb" }); ch.vline(t, { color: "#e66414" }); ch.dot(t, d, { color: "#e66414", label: `(${t}, ${dec(d)})` }); }; c.render();
+  };
+  $("x4t").oninput = draw; $("x4n").onclick = () => { F = storyPL(); draw(); }; draw();
+};
+function keyExplorer(el, mk, chartOpts, color) {
+  let F = mk();
+  el.innerHTML = `<div class="grid2"><div class="card"><canvas class="chart" id="xkc"></canvas><div class="row" style="margin-top:8px"><button class="btn small" id="xkn">New graph</button></div></div>
+    <div class="card"><h3>Show me</h3><div class="chips" id="xkt"><button class="chip on" data-k="mm">Max & min</button><button class="chip" data-k="pn">Positive & negative</button><button class="chip" data-k="id">Increasing & decreasing</button></div><div id="xko" style="margin-top:10px"></div></div></div>`;
+  let mode = "mm"; const c = newChart($("xkc"), chartOpts);
+  const draw = () => {
+    const P = F.pts, ys = P.map(p => p[1]), mx = Math.max(...ys), mn = Math.min(...ys), pM = P.find(p => p[1] === mx), pm = P.find(p => p[1] === mn);
+    const zeros = []; for (let i = 1; i < P.length; i++) { const [x1, y1] = P[i - 1], [x2, y2] = P[i]; if (y1 * y2 < 0) zeros.push(x1 + (x2 - x1) * (-y1) / (y2 - y1)); else if (y2 === 0 && i < P.length - 1) zeros.push(x2); }
+    const inc = runs(F, 1), decr = runs(F, -1);
+    let html = "";
+    if (mode === "mm") html = `<p>⬆️ <b>Maximum:</b> ${pt(pM[0], pM[1])}, the highest point.</p><p>⬇️ <b>Minimum:</b> ${pt(pm[0], pm[1])}, the lowest point.</p>`;
+    if (mode === "pn") { const S = normSet(inner(F.a, F.b, 400).length ? [] : []); const posI = [], negI = []; const cuts = [F.a, ...zeros, F.b];
+      for (let i = 1; i < cuts.length; i++) { const m = (cuts[i - 1] + cuts[i]) / 2; (F.f(m) > 0 ? posI : negI).push(`${fmt(cuts[i - 1])} < x < ${fmt(cuts[i])}`); }
+      html = `<p>🟩 <b>Positive</b> (above the x-axis): ${posI.join(" and ") || "never"}</p><p>🟥 <b>Negative</b> (below): ${negI.join(" and ") || "never"}</p><p class="muted">The graph crosses the x-axis at x = ${zeros.map(fmt).join(", ") || "—"}.</p>`; }
+    if (mode === "id") html = `<p>📈 <b>Increasing:</b> ${inc.map(([a, b]) => `${fmt(a)} < x < ${fmt(b)}`).join(" and ") || "never"}</p><p>📉 <b>Decreasing:</b> ${decr.map(([a, b]) => `${fmt(a)} < x < ${fmt(b)}`).join(" and ") || "never"}</p><p class="muted">Always read from left to right, and answer with x-values.</p>`;
+    $("xko").innerHTML = html;
+    c.layers = ch => {
+      if (mode === "pn") { ch.hband(0, ch.y[1], "#16a34a", .08); ch.hband(ch.y[0], 0, "#dc2626", .08); }
+      if (mode === "id") { inc.forEach(([a, b]) => ch.band(a, b, "#16a34a", .12)); decr.forEach(([a, b]) => ch.band(a, b, "#dc2626", .12)); }
+      if (mode === "id") for (let i = 1; i < P.length; i++) ch.seg(P[i - 1][0], P[i - 1][1], P[i][0], P[i][1], { color: P[i][1] > P[i - 1][1] ? "#16a34a" : "#dc2626", width: 3.5 });
+      else ch.poly(P, { color });
+      ch.dot(P[0][0], P[0][1], { color }); ch.dot(F.b, P[P.length - 1][1], { color });
+      if (mode === "mm") { ch.dot(pM[0], pM[1], { color: "#16a34a", r: 7, label: `max ${pt(pM[0], pM[1])}` }); ch.dot(pm[0], pm[1], { color: "#dc2626", r: 7, label: `min ${pt(pm[0], pm[1])}`, dy: 20 }); }
+      if (mode === "pn") zeros.forEach(z => ch.dot(z, 0, { color: "#e66414", r: 5 }));
+    };
+    c.render();
+  };
+  document.querySelectorAll("#xkt .chip").forEach(b => b.onclick = () => { mode = b.dataset.k; document.querySelectorAll("#xkt .chip").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  $("xkn").onclick = () => { F = mk(); draw(); }; draw();
+}
+EX[5] = el => keyExplorer(el, keyPL, keyChart, "#2563eb");
+EX[17] = el => keyExplorer(el, agePL, { x: [0, 18], y: [-6, 6], xl: "Age (years)", yl: "Math experiences", xstep: 1, ystep: 1 }, "#ca8a04");
+EX[6] = el => {
+  const FNS = [["Car trip", x => 35 * x + 10 * Math.sin(1.4 * x) * x, [0, 5], [0, 220], "Time (hr)", "Distance (mi)"], ["x² − 2x", x => x * x - 2 * x, [-3, 5], [-3, 16], "x", "f(x)"], ["Growth 2ˣ", x => Math.pow(2, x), [0, 5], [0, 34], "x", "f(x)"]];
+  let fi = 0;
+  el.innerHTML = `<div class="grid2"><div class="card"><div class="chips" id="x6f">${FNS.map((f, i) => `<button class="chip${i ? "" : " on"}" data-i="${i}">${f[0]}</button>`).join("")}</div><canvas class="chart" id="x6c" style="margin-top:8px"></canvas>
+    ${sliderHTML("x6a", "Start a", 0, 100, 1, 20)}${sliderHTML("x6b", "End b", 0, 100, 1, 70)}</div><div class="card"><h3>Average rate of change</h3><div id="x6o"></div></div></div>`;
+  const c = newChart($("x6c"), {});
+  const draw = () => {
+    const [nm, f, X, Y, xl, yl] = FNS[fi]; c.set({ x: X, y: Y, xl, yl }, false);
+    let a = X[0] + (X[1] - X[0]) * $("x6a").value / 100, b = X[0] + (X[1] - X[0]) * $("x6b").value / 100;
+    a = Math.round(a * 4) / 4; b = Math.round(b * 4) / 4; $("x6ao").textContent = dec(a); $("x6bo").textContent = dec(b);
+    const ok = Math.abs(b - a) > 1e-9, r = ok ? (f(b) - f(a)) / (b - a) : NaN;
+    $("x6o").innerHTML = ok ? `<p>${E(`f(${dec(b)}) = ${dec(f(b))}`)} and ${E(`f(${dec(a)}) = ${dec(f(a))}`)}</p><div class="eq" style="font-size:22px">(${dec(f(b))} − ${dec(f(a))}) ÷ (${dec(b)} − ${dec(a)}) = <b>${dec(r)}</b></div>
+      <div class="readout">The orange line is the slope between the two points. ${fi === 0 ? `Average speed: <b>${dec(r)} miles per hour</b>.` : ""}</div>` : '<p class="muted">Move the sliders apart to choose an interval.</p>';
+    c.layers = ch => { ch.curve(f, { color: "#2563eb" }); if (ok) { ch.curve(x => f(a) + r * (x - a), { color: "#e66414", width: 2, dash: [7, 5] }); ch.dot(a, f(a), { color: "#e66414", label: "a" }); ch.dot(b, f(b), { color: "#e66414", label: "b" }); } };
+    c.render();
+  };
+  document.querySelectorAll("#x6f .chip").forEach(b => b.onclick = () => { fi = +b.dataset.i; document.querySelectorAll("#x6f .chip").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  $("x6a").oninput = draw; $("x6b").oninput = draw; draw();
+};
+EX[7] = el => {
+  let f = busPL(), g = busPL();
+  el.innerHTML = `<div class="grid2"><div class="card"><canvas class="chart" id="x7c"></canvas>${sliderHTML("x7t", "Time t", 0, 18, 1, 8)}<button class="btn small" id="x7n">New buses</button></div><div class="card"><h3>Compare at time t</h3><div id="x7o"></div></div></div>`;
+  const c = newChart($("x7c"), { x: [0, 18], y: [0, 6], xl: "Time (min)", yl: "Distance from school (mi)", xstep: 2, ystep: 1 });
+  const draw = () => {
+    const t = +$("x7t").value, a = f.f(t), b = g.f(t), sym = near(a, b) ? "=" : a > b ? ">" : "<"; $("x7to").textContent = `${t} min`;
+    $("x7o").innerHTML = `<div class="eq" style="font-size:28px"><span style="color:#2563eb">f(${t}) = ${dec(a)}</span> &nbsp;${sym}&nbsp; <span style="color:#e66414">g(${t}) = ${dec(b)}</span></div>
+      <div class="readout">${sym === "=" ? "Both buses are the same distance from school. The graphs meet here." : sym === ">" ? "Bus f is farther from school: its graph is higher." : "Bus g is farther from school: its graph is higher."}</div>`;
+    c.layers = ch => { ch.poly(f.pts, { color: "#2563eb" }); ch.poly(g.pts, { color: "#e66414", dash: [8, 5] }); ch.vline(t); ch.dot(t, a, { color: "#2563eb" }); ch.dot(t, b, { color: "#e66414" }); }; c.render();
+  };
+  $("x7t").oninput = draw; $("x7n").onclick = () => { f = busPL(); g = busPL(); draw(); }; draw();
+};
+EX[8] = el => {
+  let C = CTX8[0];
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>Situations</h3><div class="chips" id="x8c">${CTX8.map((c, i) => `<button class="chip${i ? "" : " on"}" data-i="${i}">${["Tires", "Frozen yogurt", "Tickets", "Draining tank", "Taxi", "Class trip", "Books"][i]}</button>`).join("")}</div><div class="readout" id="x8d"></div></div>
+    <div class="card"><h3>What the graph looks like</h3><canvas class="chart" id="x8g"></canvas></div></div>`;
+  const c = newChart($("x8g"), { x: [-1, 8], y: [0, 10], xl: "input", yl: "output" });
+  const draw = () => {
+    $("x8d").innerHTML = `${C.d}<p><b>Domain:</b> ${C.desc} → <span class="tag" style="background:${C.disc ? "#fce7f3;color:#9d174d" : "#ccfbf1;color:#115e59"}">${C.disc ? "discrete" : "continuous"}</span></p><p class="muted">${C.why}</p>`;
+    const hi = C.max ?? 7;
+    c.layers = ch => { if (C.disc) for (let x = C.min; x <= 7; x++) ch.dot(x, 1 + x, { color: "#db2777" }); else { ch.seg(C.min, 1 + C.min, hi > 7 ? 8 : hi * .35, 1 + (hi > 7 ? 8 : hi * .35), { color: "#0d9488" }); ch.dot(C.min, 1 + C.min, { color: "#0d9488", open: !C.minI }); } }; c.render();
+  };
+  document.querySelectorAll("#x8c .chip").forEach(b => b.onclick = () => { C = CTX8[+b.dataset.i]; document.querySelectorAll("#x8c .chip").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  draw();
+};
+function drExplorer(el) {
+  const f = x => 0.12 * x * x * x - 0.2 * x * x - 2.2 * x + 2;
+  el.innerHTML = `<div class="grid2"><div class="card"><canvas class="chart" id="xdc"></canvas>${sliderHTML("xda", "Left end", -6, 6, 1, -4)}${sliderHTML("xdb", "Right end", -6, 6, 1, 5)}</div><div class="card"><h3>Domain and range of the bold part</h3><div id="xdo"></div></div></div>`;
+  const c = newChart($("xdc"), { ...keyChart, yl: "h(x)" });
+  const draw = () => {
+    let a = +$("xda").value, b = +$("xdb").value; if (a > b) [a, b] = [b, a]; $("xdao").textContent = a; $("xdbo").textContent = b;
+    let lo = Infinity, hi = -Infinity; for (let i = 0; i <= 400; i++) { const y = f(a + (b - a) * i / 400); lo = Math.min(lo, y); hi = Math.max(hi, y); }
+    const r = v => Math.round(v * 10) / 10;
+    $("xdo").innerHTML = `<p>📏 <b>Domain</b> (left to right): ${E(`${a} ≤ x ≤ ${b}`)}</p><p>📐 <b>Range</b> (bottom to top): ${E(`${dec(r(lo))} ≤ h(x) ≤ ${dec(r(hi))}`)}</p><p class="muted">The range uses the lowest and highest points of the bold part. Those aren't always the endpoints!</p>`;
+    c.layers = ch => { ch.band(a, b, "#e66414", .1); ch.hband(lo, hi, "#7c3aed", .1); ch.curve(f, { color: "#cbd5e1", width: 2 }); ch.curve(f, { color: "#0d9488", from: a, to: b, width: 4 }); ch.dot(a, f(a), { color: "#0d9488" }); ch.dot(b, f(b), { color: "#0d9488" }); }; c.render();
+  };
+  $("xda").oninput = draw; $("xdb").oninput = draw; draw();
+}
+EX[9] = drExplorer; EX[10] = drExplorer;
+function pwExplorer(el) {
+  const SETS = [["Pumpkin prices", [{ e: "2x", f: x => 2 * x, lo: 0, loI: true, hi: 10, hiI: true }, { e: "24", f: () => 24, lo: 10, loI: false, hi: Infinity }], [0, 20], [0, 30]],
+    ["Three pieces", [{ e: "−x", f: x => -x, lo: -Infinity, hi: 0, hiI: false }, { e: "3", f: () => 3, lo: 0, loI: true, hi: 4, hiI: false }, { e: "x − 1", f: x => x - 1, lo: 4, loI: true, hi: Infinity }], [-6, 10], [-2, 10]],
+    ["Step: shipping", [{ e: "6", f: () => 6, lo: 0, loI: false, hi: 2, hiI: true }, { e: "9", f: () => 9, lo: 2, loI: false, hi: 5, hiI: true }, { e: "14", f: () => 14, lo: 5, loI: false, hi: Infinity }], [0, 10], [0, 18]]];
+  let si = 0;
+  el.innerHTML = `<div class="grid2"><div class="card"><div class="chips" id="xpf">${SETS.map((s, i) => `<button class="chip${i ? "" : " on"}" data-i="${i}">${s[0]}</button>`).join("")}</div><canvas class="chart" id="xpc" style="margin-top:8px"></canvas>${sliderHTML("xpx", "Input x", 0, 100, 1, 30)}</div><div class="card"><h3>Which piece?</h3><div id="xpo"></div></div></div>`;
+  const c = newChart($("xpc"), {});
+  const draw = () => {
+    const [nm, PW, X, Y] = SETS[si]; c.set({ x: X, y: Y, xl: "x", yl: "f(x)" }, false);
+    const x = Math.round((X[0] + (X[1] - X[0]) * $("xpx").value / 100) * 2) / 2; $("xpxo").textContent = dec(x);
+    const k = PW.findIndex(p => inPiece(p, x)), y = k >= 0 ? PW[k].f(x) : NaN;
+    $("xpo").innerHTML = `${pwHTML(PW, "f", k)}<div class="readout">${k >= 0 ? `x = ${dec(x)} is in ${E(condStr(PW[k]))}, so use ${E(PW[k].e)}: <b>f(${dec(x)}) = ${dec(y)}</b>` : `x = ${dec(x)} is not in the domain.`}</div><p class="muted">● closed dot: included. ○ open dot: not included.</p>`;
+    c.layers = ch => { drawPW(ch, PW); if (k >= 0) { ch.vline(x, { color: "#7c3aed" }); ch.dot(x, y, { color: "#7c3aed", r: 7 }); } }; c.render();
+  };
+  document.querySelectorAll("#xpf .chip").forEach(b => b.onclick = () => { si = +b.dataset.i; document.querySelectorAll("#xpf .chip").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  $("xpx").oninput = draw; draw();
+}
+EX[11] = pwExplorer; EX[12] = pwExplorer;
+function seqExplorer(el) {
+  el.innerHTML = `<div class="grid2"><div class="card"><div class="seg" id="xsT"><button data-t="a" class="on">Arithmetic (add)</button><button data-t="g">Geometric (multiply)</button></div>
+    ${sliderHTML("xsa", "First term", -10, 20, 1, 2)}${sliderHTML("xsd", "Add / multiply", -5, 5, 1, 3)}<canvas class="chart" id="xsc"></canvas></div><div class="card"><h3>Two ways to define it</h3><div id="xso"></div></div></div>`;
+  let type = "a"; const c = newChart($("xsc"), { x: [0, 7], y: [-20, 40], xl: "n", yl: "f(n)", xstep: 1 });
+  const draw = () => {
+    const a = +$("xsa").value; let d = +$("xsd").value; if (type === "g" && d === 0) d = 2; if (type === "g" && d === 1) d = 2;
+    $("xsao").textContent = a; $("xsdo").textContent = type === "a" ? (d >= 0 ? "+" : "") + d : "×" + d;
+    const t = n => (type === "a" ? a + d * (n - 1) : a * Math.pow(d, n - 1)); const terms = [1, 2, 3, 4, 5, 6].map(t);
+    const rec = type === "a" ? `f(1) = ${a}, f(n) = f(n − 1) ${d < 0 ? "−" : "+"} ${Math.abs(d)}` : `f(1) = ${a}, f(n) = ${d} · f(n − 1)`;
+    const exp = type === "a" ? `f(n) = ${a} ${d < 0 ? "−" : "+"} ${Math.abs(d)}(n − 1) = ${poly([[d, "n"], [a - d, ""]])}` : `f(n) = ${a} · ${d < 0 ? `(${d})` : d}<sup>n − 1</sup>`;
+    $("xso").innerHTML = `<p class="eq" style="font-size:20px">${terms.map(fmt).join(", ")}, …</p><p>🔁 <b>Recursive</b> (uses the term before):<br>${E(rec)}</p><p>🎯 <b>Explicit</b> (jump straight to term n):<br>${E(exp)}</p><div class="readout">f(10) = ${fmt(t(10))}</div>`;
+    const lo = Math.min(0, ...terms), hi = Math.max(1, ...terms); c.set({ x: [0, 7], y: [Math.floor(lo - 2), Math.ceil(hi + 2)], xl: "n", yl: "f(n)", xstep: 1 }, false);
+    c.layers = ch => terms.forEach((v, i) => ch.dot(i + 1, v, { color: "#db2777", label: fmt(v) })); c.render();
+  };
+  document.querySelectorAll("#xsT button").forEach(b => b.onclick = () => { type = b.dataset.t; document.querySelectorAll("#xsT button").forEach(x => x.classList.toggle("on", x === b)); draw(); });
+  $("xsa").oninput = draw; $("xsd").oninput = draw; draw();
+}
+EX[13] = seqExplorer; EX[14] = seqExplorer;
+function absExplorer(el) {
+  el.innerHTML = `<div class="grid2"><div class="card"><canvas class="chart" id="xac"></canvas>${sliderHTML("xah", "h (shift)", -6, 6, 1, -2)}${sliderHTML("xak", "k (up/down)", -6, 6, 1, 3)}<label class="row" style="font-size:14.5px"><input type="checkbox" id="xaf"> flip it (minus in front)</label></div>
+    <div class="card"><h3>Equation, vertex and table</h3><div id="xao"></div></div></div>`;
+  const c = newChart($("xac"), { x: [-10, 10], y: [-10, 10], xl: "x", yl: "f(x)", square: true, maxH: 400 });
+  const draw = () => {
+    const h = +$("xah").value, k = +$("xak").value, a = $("xaf").checked ? -1 : 1, f = x => a * Math.abs(x - h) + k; $("xaho").textContent = h; $("xako").textContent = k;
+    const fs = `f(x) = ${a < 0 ? "−" : ""}|${h === 0 ? "x" : `x ${h > 0 ? "−" : "+"} ${Math.abs(h)}`}|${plusK(k)}`;
+    const xs = [h - 2, h - 1, h, h + 1, h + 2];
+    $("xao").innerHTML = `<div class="eq" style="font-size:24px">${fs}</div><p>Vertex: <b>${pt(h, k)}</b>, the <b>${a > 0 ? "minimum" : "maximum"}</b>.</p>${tableHTML(["x", ...xs], [["f(x)", ...xs.map(x => fmt(f(x)))]], [])}<p class="muted">The table is symmetric around x = ${h}. |x − h| is the distance from x to ${h}.</p>`;
+    c.layers = ch => { ch.vline(h, { color: "#cbd5e1" }); ch.curve(f, { color: "#16a34a" }); ch.dot(h, k, { color: "#16a34a", label: pt(h, k) }); xs.forEach(x => x !== h && ch.dot(x, f(x), { color: "#16a34a", r: 4 })); }; c.render();
+  };
+  ["xah", "xak", "xaf"].forEach(id => ($(id).oninput = draw)); draw();
+}
+EX[15] = absExplorer; EX[16] = absExplorer;
+function invExplorer(el) {
+  el.innerHTML = `<div class="grid2"><div class="card"><canvas class="chart" id="xic"></canvas>${sliderHTML("xim", "slope m", -4, 4, 0.5, 2)}${sliderHTML("xib", "b", -6, 6, 1, 4)}</div><div class="card"><h3>f and its inverse</h3><div id="xio"></div></div></div>`;
+  const c = newChart($("xic"), { x: [-10, 10], y: [-10, 10], xl: "x", yl: "y", square: true, maxH: 400 });
+  const draw = () => {
+    let m = +$("xim").value; if (m === 0) m = 0.5; const b = +$("xib").value; $("ximo").textContent = dec(m); $("xibo").textContent = b;
+    const f = x => m * x + b, g = x => (x - b) / m, pts = [-2, 0, 2].map(x => [x, f(x)]);
+    $("xio").innerHTML = `<p>${E(`f(x) = ${poly([[m, "x"], [b, ""]])}`)}</p><p>${E(`g(x) = ${poly([[1 / m, "x"], [-b / m, ""]])}`)} (the inverse)</p>
+      ${tableHTML(["point on f", "point on g"], pts.map(([x, y]) => [pt(x, y), pt(y, x)]))}
+      <p>🔁 <b>Operations:</b> f does × ${dec(m)}, then ${b < 0 ? "− " + -b : "+ " + b}. g undoes them in reverse order: ${b < 0 ? "+ " + -b : "− " + b}, then ÷ ${dec(m)}.</p><p class="muted">The dashed line is y = x. g is f's mirror image across it.</p>`;
+    c.layers = ch => { ch.curve(x => x, { color: "#94a3b8", width: 1.5, dash: [6, 5] }); ch.curve(f, { color: "#ca8a04" }); ch.curve(g, { color: "#7c3aed" }); pts.forEach(([x, y]) => { ch.dot(x, y, { color: "#ca8a04", r: 4.5 }); ch.dot(y, x, { color: "#7c3aed", r: 4.5 }); }); ch.label(8.5, f(8.5), "f", "#ca8a04"); ch.label(8.5, g(8.5), "g", "#7c3aed"); };
+    c.render();
+  };
+  $("xim").oninput = draw; $("xib").oninput = draw; draw();
+}
+EX[18] = invExplorer; EX[19] = invExplorer;
+
+/* =====================================================================
+   Question engine (practice + unit test)
+   ===================================================================== */
+const plainText = h => { const d = document.createElement("div"); d.innerHTML = String(h).replace(/<\/t[dh]>\s*<\/tr>/gi, " ;</td></tr>").replace(/<\/t[dh]>/gi, " </td>").replace(/<br\s*\/?>|<\/li>|<\/div>/gi, " ; "); return d.textContent.replace(/\s+/g, " ").replace(/(\s*[|;]\s*)+$/, "").trim(); };
+const KEYS = { set: ["≤", "≥", "<", ">", " and ", " or ", "f(x)", "−"], fn: ["(", ")", "/", "^", "−", "·"], point: ["(", ")", ",", "−"], nums: [",", "−"], number: ["−", "/", "."] };
+function mountQuestion(root, Q, { mode, lesson, onFinish, chartHost }) {
+  let tries = 0, done = false, usedHelp = false; const t0 = performance.now(); const maxTries = mode === "test" || (Q.input === "choice" && Q.choices.length <= 2) ? 1 : 2;
+  const sec = secOf(lesson);
+  root.innerHTML = `<div class="muted">${sec.icon} Lesson ${lesson} · ${L[lesson].title}</div><div class="q">${Q.q}</div><div class="qa"></div><div class="fb" aria-live="polite"></div><div class="work"></div>`;
+  const qa = root.querySelector(".qa"), fb = root.querySelector(".fb"), work = root.querySelector(".work");
+  let chart = null;
+  if (chartHost) {
+    chartHost.innerHTML = Q.chart ? `<canvas class="chart"></canvas>` : "";
+    chartHost.hidden = !Q.chart || (!Q.draw && !Q.reveal);
+    if (Q.chart) { chart = newChart(chartHost.querySelector("canvas"), Q.chart); chart.layers = c => { if (Q.draw && !(done && Q.reveal)) Q.draw(c); if (done && Q.reveal) Q.reveal(c); else if (!Q.draw && done && Q.reveal) Q.reveal(c); }; chart.render(); }
+  }
+  const getVal = () => (Q.input === "multi" ? [...qa.querySelectorAll("input[type=checkbox]")].map((b, i) => (b.checked ? i : -1)).filter(i => i >= 0) : qa.querySelector("input[type=text]").value);
+  if (Q.input === "choice") {
+    qa.innerHTML = `<div class="ansrow" style="flex-direction:column;align-items:stretch">${Q.choices.map(c => `<button class="btn choice" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
+    qa.querySelectorAll(".choice").forEach(b => b.onclick = () => submit(b.dataset.v, b));
+  } else if (Q.input === "multi") {
+    qa.innerHTML = `<div class="multi">${Q.choicesMulti.map((c, i) => `<label><input type="checkbox" value="${i}"><span>${esc(c)}</span></label>`).join("")}</div><div class="ansrow"><button class="btn primary chk">${mode === "test" ? "Save answer" : "Check"}</button></div>`;
+    qa.querySelector(".chk").onclick = () => submit(getVal());
+  } else {
+    const keys = KEYS[Q.input] || [];
+    qa.innerHTML = `<div class="ansrow"><input type="text" placeholder="${esc(Q.ph || "Your answer")}" autocomplete="off" spellcheck="false" autocapitalize="off"><button class="btn primary chk">${mode === "test" ? "Save answer" : "Check"}</button></div>
+      ${keys.length ? `<div class="keys">${keys.map(k => `<button data-ins="${esc(k)}">${esc(k.trim())}</button>`).join("")}</div>` : ""}`;
+    const inp = qa.querySelector("input");
+    qa.querySelector(".chk").onclick = () => submit(inp.value);
+    inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); if (!done) submit(inp.value); else if (onFinish.next) onFinish.next(); } };
+    qa.querySelectorAll(".keys button").forEach(b => b.onclick = e => { e.preventDefault(); const s = inp.selectionStart ?? inp.value.length, en = inp.selectionEnd ?? s; inp.value = inp.value.slice(0, s) + b.dataset.ins + inp.value.slice(en); inp.focus(); const p = s + b.dataset.ins.length; inp.setSelectionRange(p, p); });
+    if (window.innerWidth > 900) setTimeout(() => inp.focus({ preventScroll: true }), 40);
+  }
+  const record = (resp, ok, label) => {
+    if (!AM) return;
+    AM.attempt({ question: plainText(Q.q).slice(0, 290), response: String(resp).slice(0, 190), answer: plainText(Q.ansPlain || Q.ans).slice(0, 190), correct: ok, ms: performance.now() - t0,
+      topic: `L${lesson} · ${L[lesson].title}`, mode: label, session: mode === "test" ? TEST.id : undefined, meta: { lesson, section: sec.id, kind: Q.input, test: mode === "test" ? TEST.id : null } });
+  };
+  const showSteps = () => { const s = Q.steps || []; if (s.length) work.innerHTML = `<ol class="steps">${s.map(x => `<li>${x}</li>`).join("")}</ol>`; };
+  function submit(v, btn) {
+    if (done) return;
+    if (Q.input === "multi" ? !v.length : !String(v).trim()) { fb.className = "fb info"; fb.textContent = Q.input === "multi" ? "Select at least one statement." : "Type an answer first."; return; }
+    const r = Q.check(v);
+    if (r.invalid) { fb.className = "fb info"; fb.textContent = r.msg; return; }
+    tries++;
+    const ok = !!r.ok, resp = Q.input === "multi" ? v.map(i => "ABCDEF"[i]).join(", ") : v;
+    record(resp, ok, mode === "test" ? "unit test" : tries === 1 ? (usedHelp ? "after hint" : "first try") : "second try");
+    if (mode === "test") {
+      done = true; root.querySelectorAll("button.choice, .multi input, input[type=text], .chk").forEach(e => (e.disabled = true));
+      if (btn) btn.classList.add("picked");
+      onFinish({ ok, resp, Q, lesson }); return;
+    }
+    if (btn) btn.classList.add(ok ? "right" : "wrong");
+    if (Q.input === "multi" && (ok || tries >= maxTries)) qa.querySelectorAll(".multi label").forEach((l, i) => { const k = Q.correct.includes(i) ? "right" : l.querySelector("input").checked ? "wrong" : null; if (k) l.classList.add(k); });
+    if (ok) { done = true; fb.className = "fb okc"; fb.innerHTML = `✓ ${pick(["Correct!", "Nice work!", "You got it!", "Exactly right!", "Great thinking!"])} ${r.msg ? `<span style="font-weight:600">${r.msg}</span>` : ""}`; }
+    else if (tries < maxTries) { usedHelp = true; fb.className = "fb badc"; fb.innerHTML = `Not quite. ${r.msg || ""} Try once more. <div class="muted" style="font-weight:600">💡 ${Q.hint}</div>`; return; }
+    else { done = true; fb.className = "fb badc"; fb.innerHTML = `${r.msg ? r.msg + " " : ""}The answer is <span class="eq">${Q.ans}</span>.`; }
+    showSteps(); if (chart) chart.render();
+    onFinish({ ok, firstTry: ok && tries === 1 && !usedHelp, Q, lesson });
+  }
+  return {
+    hint() { if (done) return; usedHelp = true; fb.className = "fb info"; fb.innerHTML = `💡 ${Q.hint}`; },
+    reveal() { if (done) { showSteps(); return; } record("(showed the steps)", false, "showed answer"); done = true; fb.className = "fb info"; fb.innerHTML = `The answer is <span class="eq">${Q.ans}</span>.`; showSteps(); if (chart) chart.render(); onFinish({ ok: false, firstTry: false, Q, lesson }); },
+    get done() { return done; },
+  };
+}
+
+/* =====================================================================
+   State, mastery, plan
+   ===================================================================== */
+const PLAN = (AM && AM.settings) || {};
+let STATS = load("df-stats", {});
+let TESTS = load("df-tests", []);
+let CUR = load("df-cur", 1);
+const stat = n => STATS[n] || { n: 0, c: 0, recent: [] };
+const mastered = n => { const r = stat(n).recent.slice(-5); return r.length >= 5 && r.reduce((a, b) => a + b, 0) >= 4; };
+const pct = n => { const r = stat(n).recent.slice(-5); return r.length ? Math.round(r.reduce((a, b) => a + b, 0) / Math.max(5, r.length) * 100) : 0; };
+function recordResult(n, firstTry) {
+  const s = stat(n); s.n++; if (firstTry) s.c++; s.recent.push(firstTry ? 1 : 0); if (s.recent.length > 20) s.recent.shift(); STATS[n] = s; save("df-stats", STATS);
+  if (AM && mastered(n)) AM.award(`lesson-${n}`, `Mastered lesson ${n}: ${L[n].title}`, secOf(n).icon);
+  const m = Object.keys(L).filter(k => mastered(+k)).length;
+  if (AM) [[5, "🌟"], [10, "🏅"], [19, "🏆"]].forEach(([k, ic]) => { if (m >= k) AM.award(`mastered-${k}`, `${k} Unit 4 lessons mastered`, ic); });
+  updateHeader();
+}
+function updateHeader() { $("hdrMastered").textContent = `⭐ ${Object.keys(L).filter(k => mastered(+k)).length} / 19 lessons`; }
+const planLessons = () => (Array.isArray(PLAN.lessons) ? PLAN.lessons.map(Number).filter(n => L[n]) : []);
+
+/* =====================================================================
+   Views
+   ===================================================================== */
+function clearCharts() { charts.forEach(c => c.destroy()); charts = []; }
+function renderHome() {
+  const done = Object.keys(L).filter(k => mastered(+k)).length, focus = planLessons();
+  $("home").innerHTML = `<div class="hero"><div><h2>Unit 4 · Describing Functions</h2><p>Functions as tables, graphs, equations and stories: notation, key features, domain and range, piecewise rules, sequences, absolute value and inverses.</p>
+      <ul><li>What makes a relationship a function, and how can a function tell a story?</li><li>What are the key features of a function, and how do you describe them?</li><li>How does function notation help you say exactly what you mean?</li></ul></div>
+    <div class="meter"><b>${done} / 19</b>lessons mastered<div class="bigbar"><div style="width:${done / 19 * 100}%"></div></div>
+      <div class="row"><button class="btn big" id="hContinue" style="background:#fff;color:#3b1d8f;border-color:#fff">▶ Continue: Lesson ${CUR}</button><button class="btn" id="hTest" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.6)">📝 Practice test</button></div></div></div>
+    <div class="secs">${SECTIONS.map(S => `<div class="sec"><div class="head" style="background:${S.color}"><span>${S.icon}</span>${S.name}</div>
+      ${S.lessons.map(n => { const m = mastered(n), p = pct(n), st = stat(n); return `<button class="les" data-n="${n}"><span class="num" style="background:${S.color}">${n}</span><span class="t">${L[n].title}${focus.includes(n) ? ' <span class="tag" style="background:#fff1e6;color:#9a3412">📌 tutor’s plan</span>' : ""}</span>
+        <span class="mini"><div style="width:${p}%;background:${S.color}"></div></span><span class="st" style="color:${m ? "#0f9d58" : "#94a3b8"}">${m ? "★" : st.n ? p + "%" : ""}</span></button>`; }).join("")}</div>`).join("")}</div>`;
+  document.querySelectorAll(".les").forEach(b => b.onclick = () => openLesson(+b.dataset.n, "learn"));
+  $("hContinue").onclick = () => openLesson(CUR, "learn"); $("hTest").onclick = () => go("test");
+}
+let LV = { n: 1, tab: "learn", runner: null };
+function openLesson(n, tab = "learn") { LV = { n, tab, runner: null }; CUR = n; save("df-cur", n); go("lesson"); }
+function renderLesson() {
+  clearCharts();
+  const n = LV.n, S = secOf(n), D = L[n];
+  document.documentElement.style.setProperty("--c", S.color);
+  document.documentElement.style.setProperty("--soft", S.color + "14");
+  $("lesson").innerHTML = `<div class="lhead" style="background:linear-gradient(120deg, ${S.color}, ${S.color}cc)"><div class="n">${n}</div><div><div class="s">${S.icon} ${S.name}</div><h2>${D.title}</h2></div><div class="grow"></div>
+      ${n > 1 ? `<button class="btn small" id="lPrev">‹ Lesson ${n - 1}</button>` : ""}${n < 19 ? `<button class="btn small" id="lNext">Lesson ${n + 1} ›</button>` : ""}</div>
+    <div class="seg" id="lTabs"><button data-t="learn">📖 Learn</button><button data-t="explore">🔍 Explore</button><button data-t="practice">✏️ Practice</button></div><div id="lBody"></div>`;
+  if ($("lPrev")) $("lPrev").onclick = () => openLesson(n - 1, LV.tab);
+  if ($("lNext")) $("lNext").onclick = () => openLesson(n + 1, LV.tab);
+  document.querySelectorAll("#lTabs button").forEach(b => { b.classList.toggle("on", b.dataset.t === LV.tab); b.onclick = () => { LV.tab = b.dataset.t; renderLesson(); }; });
+  const body = $("lBody");
+  if (LV.tab === "learn") {
+    body.innerHTML = `<div class="grid2"><div class="card"><h3>Key ideas</h3><ul class="keylist">${D.key.map(k => `<li>${k}</li>`).join("")}</ul></div>
+      <div class="stack"><div class="card"><h3>Example</h3><div class="example">${D.example}</div></div><div class="card"><h3>Words to know</h3><div class="vocab">${D.vocab.map(([a, b]) => `<div><b>${a}</b><br><span class="muted">${b}</span></div>`).join("")}</div></div>
+      <div class="row"><button class="btn primary big" id="lGoEx">🔍 Explore it</button><button class="btn big" id="lGoPr">✏️ Practice</button></div></div></div>`;
+    $("lGoEx").onclick = () => { LV.tab = "explore"; renderLesson(); }; $("lGoPr").onclick = () => { LV.tab = "practice"; renderLesson(); };
+  } else if (LV.tab === "explore") { EX[n](body); }
+  else {
+    body.innerHTML = `<div class="grid2"><div class="card"><div id="pq"></div><div class="row" style="margin-top:12px"><button class="btn" id="pHint">💡 Hint</button><button class="btn" id="pSteps">👣 Show steps</button><span style="flex:1"></span><button class="btn primary" id="pNext">Next question ›</button></div></div>
+      <div class="stack"><div class="card" id="pChart" hidden></div><div class="card"><h3>This lesson</h3><div id="pStat"></div></div></div></div>`;
+    $("pHint").onclick = () => LV.runner && LV.runner.hint(); $("pSteps").onclick = () => LV.runner && LV.runner.reveal(); $("pNext").onclick = nextPractice;
+    nextPractice();
+  }
+}
+function lessonStatHTML(n) {
+  const s = stat(n), r = s.recent.slice(-5);
+  return `<div class="row">${[0, 1, 2, 3, 4].map(i => `<span style="width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;font-weight:900;background:${r[i] === 1 ? "#dcfce7" : r[i] === 0 ? "#fee2e2" : "#f1f5f9"};color:${r[i] === 1 ? "#15803d" : r[i] === 0 ? "#b91c1c" : "#94a3b8"}">${r[i] === 1 ? "✓" : r[i] === 0 ? "✗" : "·"}</span>`).join("")}</div>
+    <p class="muted" style="margin:8px 0 0">Get 4 of your last 5 right on the first try to master this lesson. ${mastered(n) ? '<b class="ok">★ Mastered!</b>' : ""}</p><p class="muted" style="margin:4px 0 0">Answered: ${s.n} · first-try correct: ${s.c}</p>`;
+}
+function nextPractice() {
+  clearCharts();
+  const n = LV.n, Q = G[n](Math.random() < 0.35);
+  $("pStat").innerHTML = lessonStatHTML(n);
+  LV.runner = mountQuestion($("pq"), Q, { mode: "practice", lesson: n, chartHost: $("pChart"), onFinish: Object.assign(res => { recordResult(n, res.firstTry); $("pStat").innerHTML = lessonStatHTML(n); }, { next: nextPractice }) });
+}
+
+/* ---------- unit test ---------- */
+let TEST = { id: null };
+function testLength() { const n = Number(PLAN.testLength); return [10, 15, 19].includes(n) ? n : 15; }
+function renderTestStart() {
+  clearCharts(); document.documentElement.style.setProperty("--c", "#7c3aed"); document.documentElement.style.setProperty("--soft", "#7c3aed14");
+  const len = testLength();
+  $("test").innerHTML = `<div class="grid2"><div class="card"><h3>Unit 4 practice test</h3><p style="font-size:18px">${len} questions from across the unit, one per lesson. One try each, no hints. You see your score and the worked answers at the end.</p>
+      <p class="muted">Every answer is saved for your tutor and parents to see.</p><button class="btn primary big" id="tStart">Start the test</button></div>
+    <div class="card"><h3>Past tests</h3>${TESTS.length ? `<table class="simple"><tr><th>Date</th><th>Score</th><th>Time</th></tr>${TESTS.slice().reverse().slice(0, 10).map(t => `<tr><td>${new Date(t.d).toLocaleDateString()}</td><td><b>${t.score} / ${t.n}</b> (${Math.round(t.score / t.n * 100)}%)</td><td>${Math.round(t.secs / 60)} min</td></tr>`).join("")}</table>` : '<p class="muted">No tests yet.</p>'}</div></div>`;
+  $("tStart").onclick = startTest;
+}
+function startTest() {
+  const len = testLength();
+  let lessons = shuffle(Object.keys(L).map(Number)).slice(0, len).sort((a, b) => a - b);
+  TEST = { id: "test-" + Date.now().toString(36), lessons, i: 0, results: [], t0: Date.now() };
+  showTestQ();
+}
+function showTestQ() {
+  clearCharts();
+  const T = TEST, n = T.lessons[T.i], Q = G[n](Math.random() < 0.35);
+  $("test").innerHTML = `<div class="testbar"><b>Question ${T.i + 1} of ${T.lessons.length}</b><div class="bar"><div style="width:${T.i / T.lessons.length * 100}%;background:#7c3aed"></div></div><span class="muted" id="tClock"></span></div>
+    <div class="grid2"><div class="card"><div id="tq"></div><div class="row" style="margin-top:12px"><span style="flex:1"></span><button class="btn primary" id="tNext" disabled>Next ›</button></div></div><div class="stack"><div class="card" id="tChart" hidden></div></div></div>`;
+  const tick = () => { if ($("tClock")) { const s = Math.round((Date.now() - T.t0) / 1000); $("tClock").textContent = `⏱ ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; } };
+  tick(); clearInterval(T.timer); T.timer = setInterval(tick, 1000);
+  mountQuestion($("tq"), Q, { mode: "test", lesson: n, chartHost: $("tChart"), onFinish: Object.assign(res => {
+    T.results.push(res); $("tNext").disabled = false; $("tNext").textContent = T.i + 1 < T.lessons.length ? "Next ›" : "See my results";
+    $("tNext").onclick = () => { T.i++; T.i < T.lessons.length ? showTestQ() : finishTest(); }; $("tNext").focus();
+  }, { next: () => $("tNext") && !$("tNext").disabled && $("tNext").click() }) });
+}
+function finishTest() {
+  clearInterval(TEST.timer); clearCharts();
+  const R = TEST.results, score = R.filter(r => r.ok).length, n = R.length, secs = Math.round((Date.now() - TEST.t0) / 1000), p = Math.round(score / n * 100);
+  TESTS.push({ d: Date.now(), score, n, secs }); save("df-tests", TESTS);
+  if (AM) { if (p >= 80) AM.award("test-80", "Unit 4 practice test: 80% or better", "📝"); if (p === 100) AM.award("test-100", "Perfect Unit 4 practice test", "🏆"); }
+  const bySec = SECTIONS.map(S => { const rs = R.filter(r => S.lessons.includes(r.lesson)); return { S, n: rs.length, c: rs.filter(r => r.ok).length }; }).filter(x => x.n);
+  $("test").innerHTML = `<div class="grid2"><div class="card"><h3>Your results</h3><div class="score" style="color:${p >= 80 ? "#0f9d58" : p >= 60 ? "#ca8a04" : "#d93025"}">${score} / ${n}</div><p style="font-size:18px">${p}% · ${Math.floor(secs / 60)} min ${secs % 60} s</p>
+      <p>${p === 100 ? "🏆 Perfect score!" : p >= 80 ? "🌟 Great work. Review the ones you missed below." : "Keep going! Practice the lessons below, then try again."}</p><div class="row"><button class="btn primary" id="tAgain">Take another test</button><button class="btn" id="tHome">Unit map</button></div></div>
+    <div class="card"><h3>By section</h3><table class="simple">${bySec.map(x => `<tr><td>${x.S.icon} ${x.S.name}</td><td><b>${x.c} / ${x.n}</b></td><td style="width:40%"><div class="bar"><div style="width:${x.c / x.n * 100}%;background:${x.S.color}"></div></div></td></tr>`).join("")}</table></div></div>
+    <div class="card" style="margin-top:16px"><h3>Review your answers</h3>${R.map((r, i) => `<details class="rev"${r.ok ? "" : " open"}><summary>${r.ok ? '<b class="ok">✓</b>' : '<b class="bad">✗</b>'} ${i + 1}. Lesson ${r.lesson}: ${L[r.lesson].title}</summary>
+      <div style="margin-top:8px">${r.Q.q}</div>${r.Q.choicesMulti ? `<ul>${r.Q.choicesMulti.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}<p>Your answer: <b>${esc(r.resp)}</b><br>Correct answer: <b class="eq">${r.Q.ans}</b></p>${(r.Q.steps || []).length ? `<ol class="steps">${r.Q.steps.map(s => `<li>${s}</li>`).join("")}</ol>` : ""}
+      ${r.ok ? "" : `<button class="btn small" data-l="${r.lesson}">Practice lesson ${r.lesson} ›</button>`}</details>`).join("")}</div>`;
+  $("tAgain").onclick = startTest; $("tHome").onclick = () => go("home");
+  document.querySelectorAll("#test [data-l]").forEach(b => b.onclick = () => openLesson(+b.dataset.l, "practice"));
+}
+
+/* ---------- progress ---------- */
+function renderProgress() {
+  clearCharts();
+  const tot = Object.keys(L).reduce((a, k) => a + stat(+k).n, 0), cor = Object.keys(L).reduce((a, k) => a + stat(+k).c, 0);
+  $("progress").innerHTML = `<div class="grid2"><div class="card"><h3>Lessons</h3><table class="simple"><tr><th>Lesson</th><th>Answered</th><th>Last 5</th><th></th></tr>
+      ${SECTIONS.map(S => S.lessons.map(n => { const s = stat(n), p = pct(n); return `<tr><td><span class="tag" style="background:${S.color};color:#fff">${n}</span> ${L[n].title}</td><td>${s.n}</td><td style="min-width:90px"><div class="bar"><div style="width:${p}%;background:${S.color}"></div></div></td><td>${mastered(n) ? '<b class="ok">★ mastered</b>' : s.n ? '<span class="muted">practicing</span>' : '<span class="muted">not started</span>'}</td></tr>`; }).join("")).join("")}</table></div>
+    <div class="stack"><div class="card"><h3>Totals</h3><p style="font-size:20px;margin:0"><b>${Object.keys(L).filter(k => mastered(+k)).length} / 19</b> lessons mastered</p><p style="font-size:20px;margin:6px 0"><b>${tot}</b> questions answered</p><p style="font-size:20px;margin:0"><b>${tot ? Math.round(cor / tot * 100) : 0}%</b> right on the first try</p></div>
+      <div class="card"><h3>Practice tests</h3>${TESTS.length ? TESTS.slice().reverse().slice(0, 8).map(t => `<div class="row" style="margin:6px 0"><span style="width:110px">${new Date(t.d).toLocaleDateString()}</span><div class="bar" style="flex:1"><div style="width:${t.score / t.n * 100}%;background:#7c3aed"></div></div><b>${t.score}/${t.n}</b></div>`).join("") : '<p class="muted">No tests yet.</p>'}</div></div></div>`;
+}
+
+/* ---------- nav ---------- */
+function go(v) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.v === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === v));
+  if (v !== "test" && TEST.timer) clearInterval(TEST.timer);
+  if (v === "home") { clearCharts(); document.documentElement.style.setProperty("--c", "#7c3aed"); renderHome(); }
+  if (v === "lesson") renderLesson();
+  if (v === "test") { if (!TEST.id || TEST.i >= (TEST.lessons || []).length || !TEST.results) renderTestStart(); else showTestQ(); }
+  if (v === "progress") { document.documentElement.style.setProperty("--c", "#7c3aed"); renderProgress(); }
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => go(t.dataset.v));
+
+(function boot() {
+  if (AM && AM.student) { $("appTitle").textContent = `${AM.student.firstName}'s Describing Functions`; document.title = $("appTitle").textContent; }
+  const focus = planLessons();
+  if (focus.length || PLAN.note) {
+    $("plan").innerHTML = `<b style="color:var(--accent)">📌 ${PLAN._by ? esc(PLAN._by.split(" ")[0]) + "’s" : "Your tutor’s"} plan:</b> ` + (focus.length ? `work on <b>lesson${focus.length > 1 ? "s" : ""} ${focus.join(", ")}</b>. ` : "") + (PLAN.note ? esc(PLAN.note) : "");
+    $("plan").style.display = "block";
+    if (focus.length && PLAN._updated && load("df-planseen", null) !== PLAN._updated) { CUR = focus[0]; save("df-planseen", PLAN._updated); }
+  }
+  updateHeader();
+  go(PLAN.open === "test" ? "test" : "home");
+})();
+</script>
+</body>
+</html>

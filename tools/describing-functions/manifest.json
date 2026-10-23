@@ -1,0 +1,91 @@
+{
+  "name": "Describing Functions (Unit 4)",
+  "subject": "math",
+  "grade_min": 8,
+  "grade_max": 10,
+  "icon": "ƒ",
+  "version": "1.0.0",
+  "description": "Algebra 1 Unit 4 in 19 lessons: function notation, graphs that tell stories, key features, rate of change, domain and range, piecewise and step functions, sequences, absolute value and inverses. Learn, explore, practice, and take a unit practice test. Every answer is recorded.",
+  "settings": [
+    {
+      "key": "lessons",
+      "label": "Lessons to focus on",
+      "type": "multi",
+      "options": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "labels": [
+        "1 Functions",
+        "2 Notation",
+        "3 Representations",
+        "4 Graph stories",
+        "5 Key features",
+        "6 Rate of change",
+        "7 Comparing",
+        "8 Domain in context",
+        "9 Domain/range inequalities",
+        "10 Restricting",
+        "11 Piecewise",
+        "12 Step functions",
+        "13 Recursive",
+        "14 Explicit",
+        "15 Absolute value",
+        "16 Abs. value graphs",
+        "17 Story graphs",
+        "18 Inverses (graphs)",
+        "19 Inverses (operations)"
+      ]
+    },
+    {
+      "key": "testLength",
+      "label": "Practice test length",
+      "type": "select",
+      "options": [
+        10,
+        15,
+        19
+      ],
+      "labels": [
+        "10 questions",
+        "15 questions",
+        "19 questions (one per lesson)"
+      ]
+    },
+    {
+      "key": "open",
+      "label": "Open on",
+      "type": "select",
+      "options": [
+        "home",
+        "test"
+      ],
+      "labels": [
+        "Unit map",
+        "Practice test"
+      ]
+    },
+    {
+      "key": "note",
+      "label": "Note to the student",
+      "type": "text"
+    }
+  ]
+}
