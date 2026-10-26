@@ -222,6 +222,12 @@ table.data td.num, table.data th.num { text-align: right; }
 .play-bar a:hover, .play-bar button:hover { background: rgba(255, 255, 255, .22); }
 .play-bar .t { font-weight: 500; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .play iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+.play { height: 100dvh; }
+@media (max-width: 700px), (max-height: 520px) {
+  .play-bar { height: 40px; gap: 8px; padding: 0 8px; }
+  .play-bar a, .play-bar button { padding: 4px 10px; font-size: .85rem; }
+  .play-bar .note { display: none; }
+}
 
 /* ---------- people / child cards ---------- */
 .kid-card { display: block; background: var(--white); border: 1.5px solid var(--line); border-radius: var(--radius-lg); padding: 18px; text-decoration: none; color: var(--ink); }

@@ -360,12 +360,18 @@ route("/play/:slug", (slug, q) => {
   const back = q.student ? `#/student/${encodeURIComponent(q.student)}` : ME.user.role === "student" ? "#/" : (q.from || "#/");
   app().innerHTML = `<div class="play">
     <div class="play-bar"><a href="${esc(back)}">‹ Back</a><span class="t" id="pt">Loading…</span>
-      ${ME.user.role !== "student" ? `<span class="small" style="opacity:.8">${q.student ? "Viewing a student · not saved" : "Preview · not saved"}</span>` : ""}
-      <button id="fs" title="Full screen">⛶</button></div>
+      ${ME.user.role !== "student" ? `<span class="small note" id="pnote" style="opacity:.8">${q.student ? "Viewing a student · not saved" : "Preview · not saved"}</span>` : ""}
+      ${document.fullscreenEnabled ? '<button id="fs" title="Full screen">⛶</button>' : ""}</div>
     <iframe id="tool" src="/tools/${encodeURIComponent(slug)}/${sid}" title="Tool" allow="fullscreen"></iframe></div>`;
   const fr = $("#tool");
-  fr.addEventListener("load", () => { try { $("#pt").textContent = fr.contentDocument.title || slug; } catch { $("#pt").textContent = slug; } });
-  $("#fs").onclick = () => { const p = $(".play"); (p.requestFullscreen ? p.requestFullscreen() : Promise.reject()).catch(() => {}); };
+  fr.addEventListener("load", () => {
+    try {
+      $("#pt").textContent = fr.contentDocument.title || slug;
+      // tools that save adults' work themselves (the whiteboard) say so with <meta name="amt-banner" content="off">
+      if ($("#pnote") && fr.contentDocument.querySelector('meta[name="amt-banner"][content="off"]')) $("#pnote").remove();
+    } catch { $("#pt").textContent = slug; }
+  });
+  if ($("#fs")) $("#fs").onclick = () => { const p = $(".play"); (p.requestFullscreen ? p.requestFullscreen() : Promise.reject()).catch(() => {}); };
 });
 
 /* ---------- parent home ---------- */

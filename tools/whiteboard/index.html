@@ -39,8 +39,7 @@
   .float { position:absolute; background:var(--panel); border-radius:14px; box-shadow:var(--shadow); z-index:10; }
   #tools { left:10px; top:64px; padding:6px; display:flex; flex-direction:column; gap:2px; max-height:calc(100% - 128px); overflow-y:auto; scrollbar-width:none; }
   #tools .grp { display:grid; grid-template-columns:repeat(var(--cols,1),40px); gap:2px; padding:3px 0; border-bottom:1px solid #f1f2f4; } #tools .grp:last-child { border:none; }
-  @media (max-height:960px) { #tools { --cols:2; } }
-  @media (max-height:560px) { #tools { --cols:3; } }
+
   #tools .ib { width:40px; height:38px; } #tools .ib svg { width:21px; height:21px; }
   .tip { position:absolute; left:52px; background:#111827; color:#fff; font-size:12px; padding:4px 8px; border-radius:6px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .12s; z-index:30; }
   #tools .ib:hover .tip { opacity:1; transition-delay:.35s; }
@@ -64,7 +63,7 @@
   #pagebar select { border:1px solid var(--line); border-radius:8px; padding:5px 6px; font-size:13px; background:#fff; }
   #zoomPct { font-size:12.5px; font-weight:700; min-width:48px; border:none; background:none; cursor:pointer; border-radius:8px; height:32px; }
   #zoomPct:hover { background:#f3f4f6; }
-  #follow { left:10px; bottom:10px; padding:8px 12px; display:none; align-items:center; gap:10px; font-size:13.5px; font-weight:600; }
+  #follow { left:10px; bottom:10px; z-index:12; padding:8px 12px; display:none; align-items:center; gap:10px; font-size:13.5px; font-weight:600; }
   #readonly { left:10px; top:64px; padding:8px 12px; font-size:13px; font-weight:700; color:#92400e; background:#fffbeb; display:none; }
   /* drawer */
   #drawer { position:absolute; left:0; top:52px; bottom:0; width:320px; max-width:90vw; background:#fff; border-right:1px solid var(--line); box-shadow:var(--shadow); z-index:25; transform:translateX(-105%); transition:transform .18s; display:flex; flex-direction:column; }
@@ -89,7 +88,41 @@
   #menu button { display:block; width:100%; text-align:left; border:none; background:none; padding:8px 10px; border-radius:8px; cursor:pointer; font-size:14px; }
   #menu button:hover { background:#f3f4f6; }
   #empty { position:absolute; inset:0; display:none; place-items:center; text-align:center; color:var(--muted); z-index:15; background:#fff; }
-  @media (max-width:760px) { #who, #status, #bLeadWrap { display:none; } #props { top:auto; bottom:62px; max-width:calc(100% - 20px); } #title { width:40vw; } }
+  .pgroup { display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
+  .ib .more { position:absolute; right:3px; bottom:3px; width:0; height:0; border-left:4px solid transparent; border-bottom:4px solid currentColor; opacity:.55; }
+  #pop { position:absolute; display:none; z-index:40; padding:8px; }
+  #pop .gt { font-size:12px; font-weight:700; color:var(--muted); margin:0 4px 6px; }
+  #pop .pgrid { display:grid; grid-template-columns:repeat(4, 64px); gap:4px; }
+  #pop .pgrid button { border:none; background:none; border-radius:10px; padding:6px 2px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; color:#374151; line-height:1.15; text-align:center; }
+  #pop .pgrid button.on { background:var(--accent-soft); color:var(--accent); }
+  #pop .pgrid svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+  .styledot { width:22px; height:22px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1.5px #9ca3af; display:block; }
+  #bExport .ico { display:none; }
+  @media (hover:none) { .tip { display:none; } }
+  /* ---------- phones and small windows ---------- */
+  body.compact #top { height:48px; padding:0 4px; gap:2px; }
+  body.compact #top .logo, body.compact #who, body.compact #status, body.compact .sep { display:none; }
+  body.compact #title { width:auto; flex:1; min-width:60px; font-size:14px; padding:4px 6px; }
+  body.compact #top .grow { display:none; }
+  body.compact #people .av { width:24px; height:24px; font-size:10px; }
+  body.compact #people .av:nth-child(n+3) { display:none; }
+  body.compact #bLead { padding:6px 8px; } body.compact #bLead .lt { display:none; }
+  body.compact #bExport { border:none; padding:0; width:36px; height:36px; display:grid; place-items:center; background:none; }
+  body.compact #bExport .lt { display:none; } body.compact #bExport .ico { display:block; }
+  body.compact #tools { left:50%; transform:translateX(-50%); top:auto; bottom:8px; flex-direction:row; max-width:calc(100% - 12px); max-height:none; overflow-x:auto; overflow-y:hidden; padding:4px; gap:0; border-radius:16px; }
+  body.compact #tools { width:min(440px, calc(100% - 12px)); }
+  body.compact #tools .ib { width:auto; min-width:32px; height:40px; flex:1 1 0; }
+  body.compact #props { left:6px; right:6px; transform:none; top:auto; bottom:64px; max-width:none; flex-wrap:nowrap; overflow-x:auto; padding:6px 8px; min-height:0; display:none; scrollbar-width:none; }
+  body.compact #props.show { display:flex; }
+  body.compact #props .sym { flex-wrap:nowrap; max-width:none; }
+  body.compact #pagebar { top:8px; bottom:auto; right:8px; padding:2px 3px; }
+  body.compact #pagebar .wide { display:none; }
+  body.compact #pagebar .ib { width:34px; height:34px; }
+  body.compact #pagebar .num { min-width:44px; font-size:12.5px; }
+  body.compact #follow { top:8px; bottom:auto; left:8px; padding:5px 8px; font-size:12.5px; }
+  body.compact #readonly { top:8px; left:8px; }
+  body.compact #toast { bottom:120px; }
+  body.compact #menu { max-width:calc(100% - 16px); }
 </style>
 </head>
 <body>
@@ -105,8 +138,8 @@
     <div class="sep"></div>
     <button class="ib" id="bUndo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
     <button class="ib" id="bRedo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
-    <span id="bLeadWrap"><button class="tb" id="bLead" title="Everyone follows your page and view" hidden>📣 Lead</button></span>
-    <button class="tb" id="bExport">Export ▾</button>
+    <span id="bLeadWrap"><button class="tb" id="bLead" title="Everyone follows your page and view" hidden>📣<span class="lt"> Lead</span></button></span>
+    <button class="tb" id="bExport" title="Export"><span class="lt">Export ▾</span><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
   </header>
   <div id="stage">
     <canvas id="cv"></canvas><canvas id="ov"></canvas>
@@ -121,16 +154,17 @@
       <button class="ib" id="pAdd" title="Add a page"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <button class="ib" id="pMore" title="Page options"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
       <div class="sep"></div>
-      <select id="pBg" title="Paper"><option value="grid">Grid</option><option value="graph">Graph paper</option><option value="dots">Dots</option><option value="lined">Lined</option><option value="plain">Plain</option></select>
-      <button class="ib" id="bSnap" title="Snap shapes to the grid"><svg viewBox="0 0 24 24"><path d="M6 15V9a6 6 0 0 1 12 0v6"/><path d="M6 15h4v-3H6M14 12h4v3h-4"/><path d="M6 19h4M14 19h4"/></svg></button>
+      <select id="pBg" class="wide" title="Paper"><option value="grid">Grid</option><option value="graph">Graph paper</option><option value="dots">Dots</option><option value="lined">Lined</option><option value="plain">Plain</option></select>
+      <button class="ib wide" id="bSnap" title="Snap shapes to the grid"><svg viewBox="0 0 24 24"><path d="M6 15V9a6 6 0 0 1 12 0v6"/><path d="M6 15h4v-3H6M14 12h4v3h-4"/><path d="M6 19h4M14 19h4"/></svg></button>
       <div class="sep"></div>
-      <button class="ib" id="zOut" title="Zoom out (Ctrl −)"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
-      <button id="zoomPct" title="Back to 100%">100%</button>
-      <button class="ib" id="zIn" title="Zoom in (Ctrl +)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-      <button class="ib" id="zFit" title="Fit the page (Ctrl 0)"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button class="ib wide" id="zOut" title="Zoom out (Ctrl −)"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+      <button id="zoomPct" class="wide" title="Back to 100%">100%</button>
+      <button class="ib wide" id="zIn" title="Zoom in (Ctrl +)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="ib wide" id="zFit" title="Fit the page (Ctrl 0)"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
     </div>
     <div class="float" id="follow"><span id="followTxt"></span><button class="tb" id="followBtn">Stop following</button></div>
     <div class="float" id="menu"></div>
+    <div class="float" id="pop"></div>
     <div id="empty"><div><h2>No boards yet</h2><p>Your tutor will add a board for you.</p></div></div>
   </div>
   <aside id="drawer"><h2 id="drawerTitle">Boards</h2><div class="list" id="blist"></div><div class="foot" id="dfoot"></div></aside>
@@ -327,6 +361,7 @@ let baseDirty = true, ovDirty = true;
 const dirtyBase = () => { baseDirty = true; };
 const dirtyOv = () => { ovDirty = true; };
 function resize() {
+  layout();
   const r = stage.getBoundingClientRect(); W = r.width; H = r.height; DPR = window.devicePixelRatio || 1;
   for (const c of [cv, ov]) { c.width = Math.max(1, Math.round(W * DPR)); c.height = Math.max(1, Math.round(H * DPR)); c.style.width = W + "px"; c.style.height = H + "px"; }
   dirtyBase(); dirtyOv();
@@ -640,17 +675,57 @@ const TOOLS = [
 ];
 const KEYMAP = {}; TOOLS.flat().forEach(([t, , k]) => { if (k && k.length === 1) KEYMAP[k.toLowerCase()] = t; });
 let TOOL = "pen";
+let COMPACT = false;
+const TRAYS = { shapes: { name: "Shapes", tools: TOOLS[2] }, geo: { name: "Geometry", tools: TOOLS[3] }, more: { name: "More", tools: TOOLS[4] } };
+const TRAY_LAST = { shapes: "line", geo: "angle", more: "laser" };
+const SHORT = { darrow: "Double arrow", rect: "Rectangle", ellipse: "Ellipse", tri: "Triangle", rtri: "Right triangle", poly: "Polygon", angle: "Angle", pt: "Point", axes: "Axes", prot: "Protractor", ruler: "Ruler", laser: "Laser", img: "Image", line: "Line", arrow: "Arrow" };
+const trayOf = t => Object.keys(TRAYS).find(k => TRAYS[k].tools.some(x => x[0] === t));
+const toolBtn = ([t, label, k]) => `<button class="ib" data-tool="${t}" aria-label="${esc(label)}"><svg viewBox="0 0 24 24">${I[t]}</svg><span class="tip">${esc(label)}${k ? `<kbd>${k}</kbd>` : ""}</span></button>`;
 function buildToolbar() {
-  $("tools").innerHTML = TOOLS.map(g => `<div class="grp">${g.map(([t, label, k]) => `<button class="ib" data-tool="${t}" aria-label="${esc(label)}"><svg viewBox="0 0 24 24">${I[t]}</svg><span class="tip">${esc(label)}${k ? `<kbd>${k}</kbd>` : ""}</span></button>`).join("")}</div>`).join("");
-  $("tools").querySelectorAll("[data-tool]").forEach(b => b.onclick = () => { if (b.dataset.tool === "img") return $("fileImg").click(); setTool(b.dataset.tool); });
+  const T = $("tools");
+  if (!COMPACT) {
+    T.innerHTML = TOOLS.map(g => `<div class="grp">${g.map(toolBtn).join("")}</div>`).join("");
+  } else {
+    const single = [...TOOLS[0], ...TOOLS[1]].map(toolBtn).join("");
+    const trays = Object.keys(TRAYS).map(k => { const cur = trayOf(TOOL) === k ? TOOL : TRAY_LAST[k]; return `<button class="ib" data-tray="${k}" aria-label="${TRAYS[k].name}"><svg viewBox="0 0 24 24">${I[cur]}</svg><span class="more"></span></button>`; }).join("");
+    const st = STYLE[styleKey()] || {}, dot = TOOL === "eraser" ? "#e5e7eb" : (st.c || "#111827");
+    T.innerHTML = single + trays + `<button class="ib" id="bStyle" aria-label="Colour and size"><span class="styledot" style="background:${dot}"></span></button>`;
+    T.querySelectorAll("[data-tray]").forEach(b => b.onclick = () => openTray(b));
+    $("bStyle").onclick = () => { $("props").classList.toggle("show"); closePop(); };
+  }
+  T.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => { if (b.dataset.tool === "img") return $("fileImg").click(); setTool(b.dataset.tool); });
+  T.querySelectorAll("[data-tool],[data-tray]").forEach(b => b.classList.toggle("on", b.dataset.tool === TOOL || (!!b.dataset.tray && trayOf(TOOL) === b.dataset.tray)));
+}
+function openTray(btn) {
+  const k = btn.dataset.tray, P = $("pop");
+  if (P.style.display === "block" && P.dataset.tray === k) return closePop();
+  $("props").classList.remove("show");
+  P.dataset.tray = k;
+  P.innerHTML = `<div class="gt">${TRAYS[k].name}</div><div class="pgrid">${TRAYS[k].tools.map(([t, label]) => `<button data-t="${t}" class="${t === TOOL ? "on" : ""}" title="${esc(label)}"><svg viewBox="0 0 24 24">${I[t]}</svg>${SHORT[t] || t}</button>`).join("")}</div>`;
+  P.style.display = "block";
+  const sr = stage.getBoundingClientRect(), br = btn.getBoundingClientRect();
+  P.style.left = Math.max(6, Math.min(br.left - sr.left + br.width / 2 - P.offsetWidth / 2, sr.width - P.offsetWidth - 6)) + "px";
+  P.style.top = (br.top - sr.top - P.offsetHeight - 8) + "px";
+  P.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { closePop(); if (b.dataset.t === "img") return $("fileImg").click(); TRAY_LAST[k] = b.dataset.t; setTool(b.dataset.t); });
+}
+function closePop() { $("pop").style.display = "none"; }
+// Switches between the full layout and the phone layout, and fits the side toolbar to the height
+function layout() {
+  const compact = window.innerWidth < 700 || window.innerHeight < 520;
+  if (compact !== COMPACT) { COMPACT = compact; document.body.classList.toggle("compact", compact); closePop(); closeMenu(); $("props").classList.remove("show"); buildToolbar(); buildProps(); }
+  if (!COMPACT) {
+    const T = $("tools"); let cols = 1;
+    T.style.setProperty("--cols", 1);
+    while (cols < 3 && T.scrollHeight > T.clientHeight + 2) { cols++; T.style.setProperty("--cols", cols); }
+  }
 }
 function setTool(t) {
   if (!CAN_EDIT && !["hand", "select"].includes(t)) t = "hand";
   finishText(); cancelPoly(); ANGLE_PTS = [];
   if (t !== "select") clearSel();
   TOOL = t; stage.className = "c-" + t;
-  $("tools").querySelectorAll("[data-tool]").forEach(b => b.classList.toggle("on", b.dataset.tool === t));
-  buildProps(); dirtyOv();
+  const tr = trayOf(t); if (tr) TRAY_LAST[tr] = t;
+  buildToolbar(); buildProps(); dirtyOv();
 }
 const styleKey = () => (["pen", "hl", "text", "eraser"].includes(TOOL) ? TOOL : "shape");
 function saveStyle() { setPref("style", STYLE); }
@@ -663,9 +738,11 @@ function wireSwatches(root, onPick) {
 }
 const SYMBOLS = ["π", "θ", "°", "√", "²", "³", "½", "¼", "×", "÷", "±", "≤", "≥", "≠", "≈", "∞", "∠", "△", "⊥", "∥", "α", "β", "Δ", "Σ", "→", "∴", "≅", "~"];
 function buildProps() {
+  if (COMPACT && $("bStyle")) { const st = STYLE[styleKey()] || {}; $("bStyle").querySelector(".styledot").style.background = TOOL === "eraser" ? "#e5e7eb" : (st.c || "#111827"); }
+  if (COMPACT && TOOL === "select" && SEL.length) $("props").classList.add("show");
   const p = $("props"), k = styleKey(), s = STYLE[k];
   if (!CAN_EDIT) { p.style.display = "none"; return; }
-  p.style.display = "flex";
+  p.style.display = "";
   let h = "";
   if (TOOL === "select") {
     if (!SEL.length) { p.innerHTML = '<span class="lbl">Click something to select it · drag to select an area · Shift-click to add</span>'; return; }
@@ -693,7 +770,7 @@ function buildProps() {
     h += `<select id="pFs" class="tb">${[14, 18, 24, 32, 44, 60, 80].map(f => `<option ${f === s.fs ? "selected" : ""} value="${f}">${f}</option>`).join("")}</select><button class="tb${s.b ? " on" : ""}" id="pBold" style="font-weight:800">B</button><div class="sep"></div><div class="sym">${SYMBOLS.map(x => `<button data-sym="${x}">${x}</button>`).join("")}</div>`;
   } else {
     const isPen = TOOL === "pen" || TOOL === "hl", key = isPen ? "w" : "sw", [mn, mx] = TOOL === "hl" ? [8, 60] : TOOL === "pen" ? [1, 24] : [1, 12];
-    h += `<span class="lbl">Size</span><input type="range" id="pSize" min="${mn}" max="${mx}" step="0.5" value="${s[key]}"><span class="dotprev"><i id="pDot"></i></span>`;
+    h += `<span class="pgroup"><span class="lbl">Size</span><input type="range" id="pSize" min="${mn}" max="${mx}" step="0.5" value="${s[key]}"><span class="dotprev"><i id="pDot"></i></span></span>`;
     if (["rect", "ellipse", "tri", "rtri", "poly"].includes(TOOL)) h += `<button class="tb${s.fill ? " on" : ""}" id="pFill">Fill</button>`;
     if (["line", "arrow", "darrow", "rect", "ellipse", "tri", "rtri", "poly"].includes(TOOL)) h += `<button class="tb${s.dash ? " on" : ""}" id="pDash">Dashed</button>`;
     if (["line", "arrow", "darrow"].includes(TOOL)) h += '<span class="lbl">Shift: 15° steps</span>';
@@ -723,7 +800,7 @@ const evPt = e => { const r = stage.getBoundingClientRect(); return [e.clientX -
 stage.addEventListener("pointerdown", e => {
   if (e.target !== ov && e.target !== cv) return;
   if (TA_EL) { finishText(); if (TOOL === "text") return; }
-  closeMenu();
+  closeMenu(); closePop(); if (COMPACT && !(TOOL === "select" && SEL.length)) $("props").classList.remove("show");
   const [sx, sy] = evPt(e);
   POINTERS.set(e.pointerId, { sx, sy, type: e.pointerType });
   if (e.pointerType === "pen") PEN_SEEN = true;
@@ -965,7 +1042,8 @@ function drawSelection() {
     else { octx.rect(x - 4.5 / z, y - 4.5 / z, 9 / z, 9 / z); octx.fill(); octx.stroke(); }
   }
 }
-function handleAt(x, y) { const tol = 8 / cam.z; for (const h of handles()) if (Math.abs(h[1] - x) <= tol && Math.abs(h[2] - y) <= tol) return h[0]; return null; }
+const COARSE = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+function handleAt(x, y) { const tol = (COARSE ? 16 : 8) / cam.z; for (const h of handles()) if (Math.abs(h[1] - x) <= tol && Math.abs(h[2] - y) <= tol) return h[0]; return null; }
 const CURS = { nw: "nwse-resize", se: "nwse-resize", ne: "nesw-resize", sw: "nesw-resize", n: "ns-resize", s: "ns-resize", e: "ew-resize", w: "ew-resize", rot: "grab" };
 function updateSelCursor(x, y) { const h = SEL.length ? handleAt(x, y) : null; stage.style.cursor = h ? CURS[h] : topHit(x, y) ? "move" : ""; }
 function beginSelect(e, x, y) {
@@ -1126,10 +1204,15 @@ $("pAdd").onclick = () => { const pg = blankPage(page().bg), at = pageIdx() + 1;
 $("pBg").onchange = e => { const old = page().bg; commit([{ o: "pageBg", p: PAGE, bg: e.target.value }], [{ o: "pageBg", p: PAGE, bg: old }]); };
 $("bSnap").onclick = () => { SNAP_ON = !SNAP_ON; setPref("snap", SNAP_ON); updatePageBar(); toast(SNAP_ON ? "Shapes snap to the grid" : "Snapping off"); };
 $("pMore").onclick = e => openMenu(e.currentTarget, [
+  ...(COMPACT ? [
+    ["Zoom to fit", () => fitPage()], ["Zoom 100%", () => zoomAt(W / 2, H / 2, 1 / cam.z)],
+    ...[["grid", "Grid"], ["graph", "Graph paper"], ["dots", "Dots"], ["lined", "Lined"], ["plain", "Plain"]].map(([v, n]) => [`${page().bg === v ? "✓ " : "    "}Paper: ${n}`, () => { const old = page().bg; if (old !== v) commit([{ o: "pageBg", p: PAGE, bg: v }], [{ o: "pageBg", p: PAGE, bg: old }]); }]),
+    [`${SNAP_ON ? "✓ " : "    "}Snap shapes to the grid`, () => $("bSnap").click()],
+  ] : []),
   ["Duplicate this page", () => { const pg = Object.assign(clone(page()), { id: rid() }); pg.els.forEach(x => x.id = rid()); const at = pageIdx() + 1; commit([{ o: "addPage", page: pg, at }], [{ o: "delPage", p: pg.id }]); PAGE = pg.id; updatePageBar(); dirtyBase(); }],
   ["Clear this page", async () => { if (!page().els.length) return; if (await confirmBox("Clear this page?", "Everything on this page is removed. You can undo it.", "Clear page", true)) { const old = page().els.map(clone); commit([{ o: "clear", p: PAGE }], addOps(PAGE, old)); clearSel(); } }],
   ["Delete this page", async () => { if (DOC.pages.length <= 1) return toast("A board needs at least one page."); if (await confirmBox("Delete this page?", "You can undo it.", "Delete page", true)) { const pg = clone(page()), at = pageIdx(); commit([{ o: "delPage", p: pg.id }], [{ o: "addPage", page: pg, at }]); updatePageBar(); fitPage(true); } }],
-], "up");
+], COMPACT ? "down" : "up");
 $("zIn").onclick = () => zoomAt(W / 2, H / 2, 1.25); $("zOut").onclick = () => zoomAt(W / 2, H / 2, 0.8); $("zFit").onclick = () => fitPage();
 $("zoomPct").onclick = () => zoomAt(W / 2, H / 2, 1 / cam.z);
 $("bUndo").onclick = undo; $("bRedo").onclick = redo;
@@ -1234,7 +1317,7 @@ $("title").addEventListener("change", async () => {
 });
 $("title").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
 function toggleLead() {
-  LEADING = !LEADING; $("bLead").classList.toggle("on", LEADING); $("bLead").textContent = LEADING ? "📣 Leading" : "📣 Lead";
+  LEADING = !LEADING; $("bLead").classList.toggle("on", LEADING); $("bLead").innerHTML = `📣<span class="lt"> ${LEADING ? "Leading" : "Lead"}</span>`;
   live({ k: "lead", on: LEADING }); if (LEADING) { sendView(); toast("Everyone now follows your page and view."); }
 }
 $("bLead").onclick = toggleLead;
