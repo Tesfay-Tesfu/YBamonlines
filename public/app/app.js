@@ -401,32 +401,56 @@ async function parentHome() {
 /* =====================================================================
    Students list (tutor home, admin Students page)
    ===================================================================== */
-route("/students", () => studentsPage({ title: "Students" }), { roles: ["admin", "tutor"] });
+route("/students", q => studentsPage({ title: "Students", notutor: q.notutor === "1" }), { roles: ["admin", "tutor"] });
 
-async function studentsPage({ title }) {
+async function studentsPage({ title, notutor = false }) {
   loading();
   const isAdmin = ME.user.role === "admin";
-  let q = "", grade = "";
+  let q = "", grade = "", picked = new Set();
   const page = shell(`<div class="page-head"><h1>${esc(title)}</h1>
       <div class="actions"><button class="btn primary" id="add">Add a student</button>${isAdmin ? `<button class="btn" id="bulk">Import from a spreadsheet</button><a class="btn" href="#/admin/duplicates">Find duplicates</a><a class="btn" href="/api/admin/export/students.csv">Download list</a>` : ""}</div></div>
     <div class="inline" style="margin-bottom:14px"><input type="search" id="q" placeholder="Search by name or username" aria-label="Search">
-      <select id="g" aria-label="Grade"><option value="">All grades</option>${[5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4].map(g => `<option value="${g}">Grade ${g}</option>`).join("")}</select></div>
+      <select id="g" aria-label="Grade"><option value="">All grades</option>${[5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4].map(g => `<option value="${g}">Grade ${g}</option>`).join("")}</select>
+      ${isAdmin ? `<label class="check" style="margin:0"><input type="checkbox" id="nt" ${notutor ? "checked" : ""}><span>No tutor yet</span></label>` : ""}</div>
+    ${isAdmin ? `<div class="bulkbar" id="bulkbar" hidden><b id="bcount"></b><button class="btn primary small" id="bAssign">👩‍🏫 Assign a tutor</button><button class="btn small" id="bClear">Clear</button></div>` : ""}
     <div id="list"><p class="muted">Loading…</p></div>`);
   async function load() {
-    const { students } = await GET(`/api/students?q=${encodeURIComponent(q)}&grade=${grade}`);
+    const { students } = await GET(`/api/students?q=${encodeURIComponent(q)}&grade=${grade}${notutor ? "&notutor=1" : ""}`);
     $("#list", page).innerHTML = students.length ? `<div class="table-wrap"><table class="data">
-      <thead><tr><th>Name</th><th>Grade</th><th>Username</th><th class="num">Tools</th><th class="num">This week</th><th>Correct (7 days)</th><th>Last practiced</th>${isAdmin ? "<th>Tutor</th>" : ""}<th>Parents</th></tr></thead>
-      <tbody>${students.map(s => `<tr class="link" data-id="${s.id}"><td><b>${esc(s.name)}</b>${s.active ? "" : ' <span class="tag bad">Off</span>'}</td><td>${s.grade || "—"}</td><td>${esc(s.username)}</td>
+      <thead><tr>${isAdmin ? `<th style="width:34px"><input type="checkbox" id="pickAll" aria-label="Select all"></th>` : ""}<th>Name</th><th>Grade</th><th>Username</th><th class="num">Tools</th><th class="num">This week</th><th>Correct (7 days)</th><th>Last practiced</th>${isAdmin ? "<th>Tutor</th>" : ""}<th>Parents</th></tr></thead>
+      <tbody>${students.map(s => `<tr class="link" data-id="${s.id}">${isAdmin ? `<td class="pick"><input type="checkbox" data-pick="${s.id}" ${picked.has(s.id) ? "checked" : ""} aria-label="Select ${esc(s.name)}"></td>` : ""}<td><b>${esc(s.name)}</b>${s.active ? "" : ' <span class="tag bad">Off</span>'}</td><td>${s.grade || "—"}</td><td>${esc(s.username)}</td>
         <td class="num">${s.tools}</td><td class="num">${minutes(s.seconds_7d)}</td><td>${meter(s.accuracy_7d)}</td><td>${ago(s.last_active)}</td>
         ${isAdmin ? `<td>${s.tutors ? esc(s.tutors) : '<span class="tag warn">None</span>'}</td>` : ""}<td>${s.parents ? esc(s.parents) : '<span class="tag warn">Not linked</span>'}</td></tr>`).join("")}</tbody></table></div>`
-      : `<div class="panel empty">${q || grade ? "No students match." : "No students yet. Add your first student to give them tools."}</div>`;
-    $$("tr.link", page).forEach(tr => tr.onclick = () => { location.hash = `#/student/${tr.dataset.id}`; });
+      : `<div class="panel empty">${notutor && !q && !grade ? "🎉 Every student has a tutor." : q || grade || notutor ? "No students match." : "No students yet. Add your first student to give them tools."}</div>`;
+    $$("tr.link", page).forEach(tr => tr.onclick = e => { if (e.target.closest(".pick")) return; location.hash = `#/student/${tr.dataset.id}`; });
+    if (!isAdmin) return;
+    const sync = () => { $("#bulkbar", page).hidden = !picked.size; $("#bcount", page).textContent = `${picked.size} selected`; };
+    $$("[data-pick]", page).forEach(b => b.onchange = () => { b.checked ? picked.add(+b.dataset.pick) : picked.delete(+b.dataset.pick); sync(); });
+    if ($("#pickAll", page)) $("#pickAll", page).onchange = e => { students.forEach(s => e.target.checked ? picked.add(s.id) : picked.delete(s.id)); $$("[data-pick]", page).forEach(b => b.checked = e.target.checked); sync(); };
+    sync();
+  }
+  if (isAdmin) {
+    $("#nt", page).onchange = e => { notutor = e.target.checked; picked.clear(); load().catch(fail); };
+    $("#bClear", page).onclick = () => { picked.clear(); load().catch(fail); };
+    $("#bAssign", page).onclick = () => assignTutorModal([...picked], () => { picked.clear(); load().catch(fail); });
   }
   let t; $("#q", page).oninput = e => { clearTimeout(t); t = setTimeout(() => { q = e.target.value; load().catch(fail); }, 250); };
   $("#g", page).onchange = e => { grade = e.target.value; load().catch(fail); };
   $("#add", page).onclick = () => addStudentModal();
   if ($("#bulk", page)) $("#bulk", page).onclick = () => bulkImportModal();
   await load();
+}
+
+// Pick a tutor and link them to one or more students (admins)
+async function assignTutorModal(studentIds, done) {
+  const { users } = await GET("/api/admin/users?role=tutor");
+  const tutors = users.filter(u => u.active);
+  if (!tutors.length) return modal(`<h2>No tutors yet</h2><p>Add a tutor first: <b>People → Add an account</b> (role: Tutor), or <b>Invite a tutor</b>.</p><div class="btn-row"><a class="btn primary" href="#/admin/users" data-close>Go to People</a></div>`);
+  modal(`<h2>Assign a tutor</h2><p class="muted small">${studentIds.length} student${studentIds.length === 1 ? "" : "s"} will be linked to the tutor you choose. The tutor then sees them under <b>My students</b>, can set plans and open their tools, whiteboard and messages. A student can have more than one tutor.</p>
+    <label class="field"><span>Tutor</span><select id="tsel">${tutors.map(t => `<option value="${t.id}">${esc(t.name)} — ${esc(t.email)} (${t.students} student${t.students === 1 ? "" : "s"})</option>`).join("")}</select></label>
+    <div class="btn-row"><button class="btn" data-close>Cancel</button><button class="btn primary" id="tGo">Assign</button></div>`, {
+    onMount: (m, close) => { $("#tGo", m).onclick = async () => { try { const r = await POST("/api/admin/links/bulk", { adult_id: Number($("#tsel", m).value), student_ids: studentIds }); close(); toast(`${r.name} is now tutor for ${r.linked} student${r.linked === 1 ? "" : "s"}`); done && done(); } catch (e) { fail(e); } }; },
+  });
 }
 
 function addStudentModal() {
@@ -718,6 +742,9 @@ function peopleTab(box, d, sid) {
       ${d.adults.length ? `<table class="data"><tbody>${d.adults.map(a => `<tr><td><b>${esc(a.name)}</b>${a.email ? `<div class="small muted">${esc(a.email)}</div>` : ""}</td>
         <td><span class="tag ${a.relation === "tutor" ? "info" : ""}">${a.relation === "tutor" ? "Tutor" : "Parent"}</span>${a.relation === "parent" && a.consent_at ? `<div class="small muted">Consent ${fmtDate(a.consent_at)}</div>` : ""}</td>
         <td class="num">${d.canManage && (a.relation === "parent" || ME.user.role === "admin") ? `<button class="btn small danger" data-unlink="${a.id}">Remove</button>` : ""}</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Nobody is linked yet.</p>'}</div>
+    ${ME.user.role === "admin" ? `<div class="panel"><h3>Link a tutor or parent</h3>
+      <p class="small muted">Link an account that already exists. ${first} then shows up in their list right away.</p>
+      <div class="inline" style="flex-wrap:wrap"><button class="btn primary" id="lTutor">👩‍🏫 Assign a tutor</button><button class="btn" id="lParent">👪 Link an existing parent</button></div></div>` : ""}
     ${d.canManage ? `<div class="panel"><h3>Invite a parent</h3>
       <p class="small">Make a code for ${first}’s parent. They enter it at <b>${esc(location.host)}</b> under “I have an invite code” to create an account and see ${first}’s progress.</p>
       <form id="inv"><label class="field"><span>Parent’s email (optional)</span><input type="email" name="email"><small>If you add an email, only that email can use the code.</small></label>
@@ -730,6 +757,17 @@ function peopleTab(box, d, sid) {
     DEL(`/api/students/${sid}/links/${b.dataset.unlink}`).then(() => { toast("Removed"); studentPage(sid, "people"); }).catch(fail);
   });
   $$("[data-copy]", box).forEach(b => b.onclick = () => copy(b.dataset.copy));
+  if ($("#lTutor", box)) $("#lTutor", box).onclick = () => assignTutorModal([sid], () => studentPage(sid, "people"));
+  if ($("#lParent", box)) $("#lParent", box).onclick = async () => {
+    const { users } = await GET("/api/admin/users?role=parent");
+    const list = users.filter(u => u.active && !d.adults.some(a => a.id === u.id));
+    if (!list.length) return modal(`<h2>No parent accounts to link</h2><p>Make an invite code below instead. The parent creates their own account with it.</p><div class="btn-row"><button class="btn primary" data-close>OK</button></div>`);
+    modal(`<h2>Link an existing parent</h2><label class="field"><span>Parent</span><select id="psel">${list.map(u => `<option value="${u.id}">${esc(u.name)} — ${esc(u.email)}</option>`).join("")}</select></label>
+      <label class="check"><input type="checkbox" id="pcons"><span>This person confirmed they are ${first}’s parent or legal guardian.</span></label>
+      <div class="btn-row"><button class="btn" data-close>Cancel</button><button class="btn primary" id="pGo">Link parent</button></div>`, {
+      onMount: (m, close) => { $("#pGo", m).onclick = async () => { if (!$("#pcons", m).checked) return toast("Please confirm the parent or guardian first.", true); try { await POST("/api/admin/links", { student_id: sid, adult_id: Number($("#psel", m).value), relation: "parent", consent: true }); close(); toast("Parent linked"); studentPage(sid, "people"); } catch (e) { fail(e); } }; },
+    });
+  };
   if ($("#inv", box)) onSubmit($("#inv", box), async f => {
     const { invite } = await POST(`/api/students/${sid}/invites`, f);
     inviteModal(invite, d.student);
@@ -806,7 +844,7 @@ async function adminOverview() {
       <div class="panel"><h3>Needs attention</h3>
         <table class="data"><tbody>
           <tr><td>Students with no practice this week</td><td class="num">${W.inactive_students ? `<span class="tag warn">${W.inactive_students}</span>` : '<span class="tag good">0</span>'}</td></tr>
-          <tr><td>Students without a tutor</td><td class="num">${W.students_without_tutor ? `<span class="tag warn">${W.students_without_tutor}</span>` : '<span class="tag good">0</span>'}</td></tr>
+          <tr><td><a href="#/students?notutor=1">Students without a tutor</a></td><td class="num">${W.students_without_tutor ? `<span class="tag warn">${W.students_without_tutor}</span>` : '<span class="tag good">0</span>'}</td></tr>
           <tr><td>Students without a linked parent</td><td class="num">${W.students_without_parent ? `<span class="tag warn">${W.students_without_parent}</span>` : '<span class="tag good">0</span>'}</td></tr>
           <tr><td><a href="#/admin/duplicates">Names entered more than once</a></td><td class="num">${W.duplicate_names ? `<a href="#/admin/duplicates" class="tag warn">${W.duplicate_names}</a>` : '<span class="tag good">0</span>'}</td></tr>
         </tbody></table>

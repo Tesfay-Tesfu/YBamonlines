@@ -79,6 +79,12 @@ When someone adds a student or account with a name that already exists, the site
 
 Spreadsheet import columns: `name, grade, username, pin, tutor_email, parent_email` (only `name` is required). A `parent_email` creates a 30-day invite code for that parent; a `tutor_email` links an existing tutor.
 
+### Connecting a tutor to students
+A tutor only sees the students they are linked to. As admin:
+- **Many at once:** **Students** → tick **No tutor yet** (or any students) → **👩‍🏫 Assign a tutor** → pick the tutor → **Assign**.
+- **One student:** open the student → **Parents & tutors** → **👩‍🏫 Assign a tutor**. **👪 Link an existing parent** works the same way for parent accounts.
+- Students a tutor adds themselves are linked to that tutor automatically. A student can have more than one tutor; remove one under **Parents & tutors → Remove**.
+
 ### Adding tutors and admins
 **People → Add an account** (you set a temporary password) or **Invite a tutor** (they set their own password with a code).
 

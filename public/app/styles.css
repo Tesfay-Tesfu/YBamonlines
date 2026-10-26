@@ -364,3 +364,8 @@ main.page.page-wide { max-width: 1320px; padding-top: 18px; padding-bottom: 18px
   .bubble .file { min-width: 0; }
   .bubble .thumb img { max-width: 200px; }
 }
+
+/* ---------- students: select and assign a tutor ---------- */
+.bulkbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--blue-soft); border: 1px solid #c9dcef; border-radius: var(--radius); padding: 8px 12px; margin-bottom: 12px; position: sticky; top: 8px; z-index: 5; }
+.bulkbar[hidden] { display: none; }
+td.pick { cursor: default; } td.pick input, #pickAll { width: 18px; height: 18px; accent-color: var(--blue); }

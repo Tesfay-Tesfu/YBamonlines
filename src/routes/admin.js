@@ -150,6 +150,23 @@ r.post('/links', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Link one tutor (or parent) to many students at once
+r.post('/links/bulk', async (req, res) => {
+  const adultId = Number(req.body.adult_id);
+  const ids = [...new Set((Array.isArray(req.body.student_ids) ? req.body.student_ids : []).map(Number).filter(Number.isInteger))];
+  if (!ids.length) A.fail(400, 'Choose at least one student.');
+  const a = await db.one(`SELECT id, role, name FROM users WHERE id=$1 AND role IN ('tutor','parent') AND active`, [adultId]);
+  if (!a) A.fail(404, 'Tutor not found.');
+  const relation = a.role === 'tutor' ? 'tutor' : 'parent';
+  const rows = await db.many(`SELECT id FROM users WHERE role='student' AND id = ANY($1::int[])`, [ids]);
+  for (const s of rows) {
+    await db.q(`INSERT INTO student_links(student_id, adult_id, relation, created_by) VALUES ($1,$2,$3,$4)
+                ON CONFLICT (student_id, adult_id) DO UPDATE SET relation=EXCLUDED.relation`, [s.id, a.id, relation, req.user.id]);
+    A.audit(req, 'link_adult', s.id, { adult_id: a.id, relation });
+  }
+  res.json({ ok: true, linked: rows.length, name: a.name });
+});
+
 // ---------- students: bulk import ----------
 // rows: [{name, grade, username?, pin?, tutor_email?, parent_email?}]
 r.post('/students/bulk', async (req, res) => {

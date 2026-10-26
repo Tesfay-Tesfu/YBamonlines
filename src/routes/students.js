@@ -67,6 +67,7 @@ r.get('/', async (req, res) => {
   else if (u.role !== 'admin') { params.push(u.id); where += ` AND EXISTS (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.adult_id=$${params.length})`; }
   if (req.query.q) { params.push(`%${req.query.q}%`); where += ` AND (s.name ILIKE $${params.length} OR s.username ILIKE $${params.length})`; }
   if (req.query.grade) { params.push(Number(req.query.grade)); where += ` AND s.grade=$${params.length}`; }
+  if (req.query.notutor === '1') where += ` AND NOT EXISTS (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.relation='tutor')`;
   const rows = await db.many(`
     SELECT s.id, s.name, s.username, s.grade, s.active, s.last_login_at, s.created_at,
       (SELECT count(*)::int FROM allocations a WHERE a.student_id=s.id AND a.status='active') AS tools,
