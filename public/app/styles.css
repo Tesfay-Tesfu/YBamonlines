@@ -369,3 +369,9 @@ main.page.page-wide { max-width: 1320px; padding-top: 18px; padding-bottom: 18px
 .bulkbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--blue-soft); border: 1px solid #c9dcef; border-radius: var(--radius); padding: 8px 12px; margin-bottom: 12px; position: sticky; top: 8px; z-index: 5; }
 .bulkbar[hidden] { display: none; }
 td.pick { cursor: default; } td.pick input, #pickAll { width: 18px; height: 18px; accent-color: var(--blue); }
+.th-tabs { display: flex; gap: 6px; padding: 8px 14px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; background: #fff; }
+.th-tab { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); text-decoration: none; color: var(--ink); font-size: .86rem; white-space: nowrap; }
+.th-tab:hover { border-color: var(--blue); } .th-tab.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+.th-tab .nbadge { margin-left: 2px; }
+.composer[hidden] { display: none; }
+.chip[hidden] { display: none; }

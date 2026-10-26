@@ -68,14 +68,15 @@ r.get('/', async (req, res) => {
   if (req.query.q) { params.push(`%${req.query.q}%`); where += ` AND (s.name ILIKE $${params.length} OR s.username ILIKE $${params.length})`; }
   if (req.query.grade) { params.push(Number(req.query.grade)); where += ` AND s.grade=$${params.length}`; }
   if (req.query.notutor === '1') where += ` AND NOT EXISTS (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.relation='tutor')`;
+  const tv = A.tutorToolSql(u, 's.id', 'v.tool_id', 1), tt = A.tutorToolSql(u, 's.id', 't.tool_id', 1);
   const rows = await db.many(`
     SELECT s.id, s.name, s.username, s.grade, s.active, s.last_login_at, s.created_at,
-      (SELECT count(*)::int FROM allocations a WHERE a.student_id=s.id AND a.status='active') AS tools,
-      (SELECT COALESCE(sum(seconds),0)::int FROM activity v WHERE v.student_id=s.id AND v.day > current_date - 7) AS seconds_7d,
-      GREATEST((SELECT max(day) FROM activity v WHERE v.student_id=s.id), (SELECT max(created_at)::date FROM attempts t WHERE t.student_id=s.id)) AS last_active,
-      (SELECT count(*)::int FROM attempts t WHERE t.student_id=s.id AND t.created_at > now() - interval '7 days') AS attempts_7d,
-      (SELECT round(100.0 * avg(t.correct::int))::int FROM attempts t WHERE t.student_id=s.id AND t.created_at > now() - interval '7 days') AS accuracy_7d,
-      (SELECT string_agg(a.name, ', ' ORDER BY a.name) FROM student_links l JOIN users a ON a.id=l.adult_id WHERE l.student_id=s.id AND l.relation='tutor') AS tutors,
+      (SELECT count(*)::int FROM allocations a WHERE a.student_id=s.id AND a.status='active'${u.role === 'tutor' ? ' AND (a.tutor_id IS NULL OR a.tutor_id=$1)' : ''}) AS tools,
+      (SELECT COALESCE(sum(seconds),0)::int FROM activity v WHERE v.student_id=s.id AND v.day > current_date - 7${tv}) AS seconds_7d,
+      GREATEST((SELECT max(day) FROM activity v WHERE v.student_id=s.id${tv}), (SELECT max(created_at)::date FROM attempts t WHERE t.student_id=s.id${tt})) AS last_active,
+      (SELECT count(*)::int FROM attempts t WHERE t.student_id=s.id AND t.created_at > now() - interval '7 days'${tt}) AS attempts_7d,
+      (SELECT round(100.0 * avg(t.correct::int))::int FROM attempts t WHERE t.student_id=s.id AND t.created_at > now() - interval '7 days'${tt}) AS accuracy_7d,
+      (SELECT string_agg(a.name || COALESCE(' (' || a.subject || ')', ''), ', ' ORDER BY a.name) FROM student_links l JOIN users a ON a.id=l.adult_id WHERE l.student_id=s.id AND l.relation='tutor') AS tutors,
       (SELECT string_agg(a.name, ', ' ORDER BY a.name) FROM student_links l JOIN users a ON a.id=l.adult_id WHERE l.student_id=s.id AND l.relation='parent') AS parents
     FROM users s WHERE ${where} ORDER BY s.grade NULLS LAST, s.name LIMIT 2000`, params);
   res.json({ students: rows });
@@ -110,22 +111,23 @@ r.post('/', A.requireRole('admin', 'tutor'), async (req, res) => {
 });
 
 // ---------- profile ----------
-async function toolRows(studentId) {
+async function toolRows(studentId, user) {
+  const mine = user && user.role === 'tutor';
   return db.many(`
     SELECT t.id AS tool_id, t.slug, t.name, t.icon, t.subject, t.grade_min, t.grade_max, t.active AS tool_active, t.settings_schema,
-           a.status, a.settings, a.expires_at, a.created_at AS assigned_at,
+           a.status, a.settings, a.expires_at, a.created_at AS assigned_at, a.tutor_id, tu.name AS tutor_name, tu.subject AS tutor_subject,
            (a.status='active' AND t.active AND (a.expires_at IS NULL OR a.expires_at > now())) AS usable,
            COALESCE(v.total,0)::int AS seconds_total, COALESCE(v.week,0)::int AS seconds_7d, v.last_day,
            COALESCE(x.n,0)::int AS attempts, x.acc AS accuracy, x.avg_ms, x.last_at,
            COALESCE(x.n7,0)::int AS attempts_7d, x.acc7 AS accuracy_7d
-      FROM allocations a JOIN tools t ON t.id=a.tool_id
+      FROM allocations a JOIN tools t ON t.id=a.tool_id LEFT JOIN users tu ON tu.id=a.tutor_id
       LEFT JOIN LATERAL (SELECT sum(seconds) total, sum(seconds) FILTER (WHERE day > current_date - 7) week, max(day) last_day
                            FROM activity WHERE student_id=a.student_id AND tool_id=a.tool_id) v ON true
       LEFT JOIN LATERAL (SELECT count(*) n, round(100.0*avg(correct::int))::int acc, round(avg(ms))::int avg_ms, max(created_at) last_at,
                                 count(*) FILTER (WHERE created_at > now() - interval '7 days') n7,
                                 round(100.0*avg(correct::int) FILTER (WHERE created_at > now() - interval '7 days'))::int acc7
                            FROM attempts WHERE student_id=a.student_id AND tool_id=a.tool_id) x ON true
-     WHERE a.student_id=$1 ORDER BY a.status, t.subject, t.name`, [studentId]);
+     WHERE a.student_id=$1${mine ? ' AND (a.tutor_id IS NULL OR a.tutor_id=$2)' : ''} ORDER BY a.status, t.subject, t.name`, mine ? [studentId, user.id] : [studentId]);
 }
 
 r.get('/:id', async (req, res) => {
@@ -135,15 +137,16 @@ r.get('/:id', async (req, res) => {
   if (!s) A.fail(404, 'Student not found.');
   const manage = await A.canManageStudent(req.user, id);
   const adults = req.user.role === 'student' ? [] : await db.many(`
-    SELECT a.id, a.name, ${manage || req.user.role === 'admin' ? 'a.email,' : ''} l.relation, l.consent_at
+    SELECT a.id, a.name, a.subject, ${manage || req.user.role === 'admin' ? 'a.email,' : ''} l.relation, l.consent_at
       FROM student_links l JOIN users a ON a.id=l.adult_id WHERE l.student_id=$1 ORDER BY l.relation DESC, a.name`, [id]);
-  const tools = (await toolRows(id)).filter(t => req.user.role === 'admin' || t.status === 'active');
+  const tools = (await toolRows(id, req.user)).filter(t => req.user.role === 'admin' || t.status === 'active');
+  const tp = req.user.role === 'tutor' ? [id, req.user.id] : [id];
   const achievements = await db.many(`SELECT ac.code, ac.title, ac.icon, ac.created_at, t.name AS tool FROM achievements ac LEFT JOIN tools t ON t.id=ac.tool_id
-                                      WHERE ac.student_id=$1 ORDER BY ac.created_at DESC LIMIT 100`, [id]);
+                                      WHERE ac.student_id=$1${A.tutorToolSql(req.user, '$1', 'ac.tool_id', 2)} ORDER BY ac.created_at DESC LIMIT 100`, tp);
   const days = await db.many(`SELECT to_char(d, 'YYYY-MM-DD') AS day,
-        COALESCE((SELECT sum(seconds) FROM activity WHERE student_id=$1 AND day=d::date),0)::int AS seconds,
-        (SELECT count(*) FROM attempts WHERE student_id=$1 AND created_at::date = d::date)::int AS attempts
-      FROM generate_series(current_date - 27, current_date, interval '1 day') d ORDER BY d`, [id]);
+        COALESCE((SELECT sum(seconds) FROM activity v WHERE v.student_id=$1 AND v.day=d::date${A.tutorToolSql(req.user, '$1', 'v.tool_id', 2)}),0)::int AS seconds,
+        (SELECT count(*) FROM attempts t WHERE t.student_id=$1 AND t.created_at::date = d::date${A.tutorToolSql(req.user, '$1', 't.tool_id', 2)})::int AS attempts
+      FROM generate_series(current_date - 27, current_date, interval '1 day') d ORDER BY d`, tp);
   const invites = manage ? await db.many(`SELECT id, code, role, email, expires_at, used_at FROM invites WHERE student_id=$1 AND used_at IS NULL AND expires_at > now() ORDER BY created_at DESC`, [id]) : [];
   if (req.user.role !== 'student' && req.user.id !== id) A.audit(req, 'view_student', id);
   res.json({ student: s, canManage: manage, canDelete: await canDeleteStudent(req.user, id), canResetPin: manage || adults.some(a => a.id === req.user.id && a.relation === 'parent'), adults, tools, achievements, days, invites });
@@ -194,14 +197,22 @@ r.post('/:id/pin', async (req, res) => {
 });
 
 // ---------- tools for a student ----------
+// Which tutor a tool belongs to: null = all the student's tutors; otherwise a tutor linked to the student.
+async function checkTutorFor(studentId, tutorId) {
+  if (tutorId === undefined || tutorId === null || tutorId === '' || Number(tutorId) === 0) return null;
+  const t = await db.one(`SELECT 1 FROM student_links l JOIN users u ON u.id=l.adult_id WHERE l.student_id=$1 AND l.adult_id=$2 AND l.relation='tutor' AND u.role='tutor'`, [studentId, Number(tutorId)]);
+  if (!t) A.fail(400, 'Choose one of this student’s tutors.');
+  return Number(tutorId);
+}
 r.post('/:id/tools', A.requireRole('admin'), async (req, res) => {
   const id = Number(req.params.id);
   const tool = req.body.slug ? await toolBySlug(req.body.slug) : await db.one('SELECT * FROM tools WHERE id=$1', [Number(req.body.tool_id)]);
   if (!tool) A.fail(404, 'Tool not found.');
-  await db.q(`INSERT INTO allocations(student_id, tool_id, settings, expires_at, assigned_by) VALUES ($1,$2,$3::jsonb,$4,$5)
-              ON CONFLICT (student_id, tool_id) DO UPDATE SET status='active', expires_at=EXCLUDED.expires_at, assigned_by=EXCLUDED.assigned_by, updated_at=now()`,
-    [id, tool.id, JSON.stringify(req.body.settings || {}), req.body.expires_at || null, req.user.id]);
-  A.audit(req, 'assign_tool', id, { tool: tool.slug });
+  const tutorId = await checkTutorFor(id, req.body.tutor_id);
+  await db.q(`INSERT INTO allocations(student_id, tool_id, settings, expires_at, assigned_by, tutor_id) VALUES ($1,$2,$3::jsonb,$4,$5,$6)
+              ON CONFLICT (student_id, tool_id) DO UPDATE SET status='active', expires_at=EXCLUDED.expires_at, assigned_by=EXCLUDED.assigned_by, tutor_id=EXCLUDED.tutor_id, updated_at=now()`,
+    [id, tool.id, JSON.stringify(req.body.settings || {}), req.body.expires_at || null, req.user.id, tutorId]);
+  A.audit(req, 'assign_tool', id, { tool: tool.slug, tutor_id: tutorId });
   res.json({ ok: true });
 });
 
@@ -211,8 +222,14 @@ r.patch('/:id/tools/:toolId', async (req, res) => {
   const a = await db.one('SELECT * FROM allocations WHERE student_id=$1 AND tool_id=$2', [id, toolId]);
   if (!a) A.fail(404, 'This tool is not assigned to this student.');
   if (req.user.role !== 'admin') {
-    if (a.status !== 'active') A.fail(403, 'This tool has been removed from this student.');
-    if (req.body.status !== undefined || req.body.expires_at !== undefined) A.fail(403, 'Only an admin can give or remove tools.');
+    if (a.status !== 'active' || !A.tutorOwnsAlloc(req.user, a)) A.fail(403, 'This tool is not one of yours for this student.');
+    if (req.body.status !== undefined || req.body.expires_at !== undefined || req.body.tutor_id !== undefined) A.fail(403, 'Only an admin can give or remove tools.');
+  }
+  if (req.body.tutor_id !== undefined) {
+    const tutorId = await checkTutorFor(id, req.body.tutor_id);
+    await db.q('UPDATE allocations SET tutor_id=$3, updated_at=now() WHERE student_id=$1 AND tool_id=$2', [id, toolId, tutorId]);
+    A.audit(req, 'tool_tutor', id, { tool_id: toolId, tutor_id: tutorId });
+    if (req.body.settings === undefined && req.body.status === undefined && req.body.expires_at === undefined) return res.json({ ok: true });
   }
   const status = ['active', 'revoked'].includes(req.body.status) ? req.body.status : a.status;
   const settings = req.body.settings && typeof req.body.settings === 'object'
@@ -228,7 +245,7 @@ r.patch('/:id/tools/:toolId', async (req, res) => {
 r.delete('/:id/tools/:toolId/progress', async (req, res) => {
   const id = Number(req.params.id), toolId = Number(req.params.toolId);
   await A.assertManage(req.user, id);
-  if (req.user.role !== 'admin' && !(await db.one(`SELECT 1 FROM allocations WHERE student_id=$1 AND tool_id=$2 AND status='active'`, [id, toolId]))) A.fail(403, 'This tool has not been given to this student.');
+  if (req.user.role !== 'admin') { const al = await db.one(`SELECT * FROM allocations WHERE student_id=$1 AND tool_id=$2 AND status='active'`, [id, toolId]); if (!A.tutorOwnsAlloc(req.user, al)) A.fail(403, 'This tool is not one of yours for this student.'); }
   await db.q('DELETE FROM tool_state WHERE student_id=$1 AND tool_id=$2', [id, toolId]);
   if (req.query.history === '1') {
     await db.q('DELETE FROM attempts WHERE student_id=$1 AND tool_id=$2', [id, toolId]);
@@ -244,6 +261,7 @@ r.get('/:id/attempts', async (req, res) => {
   const id = Number(req.params.id);
   await A.assertView(req.user, id);
   const params = [id]; let where = 'a.student_id=$1';
+  if (req.user.role === 'tutor') { params.push(req.user.id); where += A.tutorToolSql(req.user, 'a.student_id', 'a.tool_id', params.length); }
   if (req.query.tool) { params.push(req.query.tool); where += ` AND t.slug=$${params.length}`; }
   if (req.query.days) { params.push(String(Number(req.query.days) || 30)); where += ` AND a.created_at > now() - ($${params.length} || ' days')::interval`; }
   if (req.query.result === 'wrong') where += ' AND NOT a.correct';
@@ -267,6 +285,9 @@ r.get('/:id/report', async (req, res) => {
   await A.assertView(req.user, id);
   const days = Math.min(Math.max(Number(req.query.days) || 7, 1), 365);
   const d = String(days);
+  // tutors only see the tools that are theirs (or shared) — $3 is the tutor's id
+  const tu = req.user.role === 'tutor', P = tu ? [id, d, req.user.id] : [id, d];
+  const fa = col => A.tutorToolSql(req.user, '$1', col, 3);
   const s = await db.one(`SELECT id, name, grade FROM users WHERE id=$1 AND role='student'`, [id]);
   if (!s) A.fail(404, 'Student not found.');
   const perTool = await db.many(`
@@ -276,19 +297,19 @@ r.get('/:id/report', async (req, res) => {
       count(DISTINCT a.created_at::date)::int AS days_practiced
     FROM allocations al JOIN tools t ON t.id=al.tool_id
     LEFT JOIN attempts a ON a.student_id=al.student_id AND a.tool_id=al.tool_id AND a.created_at > now() - ($2 || ' days')::interval
-    WHERE al.student_id=$1 GROUP BY t.id ORDER BY seconds DESC, t.name`, [id, d]);
+    WHERE al.student_id=$1${tu ? ' AND (al.tutor_id IS NULL OR al.tutor_id=$3)' : ''} GROUP BY t.id ORDER BY seconds DESC, t.name`, P);
   const missed = await db.many(`
     SELECT t.name AS tool, a.question, a.answer, count(*)::int AS wrong
       FROM attempts a JOIN tools t ON t.id=a.tool_id
-     WHERE a.student_id=$1 AND NOT a.correct AND a.created_at > now() - ($2 || ' days')::interval
-     GROUP BY t.name, a.question, a.answer ORDER BY wrong DESC, a.question LIMIT 12`, [id, d]);
+     WHERE a.student_id=$1 AND NOT a.correct AND a.created_at > now() - ($2 || ' days')::interval${fa('a.tool_id')}
+     GROUP BY t.name, a.question, a.answer ORDER BY wrong DESC, a.question LIMIT 12`, P);
   const totals = await db.one(`SELECT
-      (SELECT COALESCE(sum(seconds),0) FROM activity WHERE student_id=$1 AND day > current_date - $2::int)::int AS seconds,
-      (SELECT count(*) FROM (SELECT day FROM activity WHERE student_id=$1 AND day > current_date - $2::int
-                              UNION SELECT created_at::date FROM attempts WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval) d)::int AS active_days,
-      (SELECT count(*) FROM attempts WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval)::int AS attempts,
-      (SELECT round(100.0*avg(correct::int)) FROM attempts WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval)::int AS accuracy`, [id, d]);
-  const badges = await db.many(`SELECT title, icon, created_at FROM achievements WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval ORDER BY created_at DESC`, [id, d]);
+      (SELECT COALESCE(sum(seconds),0) FROM activity WHERE student_id=$1 AND day > current_date - $2::int${fa('tool_id')})::int AS seconds,
+      (SELECT count(*) FROM (SELECT day FROM activity WHERE student_id=$1 AND day > current_date - $2::int${fa('tool_id')}
+                              UNION SELECT created_at::date FROM attempts WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval${fa('tool_id')}) d)::int AS active_days,
+      (SELECT count(*) FROM attempts WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval${fa('tool_id')})::int AS attempts,
+      (SELECT round(100.0*avg(correct::int)) FROM attempts WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval${fa('tool_id')})::int AS accuracy`, P);
+  const badges = await db.many(`SELECT title, icon, created_at FROM achievements WHERE student_id=$1 AND created_at > now() - ($2 || ' days')::interval${fa('tool_id')} ORDER BY created_at DESC`, P);
   res.json({ student: s, days, totals, perTool, missed, badges });
 });
 

@@ -85,6 +85,14 @@ A tutor only sees the students they are linked to. As admin:
 - **One student:** open the student → **Parents & tutors** → **👩‍🏫 Assign a tutor**. **👪 Link an existing parent** works the same way for parent accounts.
 - Students a tutor adds themselves are linked to that tutor automatically. A student can have more than one tutor; remove one under **Parents & tutors → Remove**.
 
+### Students with more than one tutor (e.g. Math and English)
+Each tutor sees only their own work with the student. Parents and admins see everything.
+- **Tools:** on the student's **Tools** tab, the **Tutor** column says who each tool is for: one tutor, or **All tutors**. A tutor only sees, opens and gets reports, answers and badges for their own tools (and the shared ones). Choose the tutor when you **Give a tool**, too.
+- **When a second tutor is linked**, the tools the student already had stay with the first tutor automatically. Set the whiteboard (or any tool both should use) to **All tutors**.
+- **Messages:** each tutor has a private conversation with the student and parents, plus a **General** conversation everyone shares. Tutors never see another tutor's conversation or files.
+- **Whiteboard:** a tutor sees the boards they made plus boards the student made; never another tutor's boards.
+- **Subjects:** give tutors a subject under **People → Manage → Subject** so everyone sees "Math · Tesfaye", "English · Ruth".
+
 ### Adding tutors and admins
 **People → Add an account** (you set a temporary password) or **Invite a tutor** (they set their own password with a code).
 

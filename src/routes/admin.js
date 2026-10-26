@@ -45,7 +45,7 @@ r.get('/users', async (req, res) => {
   const params = []; let where = `role <> 'student'`;
   if (req.query.role) { params.push(req.query.role); where += ` AND role=$${params.length}`; }
   if (req.query.q) { params.push(`%${req.query.q}%`); where += ` AND (name ILIKE $${params.length} OR email ILIKE $${params.length})`; }
-  const users = await db.many(`SELECT u.id, u.role, u.name, u.email, u.email_verified, u.active, u.created_at, u.last_login_at,
+  const users = await db.many(`SELECT u.id, u.role, u.name, u.subject, u.email, u.email_verified, u.active, u.created_at, u.last_login_at,
       (SELECT count(*)::int FROM student_links l WHERE l.adult_id=u.id) AS students
     FROM users u WHERE ${where} ORDER BY role, name LIMIT 2000`, params);
   res.json({ users });
@@ -59,8 +59,9 @@ r.post('/users', async (req, res) => {
   if (await db.one('SELECT 1 FROM users WHERE email=$1', [email])) A.fail(409, 'An account with this email already exists.');
   const temp = req.body.password || `Am${A.token(6)}9`;
   const p = A.passwordProblem(temp); if (p) A.fail(400, p);
-  const u = await db.one(`INSERT INTO users(role,name,email,password_hash,email_verified,created_by) VALUES ($1,$2,$3,$4,true,$5) RETURNING id, role, name, email`,
-    [role, name, email, await A.hashSecret(temp), req.user.id]);
+  const subject = role === 'tutor' ? String(req.body.subject || '').trim().slice(0, 40) || null : null;
+  const u = await db.one(`INSERT INTO users(role,name,email,password_hash,email_verified,created_by,subject) VALUES ($1,$2,$3,$4,true,$5,$6) RETURNING id, role, name, email, subject`,
+    [role, name, email, await A.hashSecret(temp), req.user.id, subject]);
   A.audit(req, 'create_user', null, { id: u.id, role, email });
   res.json({ user: u, password: temp });
 });
@@ -78,6 +79,7 @@ r.patch('/users/:id', async (req, res) => {
   let hash = u.password_hash;
   if (b.password) { const p = A.passwordProblem(b.password); if (p) A.fail(400, p); hash = await A.hashSecret(b.password); }
   const active = b.active !== undefined ? !!b.active : u.active;
+  if (b.subject !== undefined) await db.q('UPDATE users SET subject=$2 WHERE id=$1', [id, String(b.subject || '').trim().slice(0, 40) || null]);
   await db.q(`UPDATE users SET name=$2, email=$3, role=$4, active=$5, email_verified=$6, password_hash=$7, failed_logins=0, locked_until=NULL WHERE id=$1`,
     [id, b.name !== undefined ? String(b.name).trim() || u.name : u.name, email, role, active, b.email_verified !== undefined ? !!b.email_verified : u.email_verified, hash]);
   if (!active || b.password) await db.q('DELETE FROM sessions WHERE user_id=$1', [id]);
@@ -143,12 +145,21 @@ r.post('/links', async (req, res) => {
   if (!s || !a) A.fail(404, 'Student or adult not found.');
   const relation = req.body.relation === 'tutor' || (!req.body.relation && a.role === 'tutor') ? 'tutor' : 'parent';
   if (relation === 'tutor' && a.role !== 'tutor') A.fail(400, 'Only tutor accounts can be linked as tutor.');
+  if (relation === 'tutor' && !(await db.one(`SELECT 1 FROM student_links WHERE student_id=$1 AND adult_id=$2`, [studentId, adultId]))) await keepToolsWithFirstTutor(studentId, adultId);
   await db.q(`INSERT INTO student_links(student_id, adult_id, relation, consent_at, created_by) VALUES ($1,$2,$3,$4,$5)
               ON CONFLICT (student_id, adult_id) DO UPDATE SET relation=EXCLUDED.relation`,
     [studentId, adultId, relation, relation === 'parent' && req.body.consent ? new Date() : null, req.user.id]);
   A.audit(req, 'link_adult', studentId, { adult_id: adultId, relation });
   res.json({ ok: true });
 });
+
+// A student who had one tutor gets a second one: the tools that were shared become the first tutor's,
+// so the new tutor (e.g. English) doesn't see the first tutor's (e.g. Math) tools. Admins can change it per tool.
+async function keepToolsWithFirstTutor(studentId, newTutorId) {
+  const others = await db.many(`SELECT adult_id FROM student_links WHERE student_id=$1 AND relation='tutor' AND adult_id<>$2`, [studentId, newTutorId]);
+  if (others.length !== 1) return 0;
+  return (await db.q(`UPDATE allocations SET tutor_id=$2 WHERE student_id=$1 AND tutor_id IS NULL`, [studentId, others[0].adult_id])).rowCount;
+}
 
 // Link one tutor (or parent) to many students at once
 r.post('/links/bulk', async (req, res) => {
@@ -160,6 +171,8 @@ r.post('/links/bulk', async (req, res) => {
   const relation = a.role === 'tutor' ? 'tutor' : 'parent';
   const rows = await db.many(`SELECT id FROM users WHERE role='student' AND id = ANY($1::int[])`, [ids]);
   for (const s of rows) {
+    const isNew = relation === 'tutor' && !(await db.one(`SELECT 1 FROM student_links WHERE student_id=$1 AND adult_id=$2`, [s.id, a.id]));
+    if (isNew) await keepToolsWithFirstTutor(s.id, a.id);
     await db.q(`INSERT INTO student_links(student_id, adult_id, relation, created_by) VALUES ($1,$2,$3,$4)
                 ON CONFLICT (student_id, adult_id) DO UPDATE SET relation=EXCLUDED.relation`, [s.id, a.id, relation, req.user.id]);
     A.audit(req, 'link_adult', s.id, { adult_id: a.id, relation });
@@ -284,10 +297,14 @@ r.post('/allocations/bulk', async (req, res) => {
   if (req.body.action === 'revoke') {
     n = (await db.q(`UPDATE allocations SET status='revoked', updated_at=now() WHERE tool_id=$1 AND student_id = ANY($2::int[])`, [tool.id, ids])).rowCount;
   } else {
-    n = (await db.q(`INSERT INTO allocations(student_id, tool_id, expires_at, assigned_by)
-        SELECT s.id, $1, $3, $4 FROM users s WHERE s.id = ANY($2::int[]) AND s.role='student'
-        ON CONFLICT (student_id, tool_id) DO UPDATE SET status='active', expires_at=EXCLUDED.expires_at, updated_at=now()`,
-      [tool.id, ids, req.body.expires_at || null, req.user.id])).rowCount;
+    // optional: the tool belongs to this tutor for every selected student they teach (others: shared)
+    const tutorId = Number(req.body.tutor_id) || null;
+    if (tutorId && !(await db.one(`SELECT 1 FROM users WHERE id=$1 AND role='tutor'`, [tutorId]))) A.fail(400, 'Tutor not found.');
+    n = (await db.q(`INSERT INTO allocations(student_id, tool_id, expires_at, assigned_by, tutor_id)
+        SELECT s.id, $1, $3, $4, CASE WHEN EXISTS (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.adult_id=$5 AND l.relation='tutor') THEN $5::int END
+          FROM users s WHERE s.id = ANY($2::int[]) AND s.role='student'
+        ON CONFLICT (student_id, tool_id) DO UPDATE SET status='active', expires_at=EXCLUDED.expires_at, tutor_id=COALESCE(EXCLUDED.tutor_id, allocations.tutor_id), updated_at=now()`,
+      [tool.id, ids, req.body.expires_at || null, req.user.id, tutorId])).rowCount;
   }
   A.audit(req, req.body.action === 'revoke' ? 'bulk_revoke' : 'bulk_assign', null, { tool: tool.slug, students: ids.length });
   res.json({ ok: true, changed: n });

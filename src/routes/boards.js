@@ -37,20 +37,22 @@ async function studentAccess(user, studentId) {
   if (user.role === 'admin') return { canView: true, canEdit: true };
   const tool = await whiteboardTool();
   if (!tool || !tool.active) return { canView: false, canEdit: false };
-  const given = await db.one(`SELECT 1 FROM allocations WHERE student_id=$1 AND tool_id=$2 AND status='active' AND (expires_at IS NULL OR expires_at > now())`, [studentId, tool.id]);
-  if (!given) return { canView: false, canEdit: false };
+  const given = await db.one(`SELECT tutor_id FROM allocations WHERE student_id=$1 AND tool_id=$2 AND status='active' AND (expires_at IS NULL OR expires_at > now())`, [studentId, tool.id]);
+  if (!given || !A.tutorOwnsAlloc(user, given)) return { canView: false, canEdit: false };
   if (user.role === 'student') return { canView: user.id === studentId, canEdit: user.id === studentId };
   if (!(await A.canViewStudent(user, studentId))) return { canView: false, canEdit: false };
   return { canView: true, canEdit: await A.canManageStudent(user, studentId) };
 }
 async function boardAccess(user, board) {
   if (!board) A.fail(404, 'Board not found.');
+  // a tutor sees their own boards and shared ones (made by the student or an admin), not other tutors' boards
+  if (board.student_id && user.role === 'tutor' && board.tutor_key && board.tutor_key !== user.id) return { canView: false, canEdit: false };
   if (board.student_id) return studentAccess(user, board.student_id);
   const own = board.owner_id === user.id || user.role === 'admin';
   return { canView: own, canEdit: own };
 }
 async function loadBoardRow(id) {
-  return db.one('SELECT id, student_id, owner_id, title, version, updated_at, created_at FROM boards WHERE id=$1', [Number(id)]);
+  return db.one('SELECT id, student_id, owner_id, tutor_key, title, version, updated_at, created_at FROM boards WHERE id=$1', [Number(id)]);
 }
 
 // ---------------------------------------------------------------- rooms
@@ -147,7 +149,9 @@ r.get('/', async (req, res) => {
     const a = await studentAccess(req.user, sid);
     if (!a.canView) A.fail(403, 'You do not have access to these boards.');
     canEdit = a.canEdit;
-    rows = await db.many(`SELECT id, title, updated_at, created_at, jsonb_array_length(data->'pages') AS pages FROM boards WHERE student_id=$1 ORDER BY updated_at DESC`, [sid]);
+    const mine = req.user.role === 'tutor';
+    rows = await db.many(`SELECT b.id, b.title, b.updated_at, b.created_at, jsonb_array_length(b.data->'pages') AS pages, b.tutor_key, u.name AS tutor_name, u.subject AS tutor_subject
+        FROM boards b LEFT JOIN users u ON u.id=b.tutor_key WHERE b.student_id=$1${mine ? ' AND b.tutor_key IN (0, $2)' : ''} ORDER BY b.updated_at DESC`, mine ? [sid, req.user.id] : [sid]);
   } else {
     if (req.user.role === 'student' || req.user.role === 'parent') A.fail(400, 'Choose a student.');
     canEdit = true;
@@ -176,7 +180,7 @@ r.post('/', async (req, res) => {
     const a = await studentAccess(req.user, sid);
     if (!a.canEdit) A.fail(403, 'You cannot add boards for this student.');
     if ((await db.one('SELECT count(*)::int AS n FROM boards WHERE student_id=$1', [sid])).n >= 300) A.fail(400, 'This student has too many boards. Delete some first.');
-    row = await db.one(`INSERT INTO boards(student_id, title, data, created_by) VALUES ($1,$2,$3::jsonb,$4) RETURNING id, title`, [sid, title, JSON.stringify(data), req.user.id]);
+    row = await db.one(`INSERT INTO boards(student_id, title, data, created_by, tutor_key) VALUES ($1,$2,$3::jsonb,$4,$5) RETURNING id, title`, [sid, title, JSON.stringify(data), req.user.id, req.user.role === 'tutor' ? req.user.id : 0]);
     A.audit(req, 'create_board', sid, { board: row.id });
   } else {
     if (!['admin', 'tutor'].includes(req.user.role)) A.fail(403, 'Choose a student.');

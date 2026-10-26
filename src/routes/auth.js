@@ -109,6 +109,10 @@ r.post('/redeem', loginLimit, async (req, res) => {
       created = true;
     }
     if (inv.student_id) {
+      if (inv.role === 'tutor') { // a student who had one tutor: their shared tools stay with that tutor
+        const others = (await c.query(`SELECT adult_id FROM student_links WHERE student_id=$1 AND relation='tutor' AND adult_id<>$2`, [inv.student_id, user.id])).rows;
+        if (others.length === 1) await c.query(`UPDATE allocations SET tutor_id=$2 WHERE student_id=$1 AND tutor_id IS NULL`, [inv.student_id, others[0].adult_id]);
+      }
       await c.query(`INSERT INTO student_links(student_id, adult_id, relation, consent_at, created_by)
                      VALUES ($1,$2,$3,$4,$5) ON CONFLICT (student_id, adult_id) DO UPDATE SET consent_at = COALESCE(student_links.consent_at, EXCLUDED.consent_at)`,
         [inv.student_id, user.id, inv.role === 'tutor' ? 'tutor' : 'parent', inv.role === 'parent' ? new Date() : null, inv.created_by]);

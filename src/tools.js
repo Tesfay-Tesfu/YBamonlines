@@ -79,12 +79,13 @@ async function resolveToolAccess(user, tool, studentParam) {
     await A.assertView(user, studentParam);
     const alloc = await db.one('SELECT * FROM allocations WHERE student_id=$1 AND tool_id=$2', [Number(studentParam), tool.id]);
     if (user.role !== 'admin' && (!alloc || alloc.status !== 'active')) A.fail(403, 'This tool has not been given to this student.');
+    if (!A.tutorOwnsAlloc(user, alloc)) A.fail(403, 'This tool belongs to another of this student’s tutors.');
     return { mode: 'review', studentId: Number(studentParam), alloc };
   }
   if (!['admin', 'tutor'].includes(user.role)) A.fail(403, 'Choose a student to view this tool.');
   if (user.role === 'tutor') {
     const given = await db.one(`SELECT 1 FROM allocations a JOIN student_links l ON l.student_id=a.student_id
-                                 WHERE a.tool_id=$1 AND a.status='active' AND l.adult_id=$2 AND l.relation='tutor' LIMIT 1`, [tool.id, user.id]);
+                                 WHERE a.tool_id=$1 AND a.status='active' AND l.adult_id=$2 AND l.relation='tutor' AND (a.tutor_id IS NULL OR a.tutor_id=$2) LIMIT 1`, [tool.id, user.id]);
     if (!given || !tool.active) A.fail(403, 'You can only open tools that an admin has given to your students.');
   }
   return { mode: 'preview', studentId: null, alloc: null };

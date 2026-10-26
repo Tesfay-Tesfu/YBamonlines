@@ -32,10 +32,10 @@ r.get('/tools', A.requireRole('admin', 'tutor', 'parent'), async (req, res) => {
     ? await db.many(`SELECT ${cols} FROM tools ORDER BY subject, grade_min, name`)
     : await db.many(`SELECT ${cols},
           (SELECT count(DISTINCT a.student_id)::int FROM allocations a JOIN student_links l ON l.student_id=a.student_id
-            WHERE a.tool_id=t.id AND a.status='active' AND l.adult_id=$1) AS students
+            WHERE a.tool_id=t.id AND a.status='active' AND l.adult_id=$1 AND (l.relation<>'tutor' OR a.tutor_id IS NULL OR a.tutor_id=$1)) AS students
          FROM tools t
         WHERE t.active AND EXISTS (SELECT 1 FROM allocations a JOIN student_links l ON l.student_id=a.student_id
-                                    WHERE a.tool_id=t.id AND a.status='active' AND l.adult_id=$1)
+                                    WHERE a.tool_id=t.id AND a.status='active' AND l.adult_id=$1 AND (l.relation<>'tutor' OR a.tutor_id IS NULL OR a.tutor_id=$1))
         ORDER BY subject, grade_min, name`, [req.user.id]);
   res.json({ tools });
 });

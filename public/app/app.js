@@ -108,6 +108,7 @@ function meter(pct) {
 }
 const gradeText = g => g ? `Grade ${g}` : "No grade set";
 const roleName = r => ({ admin: "Admin", tutor: "Tutor", parent: "Parent", student: "Student" }[r] || r);
+const tutorLabel = t => (t.subject ? `${t.subject} · ${t.name}` : t.name); // e.g. "Math · Tesfaye Tutor"
 async function copy(text) { try { await navigator.clipboard.writeText(text); toast("Copied"); } catch { toast("Copy failed — select and copy by hand", true); } }
 function downloadText(name, text, type = "text/csv") {
   const a = document.createElement("a");
@@ -447,7 +448,8 @@ async function assignTutorModal(studentIds, done) {
   const tutors = users.filter(u => u.active);
   if (!tutors.length) return modal(`<h2>No tutors yet</h2><p>Add a tutor first: <b>People → Add an account</b> (role: Tutor), or <b>Invite a tutor</b>.</p><div class="btn-row"><a class="btn primary" href="#/admin/users" data-close>Go to People</a></div>`);
   modal(`<h2>Assign a tutor</h2><p class="muted small">${studentIds.length} student${studentIds.length === 1 ? "" : "s"} will be linked to the tutor you choose. The tutor then sees them under <b>My students</b>, can set plans and open their tools, whiteboard and messages. A student can have more than one tutor.</p>
-    <label class="field"><span>Tutor</span><select id="tsel">${tutors.map(t => `<option value="${t.id}">${esc(t.name)} — ${esc(t.email)} (${t.students} student${t.students === 1 ? "" : "s"})</option>`).join("")}</select></label>
+    <label class="field"><span>Tutor</span><select id="tsel">${tutors.map(t => `<option value="${t.id}">${esc(tutorLabel(t))} — ${esc(t.email)} (${t.students} student${t.students === 1 ? "" : "s"})</option>`).join("")}</select></label>
+    <p class="small muted">If a student already has a tutor, the tools they had stay with that first tutor, so the new tutor doesn’t see them. You can change this per tool on the student’s <b>Tools</b> tab.</p>
     <div class="btn-row"><button class="btn" data-close>Cancel</button><button class="btn primary" id="tGo">Assign</button></div>`, {
     onMount: (m, close) => { $("#tGo", m).onclick = async () => { try { const r = await POST("/api/admin/links/bulk", { adult_id: Number($("#tsel", m).value), student_ids: studentIds }); close(); toast(`${r.name} is now tutor for ${r.linked} student${r.linked === 1 ? "" : "s"}`); done && done(); } catch (e) { fail(e); } }; },
   });
@@ -597,12 +599,14 @@ function overviewTab(box, d) {
     <div class="panel" style="margin-top:16px"><h3>Tools</h3>${toolTable(d.tools.filter(t => t.status === "active"), d.student.id, false)}</div>`;
 }
 
-function toolTable(tools, sid, manage) {
+function toolTable(tools, sid, manage, tutors = null) {
   if (!tools.length) return '<p class="muted">No tools assigned yet.</p>';
-  return `<div class="table-wrap"><table class="data"><thead><tr><th>Tool</th><th class="num">Time (7 days)</th><th class="num">Time (all)</th><th class="num">Answers</th><th>Correct</th><th>Last used</th><th></th></tr></thead><tbody>
+  const tutorCell = t => !tutors ? "" : `<td>${tutors.length ? `<select class="tsel" data-tt="${t.tool_id}" aria-label="Tutor for ${esc(t.name)}"><option value="0">All tutors</option>${tutors.map(x => `<option value="${x.id}" ${t.tutor_id === x.id ? "selected" : ""}>${esc(tutorLabel(x))}</option>`).join("")}${t.tutor_id && !tutors.some(x => x.id === t.tutor_id) ? `<option value="${t.tutor_id}" selected>${esc(t.tutor_name || "Former tutor")} (not linked)</option>` : ""}</select>` : '<span class="muted small">No tutor yet</span>'}</td>`;
+  return `<div class="table-wrap"><table class="data"><thead><tr><th>Tool</th>${tutors ? "<th>Tutor</th>" : ""}<th class="num">Time (7 days)</th><th class="num">Time (all)</th><th class="num">Answers</th><th>Correct</th><th>Last used</th><th></th></tr></thead><tbody>
     ${tools.map(t => `<tr><td>${esc(t.icon)} <b>${esc(t.name)}</b><br><span class="subject ${esc(t.subject)}">${esc(t.subject)}</span>
-        ${t.status === "revoked" ? ' <span class="tag bad">Removed</span>' : !t.tool_active ? ' <span class="tag warn">Tool turned off</span>' : t.expires_at ? ` <span class="tag ${new Date(t.expires_at) < new Date() ? "bad" : "info"}">Until ${fmtDate(t.expires_at)}</span>` : ""}</td>
-      <td class="num">${minutes(t.seconds_7d)}</td><td class="num">${minutes(t.seconds_total)}</td><td class="num">${t.attempts}</td><td>${meter(t.accuracy)}</td><td>${ago(t.last_day || t.last_at)}</td>
+        ${t.status === "revoked" ? ' <span class="tag bad">Removed</span>' : !t.tool_active ? ' <span class="tag warn">Tool turned off</span>' : t.expires_at ? ` <span class="tag ${new Date(t.expires_at) < new Date() ? "bad" : "info"}">Until ${fmtDate(t.expires_at)}</span>` : ""}
+        ${!tutors && t.tutor_id && ME.user.role === "parent" ? `<div class="small muted">${esc(t.tutor_subject ? `${t.tutor_subject} · ${t.tutor_name}` : t.tutor_name || "")}</div>` : ""}</td>
+      ${tutorCell(t)}<td class="num">${minutes(t.seconds_7d)}</td><td class="num">${minutes(t.seconds_total)}</td><td class="num">${t.attempts}</td><td>${meter(t.accuracy)}</td><td>${ago(t.last_day || t.last_at)}</td>
       <td style="white-space:nowrap"><a class="btn small" href="#/play/${esc(t.slug)}?student=${sid}">Open</a>
         ${manage ? `<button class="btn small" data-plan="${t.tool_id}">Plan</button><button class="btn small" data-more="${t.tool_id}">${ME.user.role === "admin" ? "More" : "Start over"}</button>` : ""}</td></tr>`).join("")}
   </tbody></table></div>`;
@@ -610,16 +614,22 @@ function toolTable(tools, sid, manage) {
 
 function toolsTab(box, d, sid) {
   const admin = ME.user.role === "admin";
-  box.innerHTML = `${admin ? `<div class="btn-row" style="margin-bottom:14px"><button class="btn primary" id="assign">Give a tool</button></div>`
+  const tutors = d.adults.filter(a => a.relation === "tutor");
+  box.innerHTML = `${admin ? `<div class="btn-row" style="margin-bottom:14px"><button class="btn primary" id="assign">Give a tool</button>${tutors.length > 1 ? `<span class="small muted">${esc(d.student.name.split(" ")[0])} has ${tutors.length} tutors. Use the <b>Tutor</b> column so each tutor sees only their own tools, answers and reports.</span>` : ""}</div>`
       : d.canManage ? `<p class="muted small" style="margin:0 0 12px">These are the tools an admin has given to ${esc(d.student.name.split(" ")[0])}. You can set the plan for each one. To add or remove a tool, ask an admin.</p>` : ""}
-    ${toolTable(d.tools, sid, d.canManage)}
+    ${toolTable(d.tools, sid, d.canManage, admin ? tutors : null)}
     <p class="muted small" style="margin-top:10px">“Open” shows the tool with ${esc(d.student.name.split(" ")[0])}’s saved progress. Nothing you do there is saved.</p>`;
   if (!d.canManage) return;
   if ($("#assign", box)) $("#assign", box).onclick = () => assignToolModal(d, sid);
+  $$("[data-tt]", box).forEach(sel => sel.onchange = async () => {
+    try { await PATCH(`/api/students/${sid}/tools/${sel.dataset.tt}`, { tutor_id: Number(sel.value) }); toast(sel.value === "0" ? "Shared by all tutors" : `Now only ${sel.options[sel.selectedIndex].text} sees this tool`); }
+    catch (e) { fail(e); studentPage(sid, "tools"); }
+  });
   $$("[data-plan]", box).forEach(b => b.onclick = () => planModal(d.tools.find(t => t.tool_id === Number(b.dataset.plan)), sid, d.student));
   $$("[data-more]", box).forEach(b => b.onclick = () => allocationModal(d.tools.find(t => t.tool_id === Number(b.dataset.more)), sid, d.student));
 }
 
+const tutorsOf = d => d.adults.filter(a => a.relation === "tutor");
 async function assignToolModal(d, sid) {
   const { tools } = await GET("/api/tools");
   const have = new Set(d.tools.filter(t => t.status === "active").map(t => t.tool_id));
@@ -631,12 +641,13 @@ async function assignToolModal(d, sid) {
       <div class="small muted">Grades ${t.grade_min}–${t.grade_max}${g && !fits(t) ? ` · <span class="tag warn">Outside grade ${g}</span>` : ""}</div></td>
       <td class="num"><a class="btn small" href="#/play/${esc(t.slug)}?from=${encodeURIComponent(location.hash)}" data-close>Preview</a> <button class="btn small primary" data-id="${t.id}">Give</button></td></tr>`).join("")}</tbody></table></div>`
       : '<p class="muted">This student already has every available tool.</p>'}
+    ${tutorsOf(d).length ? `<label class="field" style="margin-top:14px"><span>Which tutor is this tool for?</span><select id="ttool"><option value="0">All of ${esc(d.student.name.split(" ")[0])}’s tutors</option>${tutorsOf(d).map(x => `<option value="${x.id}" ${tutorsOf(d).length > 1 && x === tutorsOf(d)[0] ? "" : ""}>${esc(tutorLabel(x))} only</option>`).join("")}</select><small>Only this tutor will see the tool, its answers and reports. Parents and admins always see everything.</small></label>` : ""}
     <label class="field" style="margin-top:14px"><span>Access ends (optional)</span><input type="date" id="exp"><small>Leave empty for no end date.</small></label>
     <div class="btn-row"><button class="btn" data-close>Close</button></div>`, {
     wide: true,
     onMount: (m, close) => $$("[data-id]", m).forEach(b => b.onclick = async () => {
       try {
-        await POST(`/api/students/${sid}/tools`, { tool_id: Number(b.dataset.id), expires_at: $("#exp", m).value ? new Date($("#exp", m).value + "T23:59:59").toISOString() : null });
+        await POST(`/api/students/${sid}/tools`, { tool_id: Number(b.dataset.id), tutor_id: $("#ttool", m) ? Number($("#ttool", m).value) : 0, expires_at: $("#exp", m).value ? new Date($("#exp", m).value + "T23:59:59").toISOString() : null });
         toast("Tool given"); close(); studentPage(sid, "tools");
       } catch (e) { fail(e); }
     }),
@@ -740,7 +751,7 @@ function peopleTab(box, d, sid) {
   const first = esc(d.student.name.split(" ")[0]);
   box.innerHTML = `<div class="split"><div class="panel"><h3>People who can see ${first}’s progress</h3>
       ${d.adults.length ? `<table class="data"><tbody>${d.adults.map(a => `<tr><td><b>${esc(a.name)}</b>${a.email ? `<div class="small muted">${esc(a.email)}</div>` : ""}</td>
-        <td><span class="tag ${a.relation === "tutor" ? "info" : ""}">${a.relation === "tutor" ? "Tutor" : "Parent"}</span>${a.relation === "parent" && a.consent_at ? `<div class="small muted">Consent ${fmtDate(a.consent_at)}</div>` : ""}</td>
+        <td><span class="tag ${a.relation === "tutor" ? "info" : ""}">${a.relation === "tutor" ? (a.subject ? `${esc(a.subject)} tutor` : "Tutor") : "Parent"}</span>${a.relation === "parent" && a.consent_at ? `<div class="small muted">Consent ${fmtDate(a.consent_at)}</div>` : ""}</td>
         <td class="num">${d.canManage && (a.relation === "parent" || ME.user.role === "admin") ? `<button class="btn small danger" data-unlink="${a.id}">Remove</button>` : ""}</td></tr>`).join("")}</tbody></table>` : '<p class="muted">Nobody is linked yet.</p>'}</div>
     ${ME.user.role === "admin" ? `<div class="panel"><h3>Link a tutor or parent</h3>
       <p class="small muted">Link an account that already exists. ${first} then shows up in their list right away.</p>
@@ -867,7 +878,7 @@ route("/admin/users", async (q) => {
   async function load() {
     const { users } = await GET(`/api/admin/users?role=${role}&q=${encodeURIComponent(search)}`);
     $("#list", page).innerHTML = users.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th class="num">Students</th><th>Last sign-in</th><th></th></tr></thead><tbody>
-      ${users.map(u => `<tr><td><b>${esc(u.name)}</b>${u.active ? "" : ' <span class="tag bad">Off</span>'}</td><td>${esc(u.email)} ${u.email_verified ? "" : '<span class="tag warn">Not confirmed</span>'}</td>
+      ${users.map(u => `<tr><td><b>${esc(u.name)}</b>${u.subject ? ` <span class="tag info">${esc(u.subject)}</span>` : ""}${u.active ? "" : ' <span class="tag bad">Off</span>'}</td><td>${esc(u.email)} ${u.email_verified ? "" : '<span class="tag warn">Not confirmed</span>'}</td>
         <td>${roleName(u.role)}</td><td class="num">${u.students}</td><td>${ago(u.last_login_at)}</td><td class="num"><button class="btn small" data-id="${u.id}">Manage</button></td></tr>`).join("")}</tbody></table></div>`
       : '<div class="panel empty">No accounts match.</div>';
     $$("[data-id]", page).forEach(b => b.onclick = () => userModal(users.find(u => u.id === Number(b.dataset.id)), load));
@@ -877,10 +888,11 @@ route("/admin/users", async (q) => {
   $("#add", page).onclick = () => modal(`<h2>Add an account</h2><form id="f">
       <label class="field"><span>Role</span><select name="role"><option value="tutor">Tutor</option><option value="parent">Parent</option><option value="admin">Admin</option></select></label>
       <label class="field"><span>Name</span><input type="text" name="name" required></label>
+      <label class="field subj"><span>Subject (for tutors)</span><input type="text" name="subject" maxlength="40" placeholder="e.g. Math, English, Physics"></label>
       <label class="field"><span>Email</span><input type="email" name="email" required></label>
       <label class="field"><span>Temporary password</span><input type="text" name="password" placeholder="Leave empty to make one"><small>Share it privately. They can change it under Account.</small></label>
       <div class="btn-row"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Add account</button></div></form>`, {
-    onMount: (m, close) => onSubmit($("#f", m), async d => {
+    onMount: (m, close) => { const rs = $("select[name=role]", m); rs.onchange = () => { $(".subj", m).hidden = rs.value !== "tutor"; }; onSubmit($("#f", m), async d => {
       const key = String(d.name || "").trim().replace(/\s+/g, " ").toLowerCase();
       const { users: found } = await GET(`/api/admin/users?q=${encodeURIComponent(String(d.name || "").trim())}`);
       const same = found.filter(u => u.name.trim().replace(/\s+/g, " ").toLowerCase() === key);
@@ -892,7 +904,7 @@ route("/admin/users", async (q) => {
         <div class="btn-row"><button class="btn" id="cp">Copy password</button><button class="btn primary" data-close>Done</button></div>`,
       { onMount: mm => $("#cp", mm).onclick = () => copy(r.password) });
       load().catch(fail);
-    }),
+    }); },
   });
   $("#inv", page).onclick = () => modal(`<h2>Invite a tutor</h2><p class="small muted">They’ll create their own password with the code.</p><form id="f">
       <label class="field"><span>Tutor’s email (optional)</span><input type="email" name="email"></label>
@@ -949,11 +961,13 @@ function userModal(u, reload) {
     <label class="field"><span>Name</span><input type="text" name="name" value="${esc(u.name)}" required></label>
     <label class="field"><span>Email</span><input type="email" name="email" value="${esc(u.email)}" required></label>
     <label class="field"><span>Role</span><select name="role" ${self ? "disabled" : ""}>${["tutor", "parent", "admin"].map(r => `<option value="${r}" ${u.role === r ? "selected" : ""}>${roleName(r)}</option>`).join("")}</select></label>
+    <label class="field subj"${u.role === "tutor" ? "" : " hidden"}><span>Subject (for tutors)</span><input type="text" name="subject" value="${esc(u.subject || "")}" maxlength="40" placeholder="e.g. Math, English, Physics"><small>Shown next to the tutor’s name, so students and parents know who is who.</small></label>
     <label class="field"><span>New password</span><input type="text" name="password" placeholder="Leave empty to keep the current one" autocomplete="off"></label>
     <label class="check"><input type="checkbox" name="email_verified" ${u.email_verified ? "checked" : ""}><span>Email confirmed</span></label>
     <label class="check"><input type="checkbox" name="active" ${u.active ? "checked" : ""} ${self ? "disabled" : ""}><span>Can sign in</span></label>
     <div class="btn-row">${self ? "" : '<button type="button" class="btn danger" id="del" style="margin-right:auto">Delete account</button>'}<button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save</button></div></form>`, {
     onMount: (m, close) => {
+      const rs = $("select[name=role]", m); if (rs) rs.onchange = () => { $(".subj", m).hidden = rs.value !== "tutor"; };
       onSubmit($("#f", m), async d => {
         if (self) { delete d.role; delete d.active; }
         if (!d.password) delete d.password;
@@ -1058,12 +1072,14 @@ function editToolModal(t) {
 
 async function bulkAssignModal(t) {
   const { students } = await GET("/api/students");
+  const { users: tutorList } = await GET("/api/admin/users?role=tutor");
   modal(`<h2>Give ${esc(t.icon)} ${esc(t.name)} to students</h2>
     <p class="small muted">Recommended for grades ${t.grade_min}–${t.grade_max}.</p>
     <div class="inline" style="margin-bottom:10px"><button class="btn small" id="fit">Select grades ${t.grade_min}–${t.grade_max}</button><button class="btn small" id="none">Clear</button><input type="search" id="q" placeholder="Filter" aria-label="Filter students"></div>
     <div class="table-wrap" style="max-height:340px;overflow:auto"><table class="data"><tbody>
       ${students.map(s => `<tr data-name="${esc(s.name.toLowerCase())}"><td><label class="check" style="margin:0"><input type="checkbox" value="${s.id}" data-grade="${s.grade || ""}"><span>${esc(s.name)}</span></label></td><td>${s.grade ? "Grade " + s.grade : ""}</td></tr>`).join("") || '<tr><td class="empty">No students yet.</td></tr>'}
     </tbody></table></div>
+    <label class="field" style="margin-top:12px"><span>Tutor for this tool (optional)</span><select id="btutor"><option value="0">Shared by each student’s tutors</option>${tutorList.filter(x => x.active).map(x => `<option value="${x.id}">${esc(tutorLabel(x))} only</option>`).join("")}</select><small>If you pick a tutor, the tool belongs to that tutor for the selected students they teach.</small></label>
     <label class="field" style="margin-top:12px"><span>Access ends (optional)</span><input type="date" id="exp"></label>
     <div class="btn-row"><button class="btn danger" id="rev" style="margin-right:auto">Remove from selected</button><button class="btn" data-close>Cancel</button><button class="btn primary" id="go">Give to selected</button></div>`, {
     wide: true,
@@ -1076,7 +1092,7 @@ async function bulkAssignModal(t) {
         const ids = boxes().filter(b => b.checked).map(b => Number(b.value));
         if (!ids.length) return toast("Select at least one student", true);
         try {
-          const r = await POST("/api/admin/allocations/bulk", { tool_id: t.id, student_ids: ids, action, expires_at: $("#exp", m).value ? new Date($("#exp", m).value + "T23:59:59").toISOString() : null });
+          const r = await POST("/api/admin/allocations/bulk", { tool_id: t.id, student_ids: ids, action, tutor_id: Number($("#btutor", m).value) || null, expires_at: $("#exp", m).value ? new Date($("#exp", m).value + "T23:59:59").toISOString() : null });
           toast(`${action === "revoke" ? "Removed from" : "Given to"} ${r.changed} student${r.changed === 1 ? "" : "s"}`); close(); render();
         } catch (e) { fail(e); }
       };
@@ -1149,9 +1165,9 @@ const dueText = d => { if (!d) return ""; const days = Math.round((new Date(d + 
 
 let MSG = { timer: null };
 route("/messages", () => messagesPage(null));
-route("/messages/:sid", sid => messagesPage(Number(sid)));
+route("/messages/:sid", (sid, q) => messagesPage(Number(sid), q.t));
 
-async function messagesPage(sid) {
+async function messagesPage(sid, key) {
   clearInterval(MSG.timer);
   const me = ME.user;
   if (me.role === "student") sid = me.id;
@@ -1181,23 +1197,27 @@ async function messagesPage(sid) {
   if (me.role === "admin") GET("/api/messages/storage").then(st => { const h = $(".msg-list-head", page); if (h) h.insertAdjacentHTML("beforeend", `<div class="small muted" style="margin-top:8px">Attachments use ${fileSize(st.used)} of ${fileSize(st.limit)}</div>`); }).catch(() => {});
   if ($("#mq", page)) $("#mq", page).oninput = e => drawList(e.target.value);
   if (!sid) return;
-  await openThread(page, sid, T);
+  await openThread(page, sid, T, key);
 }
 
-async function openThread(page, sid, T) {
+async function openThread(page, sid, T, wantKey) {
   const me = ME.user, box = $("#thread", page);
-  let D = await GET(`/api/messages/threads/${sid}`);
+  let D = await GET(`/api/messages/threads/${sid}${wantKey !== undefined && wantKey !== null && wantKey !== "" ? `?key=${encodeURIComponent(wantKey)}` : ""}`);
+  const tabLabel = t => (t.key === 0 ? "👥 General" : `${t.key === me.id ? "💬 " : "📘 "}${esc(t.subject ? `${t.subject} · ${t.name.split(" ")[0]}` : t.name)}${t.key === me.id ? " (you)" : ""}${t.linked ? "" : " · former"}`);
+  const tabsHTML = () => D.threads.length > 1 ? `<div class="th-tabs" role="tablist">${D.threads.map(t => `<a role="tab" class="th-tab ${t.key === D.key ? "on" : ""}" href="#/messages/${sid}?t=${t.key}" title="${t.key === 0 ? "Everyone: student, parents, all tutors" : `Only ${esc(t.name)}, the student, parents and admins`}">${tabLabel(t)}${t.unread && t.key !== D.key ? `<span class="nbadge">${t.unread}</span>` : ""}</a>`).join("")}</div>` : "";
   const others = T.threads.filter(t => t.id !== sid);
   let pending = [], lastSig = "", uploading = 0;
   const first = D.student.name.split(" ")[0];
   box.innerHTML = `<div class="th-head">
       ${me.role === "student" ? "" : `<a class="btn small th-back" href="#/messages">‹</a>`}
       <div class="th-title"><h2>${me.role === "student" ? "My messages" : esc(D.student.name)}</h2>
-        <div class="small muted">${me.role === "student" ? "With " : ""}${D.people.length ? D.people.map(p => `${esc(p.name)} <span class="tag">${p.relation === "parent" ? "Parent" : "Tutor"}</span>`).join(" ") : "No parent or tutor linked yet"}${me.role !== "student" ? ` · ${esc(first)}` : ""}</div></div>
+        <div class="small muted">${me.role === "student" ? "With " : ""}${D.people.length ? D.people.map(p => `${esc(p.name)} <span class="tag">${p.relation === "parent" ? "Parent" : p.subject ? esc(p.subject) + " tutor" : "Tutor"}</span>`).join(" ") : "No parent or tutor linked yet"}${me.role !== "student" ? ` · ${esc(first)}` : ""}</div></div>
       <div class="th-actions">${me.role === "student" ? "" : `<a class="btn small" href="#/student/${sid}">Student page</a>`}<button class="btn small" id="hwOnly" aria-pressed="false">📝 Homework</button></div>
     </div>
+    <div id="tabs">${tabsHTML()}</div>
     <div class="msgs" id="msgs"></div>
-    <form class="composer" id="comp">
+    ${D.canWrite ? "" : `<div class="composer small muted">This tutor is no longer linked to ${esc(first)}, so this conversation is read-only.</div>`}
+    <form class="composer" id="comp"${D.canWrite ? "" : " hidden"}>
       <div class="pend" id="pend"></div>
       <div class="opts" id="opts">
         ${D.canHomework ? `<label class="chip"><input type="checkbox" id="isHw"> 📝 Homework</label><label class="chip hw-due" hidden>Due <input type="date" id="due"></label>` : ""}
@@ -1234,12 +1254,12 @@ async function openThread(page, sid, T) {
         <div class="meta">${mine ? "You" : esc(m.sender_name)} <span class="tag role-${m.sender_role}">${roleName(m.sender_role)}</span> · ${timeOf(m.created_at)}${m.adults_only ? ' · <span class="tag warn" title="The student can’t see this">🔒 Adults only</span>' : ""}
           ${mine || me.role === "admin" ? `<button class="linkbtn" data-del="${m.id}" title="Delete">Delete</button>` : ""}</div>
         <div class="bubble">${hw}${m.body ? `<div class="text">${linkify(m.body)}</div>` : ""}${files ? `<div class="files">${files}</div>` : ""}</div></div>`;
-    }).join("") || `<div class="empty"><div style="font-size:2rem">✉️</div><p>${hwOnly ? "No homework yet." : me.role === "student" ? "No messages yet. You can write to your tutor and parents here." : `No messages yet. Say hello, or share homework with ${esc(first)}.`}</p></div>`;
+    }).join("") || `<div class="empty"><div style="font-size:2rem">✉️</div><p>${hwOnly ? "No homework yet." : D.key === 0 ? `No messages yet. Everyone linked to ${me.role === "student" ? "you" : esc(first)} reads this General conversation.` : me.role === "student" ? "No messages yet. You can write to this tutor here." : `No messages yet. Only ${esc((D.threads.find(t => t.key === D.key) || {}).name || "this tutor")}, ${esc(first)}, the parents and admins see this conversation.`}</p></div>`;
     if (force || nearBottom) msgs.scrollTop = msgs.scrollHeight;
     $$("[data-done]", msgs).forEach(b => b.onclick = async () => { try { await POST(`/api/messages/${b.dataset.done}/done`, { done: b.dataset.v === "1" }); await reload(); toast(b.dataset.v === "1" ? "Marked as done 🎉" : "Marked as not done"); } catch (e) { fail(e); } });
     $$("[data-del]", msgs).forEach(b => b.onclick = async () => { if (!(await confirmBox("Delete this message?", "It is removed for everyone, with its attachments.", "Delete", true))) return; try { await DEL(`/api/messages/${b.dataset.del}`); await reload(); } catch (e) { fail(e); } });
   }
-  async function reload() { try { D = { ...D, ...(await GET(`/api/messages/threads/${sid}`)) }; draw(); refreshUnread(true); } catch { /* offline: try again next tick */ } }
+  async function reload() { try { D = { ...D, ...(await GET(`/api/messages/threads/${sid}?key=${D.key}`)) }; draw(); $("#tabs", box).innerHTML = tabsHTML(); refreshUnread(true); } catch { /* offline: try again next tick */ } }
   draw(true);
   refreshUnread(true);
   MSG.timer = setInterval(() => { if (!document.body.contains(box)) return clearInterval(MSG.timer); if (document.visibilityState === "visible") reload(); }, 12e3);
@@ -1282,7 +1302,7 @@ async function openThread(page, sid, T) {
     const isHw = $("#isHw", box) && $("#isHw", box).checked;
     const btn = $("#send", box); btn.disabled = true;
     try {
-      const r = await POST(`/api/messages/threads/${sid}`, { body, files, kind: isHw ? "homework" : "message", due_date: isHw ? $("#due", box).value : null, adults_only: !!($("#adOnly", box) && $("#adOnly", box).checked), also });
+      const r = await POST(`/api/messages/threads/${sid}`, { key: D.key, body, files, kind: isHw ? "homework" : "message", due_date: isHw ? $("#due", box).value : null, adults_only: !!($("#adOnly", box) && $("#adOnly", box).checked), also });
       ta.value = ""; grow(); pending = []; drawPending(); also = []; if ($("#alsoN", box)) $("#alsoN", box).textContent = "";
       if ($("#isHw", box)) { $("#isHw", box).checked = false; $(".hw-due", box).hidden = true; }
       if ($("#adOnly", box)) $("#adOnly", box).checked = false;

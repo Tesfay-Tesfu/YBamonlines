@@ -1280,7 +1280,7 @@ async function loadBoards(openFirst = false) {
 }
 function renderDrawer() {
   $("drawerTitle").textContent = STUDENT ? `${STUDENT.firstName}'s boards` : "My lesson boards";
-  $("blist").innerHTML = BOARDS.map(b => `<div class="bitem${BOARD && b.id === BOARD.id ? " on" : ""}" data-id="${b.id}"><div class="ic"></div><div><b>${esc(b.title)}</b><span>${b.pages || 1} page${(b.pages || 1) === 1 ? "" : "s"} · ${ago(b.updated_at)}${b.live ? ` · <span class="livedot">● ${b.live} here</span>` : ""}</span></div></div>`).join("") || '<p style="padding:10px;color:#6b7280">No boards yet.</p>';
+  $("blist").innerHTML = BOARDS.map(b => `<div class="bitem${BOARD && b.id === BOARD.id ? " on" : ""}" data-id="${b.id}"><div class="ic"></div><div><b>${esc(b.title)}</b><span>${b.tutor_name && b.tutor_key !== VIEWER.id ? `${esc(b.tutor_subject ? b.tutor_subject + " · " + b.tutor_name.split(" ")[0] : b.tutor_name)} · ` : ""}${b.pages || 1} page${(b.pages || 1) === 1 ? "" : "s"} · ${ago(b.updated_at)}${b.live ? ` · <span class="livedot">● ${b.live} here</span>` : ""}</span></div></div>`).join("") || '<p style="padding:10px;color:#6b7280">No boards yet.</p>';
   $("blist").querySelectorAll(".bitem").forEach(d => d.onclick = () => { openBoard(+d.dataset.id); $("drawer").classList.remove("open"); });
   $("dfoot").innerHTML = LIST_CAN_EDIT ? `<button class="tb on" id="dNew">+ New board</button>${STUDENT && ADULT ? '<button class="tb" id="dCopy">Copy a lesson board</button>' : ""}${BOARD ? '<button class="tb danger" id="dDel">Delete this board</button>' : ""}` : "";
   if ($("dNew")) $("dNew").onclick = newBoardDialog;

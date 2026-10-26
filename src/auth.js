@@ -112,6 +112,14 @@ async function canManageStudent(user, studentId) {
   if (user.role !== 'tutor') return false;
   return !!(await db.one(`SELECT 1 FROM student_links WHERE student_id=$1 AND adult_id=$2 AND relation='tutor'`, [Number(studentId), user.id]));
 }
+// When a student has several tutors, each tool can belong to one of them (allocations.tutor_id).
+// A tutor only sees tools that are theirs or shared (tutor_id NULL). Everyone else sees all tools.
+// Returns an SQL condition for a tool column; `p` is the $ number of the tutor's id in the query.
+function tutorToolSql(user, stuCol, toolCol, p) {
+  if (!user || user.role !== 'tutor') return '';
+  return ` AND ${toolCol} IN (SELECT al.tool_id FROM allocations al WHERE al.student_id=${stuCol} AND (al.tutor_id IS NULL OR al.tutor_id=$${p}))`;
+}
+const tutorOwnsAlloc = (user, alloc) => !!alloc && (user.role !== 'tutor' || !alloc.tutor_id || alloc.tutor_id === user.id);
 async function assertView(user, studentId) {
   if (!(await canViewStudent(user, studentId))) fail(403, 'You do not have access to this student.');
 }
@@ -143,5 +151,5 @@ setInterval(() => { const now = Date.now(); for (const [k, b] of buckets) if (no
 module.exports = {
   HttpError, fail, sha, token, hashSecret, checkSecret, passwordProblem, pinProblem, normEmail, normUsername,
   createSession, destroySession, loadUser, csrfGuard, requireLogin, requireRole,
-  canViewStudent, canManageStudent, assertView, assertManage, audit, rateLimit,
+  canViewStudent, canManageStudent, assertView, assertManage, audit, rateLimit, tutorToolSql, tutorOwnsAlloc,
 };
