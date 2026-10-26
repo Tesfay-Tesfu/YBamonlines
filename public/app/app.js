@@ -133,15 +133,15 @@ function parseCSV(text) {
    Layout
    ===================================================================== */
 const NAV = {
-  admin: [["#/", "Overview"], ["#/students", "Students"], ["#/admin/users", "People"], ["#/admin/tools", "Tools"], ["#/admin/invites", "Invites"], ["#/admin/audit", "Activity log"]],
-  tutor: [["#/", "My students"], ["#/catalog", "Tools"]],
-  parent: [["#/", "My children"]],
-  student: [["#/", "My tools"]],
+  admin: [["#/", "Overview"], ["#/students", "Students"], ["#/messages", "Messages"], ["#/admin/users", "People"], ["#/admin/tools", "Tools"], ["#/admin/invites", "Invites"], ["#/admin/audit", "Activity log"]],
+  tutor: [["#/", "My students"], ["#/messages", "Messages"], ["#/catalog", "Tools"]],
+  parent: [["#/", "My children"], ["#/messages", "Messages"]],
+  student: [["#/", "My tools"], ["#/messages", "Messages"]],
 };
 function shell(content, { sheet = false } = {}) {
   const u = ME.user;
   const here = location.hash || "#/";
-  const nav = u ? NAV[u.role].map(([h, t]) => `<a href="${h}" class="${(h === "#/" ? here === "#/" || here === "" : here.startsWith(h)) ? "on" : ""}">${t}</a>`).join("") : "";
+  const nav = u ? NAV[u.role].map(([h, t]) => `<a href="${h}" class="${(h === "#/" ? here === "#/" || here === "" : here.startsWith(h)) ? "on" : ""}">${t}${h === "#/messages" ? `<span class="nbadge" id="nbadge"${UNREAD.unread ? "" : " hidden"}>${UNREAD.unread}</span>` : ""}</a>`).join("") : "";
   app().innerHTML = `
     <header class="topbar">
       <a class="brand" href="#/"><span class="mark">AM</span><span>AMtutorTools <span class="sub">Afro-Merica Tutor</span></span></a>
@@ -153,6 +153,7 @@ function shell(content, { sheet = false } = {}) {
   if (u) {
     $("#logout").onclick = async () => { await POST("/api/auth/logout").catch(() => {}); ME.user = null; location.hash = "#/login"; };
     if ($("#acct")) $("#acct").onclick = () => { location.hash = "#/account"; };
+    refreshUnread();
   }
   window.scrollTo(0, 0);
   return $("#page");
@@ -349,9 +350,14 @@ async function studentHome() {
       <h1>Hi ${esc(first)} <span class="eq">=</span> ready?</h1>
       ${d.streak ? `<span class="streak">🔥 ${d.streak}-day streak</span>` : ""}
     </div>
+    <div id="msgCallout"></div>
     ${d.tools.length ? `<div class="tool-grid">${tiles}</div>` : `<div class="panel"><h2>No tools yet</h2><p>Your tutor hasn’t given you any tools yet. Check back soon, or ask them.</p></div>`}
     ${d.badges.length ? `<h2 style="margin:34px 0 12px">Your badges</h2><div class="badges">${d.badges.map(b => `<div class="badge" title="${esc(b.tool || "")}, ${fmtDate(b.created_at)}"><span class="bi">${esc(b.icon)}</span>${esc(b.title)}</div>`).join("")}</div>` : ""}
   `, { sheet: true });
+  GET("/api/messages/unread").then(u => {
+    if (!u.unread && !u.homework) return;
+    $("#msgCallout").innerHTML = `<a class="callout" href="#/messages">📬 ${u.unread ? `<b>${u.unread} new message${u.unread === 1 ? "" : "s"}</b>` : ""}${u.unread && u.homework ? " · " : ""}${u.homework ? `<b>${u.homework} homework</b> to do` : ""}<span class="go">Open messages ›</span></a>`;
+  }).catch(() => {});
 }
 
 /* ---------- tool player ---------- */
@@ -386,6 +392,7 @@ async function parentHome() {
         <div><dt>Correct</dt><dd>${s.accuracy_7d === null ? "—" : s.accuracy_7d + "%"}</dd></div></dl>
       <div class="small muted" style="margin-top:10px">Last practiced ${ago(s.last_active)}</div>
     </a>`).join("");
+  // (each child's messages are under Messages, or the button on the child's page)
   shell(`<div class="page-head"><h1>My children</h1><div class="actions"><a class="btn" href="#/join">Add a child with a code</a></div></div>
     ${!ME.user.email_verified ? `<div class="form-note">Please confirm your email address so you can reset your password if you forget it. <a href="#/account">Account settings</a></div>` : ""}
     ${students.length ? `<div class="grid cols-2">${cards}</div>` : `<div class="panel"><h2>No children linked yet</h2><p>Ask your child’s tutor for an invite code, then <a href="#/join">enter it here</a>.</p></div>`}`);
@@ -525,7 +532,7 @@ async function studentPage(id, tab) {
     <p class="small" style="margin:0 0 6px"><a href="#/">‹ ${ME.user.role === "parent" ? "My children" : "All students"}</a></p>
     <div class="page-head"><div><h1>${esc(s.name)}</h1>
       <div class="muted">${gradeText(s.grade)} · username <b>${esc(s.username)}</b>${s.active ? "" : ' · <span class="tag bad">Sign-in turned off</span>'}</div></div>
-      <div class="actions">${d.canResetPin ? '<button class="btn" id="pin">New PIN</button>' : ""}${d.canManage ? '<button class="btn" id="edit">Edit</button>' : ""}</div></div>
+      <div class="actions"><a class="btn" href="#/messages/${s.id}">💬 Messages</a>${d.canResetPin ? '<button class="btn" id="pin">New PIN</button>' : ""}${d.canManage ? '<button class="btn" id="edit">Edit</button>' : ""}</div></div>
     <div class="tabs" role="tablist">${tabs.map(([k, t]) => `<button role="tab" data-t="${k}" class="${k === tab ? "on" : ""}">${t}</button>`).join("")}</div>
     <div id="tab"></div>`);
   $$(".tabs button", page).forEach(b => b.onclick = () => { history.replaceState(null, "", `#/student/${id}?tab=${b.dataset.t}`); $$(".tabs button", page).forEach(x => x.classList.toggle("on", x === b)); show(b.dataset.t); });
@@ -1082,6 +1089,172 @@ route("/admin/audit", async (q) => {
 /* =====================================================================
    Start
    ===================================================================== */
+/* =====================================================================
+   Messages — one conversation per student (student, parents, tutors, admins)
+   ===================================================================== */
+let UNREAD = { unread: 0, homework: 0, at: 0 };
+async function refreshUnread(force = false) {
+  if (!ME.user || (!force && Date.now() - UNREAD.at < 20e3)) return paintBadge();
+  UNREAD.at = Date.now();
+  try { const u = await GET("/api/messages/unread"); UNREAD = { ...u, at: Date.now() }; } catch { /* offline */ }
+  paintBadge();
+}
+function paintBadge() { const b = $("#nbadge"); if (!b) return; b.textContent = UNREAD.unread > 99 ? "99+" : UNREAD.unread; b.hidden = !UNREAD.unread; }
+setInterval(() => { if (document.visibilityState === "visible") refreshUnread(true); }, 45e3);
+
+const fileIcon = m => (/^image\//.test(m) ? "🖼️" : /pdf/.test(m) ? "📕" : /presentation|powerpoint|keynote/.test(m) ? "📊" : /sheet|excel|csv|numbers/.test(m) ? "📗" : /word|document|text|rtf|pages/.test(m) ? "📄" : /audio/.test(m) ? "🎧" : /video/.test(m) ? "🎬" : /zip/.test(m) ? "🗜️" : "📎");
+const fileSize = n => (n < 1024 ? n + " B" : n < 1048576 ? Math.round(n / 1024) + " KB" : (n / 1048576).toFixed(1) + " MB");
+const timeOf = d => new Date(d).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+const dayOf = d => { const x = new Date(d), t = new Date(); const y = new Date(); y.setDate(t.getDate() - 1); return x.toDateString() === t.toDateString() ? "Today" : x.toDateString() === y.toDateString() ? "Yesterday" : x.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }); };
+const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+const dueText = d => { if (!d) return ""; const days = Math.round((new Date(d + "T00:00") - new Date(new Date().toDateString())) / 86400e3); return `due ${new Date(d + "T00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}${days === 0 ? " (today)" : days === 1 ? " (tomorrow)" : days < 0 ? " (late)" : ""}`; };
+
+let MSG = { timer: null };
+route("/messages", () => messagesPage(null));
+route("/messages/:sid", sid => messagesPage(Number(sid)));
+
+async function messagesPage(sid) {
+  clearInterval(MSG.timer);
+  const me = ME.user;
+  if (me.role === "student") sid = me.id;
+  loading();
+  const T = await GET("/api/messages/threads");
+  const single = me.role === "student" || (T.threads.length === 1 && !sid);
+  if (single && !sid && T.threads[0]) sid = T.threads[0].id;
+  const page = shell(`<div class="msg-wrap ${sid ? "has-thread" : ""} ${me.role === "student" ? "solo" : ""}">
+      ${me.role === "student" ? "" : `<aside class="msg-list panel"><div class="msg-list-head"><h2>Messages</h2><input type="search" id="mq" placeholder="Find a student" aria-label="Find a student"></div><div id="tlist"></div></aside>`}
+      <section class="msg-thread panel" id="thread">${sid ? '<p class="muted">Loading…</p>' : `<div class="empty"><div style="font-size:2.4rem">💬</div><h3>Choose a student</h3><p>Each student has one conversation with their parents, tutor and admins. Share homework, slides and notes there.</p></div>`}</section>
+    </div>`);
+  page.classList.add("page-wide");
+  const wrap = $(".msg-wrap", page);
+  const fit = () => { if (!document.body.contains(wrap)) return window.removeEventListener("resize", fit); const top = wrap.getBoundingClientRect().top + window.scrollY; wrap.style.height = Math.max(380, window.innerHeight - top - (window.innerWidth > 800 ? 18 : 0)) + "px"; };
+  fit(); window.addEventListener("resize", fit);
+  // ---- conversation list
+  function drawList(q = "") {
+    const box = $("#tlist", page); if (!box) return;
+    const list = T.threads.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()));
+    box.innerHTML = list.map(t => `<a class="thread-item ${t.id === sid ? "on" : ""}" href="#/messages/${t.id}">
+        <span class="avatar">${esc(t.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>
+        <span class="ti"><b>${esc(t.name)}</b>${t.grade ? ` <span class="muted small">· Gr ${t.grade}</span>` : ""}
+          <span class="prev">${t.last_id ? `${t.last_kind === "homework" ? "📝 " : ""}${esc(t.last_sender.split(" ")[0])}: ${esc(t.last_body || (t.last_files ? `📎 ${t.last_files} file${t.last_files === 1 ? "" : "s"}` : ""))}` : '<i class="muted">No messages yet</i>'}</span></span>
+        <span class="tm">${t.last_at ? `<span class="small muted">${dayOf(t.last_at) === "Today" ? timeOf(t.last_at) : new Date(t.last_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>` : ""}${t.unread && (me.role !== "admin" || t.following) ? `<span class="nbadge">${t.unread}</span>` : t.open_homework ? `<span class="tag warn" title="Homework not done yet">📝 ${t.open_homework}</span>` : ""}</span></a>`).join("") || '<p class="muted small" style="padding:10px">No students.</p>';
+  }
+  drawList();
+  if (me.role === "admin") GET("/api/messages/storage").then(st => { const h = $(".msg-list-head", page); if (h) h.insertAdjacentHTML("beforeend", `<div class="small muted" style="margin-top:8px">Attachments use ${fileSize(st.used)} of ${fileSize(st.limit)}</div>`); }).catch(() => {});
+  if ($("#mq", page)) $("#mq", page).oninput = e => drawList(e.target.value);
+  if (!sid) return;
+  await openThread(page, sid, T);
+}
+
+async function openThread(page, sid, T) {
+  const me = ME.user, box = $("#thread", page);
+  let D = await GET(`/api/messages/threads/${sid}`);
+  const others = T.threads.filter(t => t.id !== sid);
+  let pending = [], lastSig = "", uploading = 0;
+  const first = D.student.name.split(" ")[0];
+  box.innerHTML = `<div class="th-head">
+      ${me.role === "student" ? "" : `<a class="btn small th-back" href="#/messages">‹</a>`}
+      <div class="th-title"><h2>${me.role === "student" ? "My messages" : esc(D.student.name)}</h2>
+        <div class="small muted">${me.role === "student" ? "With " : ""}${D.people.length ? D.people.map(p => `${esc(p.name)} <span class="tag">${p.relation === "parent" ? "Parent" : "Tutor"}</span>`).join(" ") : "No parent or tutor linked yet"}${me.role !== "student" ? ` · ${esc(first)}` : ""}</div></div>
+      <div class="th-actions">${me.role === "student" ? "" : `<a class="btn small" href="#/student/${sid}">Student page</a>`}<button class="btn small" id="hwOnly" aria-pressed="false">📝 Homework</button></div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <form class="composer" id="comp">
+      <div class="pend" id="pend"></div>
+      <div class="opts" id="opts">
+        ${D.canHomework ? `<label class="chip"><input type="checkbox" id="isHw"> 📝 Homework</label><label class="chip hw-due" hidden>Due <input type="date" id="due"></label>` : ""}
+        ${D.canAdultsOnly ? `<label class="chip" title="${esc(first)} won’t see this message"><input type="checkbox" id="adOnly"> 🔒 Adults only</label>` : ""}
+        ${D.canHomework && others.length ? `<button type="button" class="chip" id="also">👥 Also send to… <b id="alsoN"></b></button>` : ""}
+      </div>
+      <div class="row">
+        <label class="btn attach" title="Attach files (homework, slides, PDFs, photos)">📎<input type="file" id="fpick" multiple hidden></label>
+        <textarea id="mbody" rows="1" placeholder="${me.role === "student" ? "Write to your tutor and parents…" : `Write a message about ${esc(first)}…`}"></textarea>
+        <button class="btn primary" id="send" type="submit">Send</button>
+      </div>
+      <div class="small muted hint">Attach PDFs, PowerPoint, Word, Excel, pictures, audio or video (up to 15 MB each). Ctrl + Enter sends.</div>
+    </form>`;
+  const msgs = $("#msgs", box), ta = $("#mbody", box);
+  let hwOnly = false, also = [];
+  // ---- messages
+  function draw(force) {
+    const sig = JSON.stringify(D.messages.map(m => [m.id, m.done_at, !!m.deleted_at]));
+    if (!force && sig === lastSig) return;
+    lastSig = sig;
+    const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 120;
+    let day = "";
+    const list = D.messages.filter(m => !hwOnly || m.kind === "homework");
+    msgs.innerHTML = list.map(m => {
+      const mine = m.sender_id === me.id, d = dayOf(m.created_at), sep = d !== day ? `<div class="day"><span>${d}</span></div>` : ""; day = d;
+      if (m.deleted_at) return sep + `<div class="msg ${mine ? "mine" : ""}"><div class="bubble deleted">Message deleted</div></div>`;
+      const files = m.files.map(f => /^image\/(png|jpeg|gif|webp)$/.test(f.mime)
+        ? `<a class="thumb" href="/api/messages/files/${f.id}" target="_blank" rel="noopener"><img src="/api/messages/files/${f.id}" alt="" loading="lazy" onerror="this.parentNode.classList.add('broken')"><span>${esc(f.name)}</span></a>`
+        : `<a class="file" href="/api/messages/files/${f.id}${/pdf|audio|video/.test(f.mime) ? "" : "?download=1"}" target="_blank" rel="noopener"><span class="fi">${fileIcon(f.mime)}</span><span><b>${esc(f.name)}</b><small>${fileSize(f.size)}</small></span><span class="dl">⤓</span></a>`).join("");
+      const hw = m.kind === "homework" ? `<div class="hw ${m.done_at ? "done" : ""}"><b>📝 Homework</b> ${m.due_date ? `<span>${dueText(m.due_date)}</span>` : ""}
+          <span class="hw-st">${m.done_at ? `✅ Done ${fmtDate(m.done_at)}` : "Not done yet"}</span>
+          ${me.role !== "parent" ? `<button class="btn small" data-done="${m.id}" data-v="${m.done_at ? 0 : 1}">${m.done_at ? "Mark not done" : "Mark as done"}</button>` : ""}</div>` : "";
+      return sep + `<div class="msg ${mine ? "mine" : ""} ${m.kind === "homework" ? "is-hw" : ""}" data-id="${m.id}">
+        <div class="meta">${mine ? "You" : esc(m.sender_name)} <span class="tag role-${m.sender_role}">${roleName(m.sender_role)}</span> · ${timeOf(m.created_at)}${m.adults_only ? ' · <span class="tag warn" title="The student can’t see this">🔒 Adults only</span>' : ""}
+          ${mine || me.role === "admin" ? `<button class="linkbtn" data-del="${m.id}" title="Delete">Delete</button>` : ""}</div>
+        <div class="bubble">${hw}${m.body ? `<div class="text">${linkify(m.body)}</div>` : ""}${files ? `<div class="files">${files}</div>` : ""}</div></div>`;
+    }).join("") || `<div class="empty"><div style="font-size:2rem">✉️</div><p>${hwOnly ? "No homework yet." : me.role === "student" ? "No messages yet. You can write to your tutor and parents here." : `No messages yet. Say hello, or share homework with ${esc(first)}.`}</p></div>`;
+    if (force || nearBottom) msgs.scrollTop = msgs.scrollHeight;
+    $$("[data-done]", msgs).forEach(b => b.onclick = async () => { try { await POST(`/api/messages/${b.dataset.done}/done`, { done: b.dataset.v === "1" }); await reload(); toast(b.dataset.v === "1" ? "Marked as done 🎉" : "Marked as not done"); } catch (e) { fail(e); } });
+    $$("[data-del]", msgs).forEach(b => b.onclick = async () => { if (!(await confirmBox("Delete this message?", "It is removed for everyone, with its attachments.", "Delete", true))) return; try { await DEL(`/api/messages/${b.dataset.del}`); await reload(); } catch (e) { fail(e); } });
+  }
+  async function reload() { try { D = { ...D, ...(await GET(`/api/messages/threads/${sid}`)) }; draw(); refreshUnread(true); } catch { /* offline: try again next tick */ } }
+  draw(true);
+  refreshUnread(true);
+  MSG.timer = setInterval(() => { if (!document.body.contains(box)) return clearInterval(MSG.timer); if (document.visibilityState === "visible") reload(); }, 12e3);
+  $("#hwOnly", box).onclick = e => { hwOnly = !hwOnly; e.currentTarget.classList.toggle("primary", hwOnly); e.currentTarget.setAttribute("aria-pressed", hwOnly); draw(true); };
+  // ---- composer
+  const grow = () => { ta.style.height = "auto"; ta.style.height = Math.min(220, ta.scrollHeight + 2) + "px"; };
+  ta.addEventListener("input", grow);
+  ta.addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("#comp", box).requestSubmit(); } });
+  if ($("#isHw", box)) $("#isHw", box).onchange = e => { $(".hw-due", box).hidden = !e.target.checked; if (e.target.checked && $("#adOnly", box)) $("#adOnly", box).checked = false; };
+  if ($("#adOnly", box)) $("#adOnly", box).onchange = e => { if (e.target.checked && $("#isHw", box)) { $("#isHw", box).checked = false; $(".hw-due", box).hidden = true; } };
+  if ($("#also", box)) $("#also", box).onclick = () => modal(`<h2>Also send to</h2><p class="small muted">The same message and files go into each student’s own conversation.</p>
+      <div class="also-list">${others.map(t => `<label class="check"><input type="checkbox" value="${t.id}" ${also.includes(t.id) ? "checked" : ""}><span>${esc(t.name)}${t.grade ? ` <span class="muted small">· Grade ${t.grade}</span>` : ""}</span></label>`).join("")}</div>
+      <div class="btn-row"><button class="btn" id="aAll" type="button">Select all</button><span style="flex:1"></span><button class="btn" data-close>Cancel</button><button class="btn primary" id="aOk">Done</button></div>`, {
+    onMount: (m, close) => { $("#aAll", m).onclick = () => $$("input", m).forEach(i => i.checked = true); $("#aOk", m).onclick = () => { also = $$("input:checked", m).map(i => Number(i.value)); $("#alsoN", box).textContent = also.length ? `(${also.length})` : ""; close(); }; } });
+  function drawPending() {
+    $("#pend", box).innerHTML = pending.map((p, i) => `<span class="pfile ${p.err ? "err" : ""}">${fileIcon(p.mime || "")} ${esc(p.name)} <small>${p.err ? esc(p.err) : p.id ? fileSize(p.size) : `${p.pct || 0}%`}</small><button type="button" data-rm="${i}" aria-label="Remove">✕</button></span>`).join("");
+    $$("[data-rm]", box).forEach(b => b.onclick = () => { pending.splice(+b.dataset.rm, 1); drawPending(); });
+  }
+  function upload(file) {
+    const item = { name: file.name, size: file.size, pct: 0 }; pending.push(item); drawPending();
+    if (file.size > 15 * 1048576) { item.err = "too large (max 15 MB)"; drawPending(); return; }
+    uploading++;
+    const x = new XMLHttpRequest(); x.open("POST", "/api/messages/files");
+    x.setRequestHeader("X-AMT", "1"); x.setRequestHeader("X-Filename", encodeURIComponent(file.name)); x.setRequestHeader("Content-Type", "application/octet-stream");
+    x.upload.onprogress = e => { if (e.lengthComputable) { item.pct = Math.round(e.loaded / e.total * 100); drawPending(); } };
+    x.onload = () => { uploading--; let j = {}; try { j = JSON.parse(x.responseText); } catch {} if (x.status === 200) Object.assign(item, j.file); else item.err = j.error || "upload failed"; drawPending(); };
+    x.onerror = () => { uploading--; item.err = "upload failed"; drawPending(); };
+    x.send(file);
+  }
+  $("#fpick", box).onchange = e => { [...e.target.files].forEach(upload); e.target.value = ""; };
+  box.addEventListener("dragover", e => { e.preventDefault(); box.classList.add("drop"); });
+  box.addEventListener("dragleave", e => { if (e.target === box) box.classList.remove("drop"); });
+  box.addEventListener("drop", e => { e.preventDefault(); box.classList.remove("drop"); [...(e.dataTransfer.files || [])].forEach(upload); });
+  ta.addEventListener("paste", e => { const fs = [...(e.clipboardData ? e.clipboardData.files : [])]; if (fs.length) { e.preventDefault(); fs.forEach(upload); } });
+  $("#comp", box).addEventListener("submit", async e => {
+    e.preventDefault();
+    if (uploading) return toast("Wait for the files to finish uploading.", true);
+    const files = pending.filter(p => p.id).map(p => p.id), body = ta.value.trim();
+    if (!body && !files.length) return ta.focus();
+    const isHw = $("#isHw", box) && $("#isHw", box).checked;
+    const btn = $("#send", box); btn.disabled = true;
+    try {
+      const r = await POST(`/api/messages/threads/${sid}`, { body, files, kind: isHw ? "homework" : "message", due_date: isHw ? $("#due", box).value : null, adults_only: !!($("#adOnly", box) && $("#adOnly", box).checked), also });
+      ta.value = ""; grow(); pending = []; drawPending(); also = []; if ($("#alsoN", box)) $("#alsoN", box).textContent = "";
+      if ($("#isHw", box)) { $("#isHw", box).checked = false; $(".hw-due", box).hidden = true; }
+      if ($("#adOnly", box)) $("#adOnly", box).checked = false;
+      if (r.sent > 1) toast(`Sent to ${r.sent} students`);
+      await reload(); draw(true);
+    } catch (err) { fail(err); } finally { btn.disabled = false; }
+  });
+  if (window.innerWidth > 800) ta.focus();
+}
+
 async function refreshMe() {
   const r = await GET("/api/auth/me");
   ME.user = r.user; ME.mailEnabled = r.mailEnabled;

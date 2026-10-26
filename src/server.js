@@ -46,6 +46,7 @@ app.use('/api/sdk', require('./routes/sdk'));
 app.use('/api/students', require('./routes/students').router);
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/boards', require('./routes/boards'));
+app.use('/api/messages', require('./routes/messages'));
 app.use(tools.router);
 
 // Front-end (single page app) and the tool SDK
@@ -69,6 +70,7 @@ async function bootstrapAdmin() {
 async function cleanup() {
   await db.q(`DELETE FROM sessions WHERE expires_at < now()`);
   await db.q(`DELETE FROM email_tokens WHERE expires_at < now()`);
+  await require('./routes/messages').cleanupFiles();
 }
 
 async function start() {

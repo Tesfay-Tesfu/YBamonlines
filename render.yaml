@@ -7,7 +7,7 @@ services:
     name: amtutortools
     runtime: node
     region: virginia            # closest to Maryland; cannot be changed later
-    plan: free                  # free spins down after 15 min idle. Use 0.5c-512mb for always-on.
+    plan: 0.5c-512mb            # Starter: always on. ("free" sleeps after 15 min idle.)
     buildCommand: npm install --omit=dev
     startCommand: npm start
     healthCheckPath: /healthz
@@ -30,6 +30,8 @@ services:
         sync: false
       - key: MAIL_FROM            # optional, e.g. "AMtutorTools <no-reply@yourdomain.com>"
         sync: false
+      - key: MESSAGE_STORAGE_MB   # space for message attachments, stored in the database (default 500)
+        value: "500"
 
 databases:
   - name: amtutortools-db

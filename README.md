@@ -169,6 +169,18 @@ Give **Whiteboard** to a student like any other tool. The student opens it from 
 
 Live editing keeps open boards in the server's memory, so the web service must run as **one instance** (Render's Starter plan does). Boards are saved to the database a moment after each change and when the server restarts.
 
+### Messages, homework and files
+
+Every student has **one conversation** shared by the student, their parents, their tutor(s) and admins. Open it from **Messages** in the menu (a badge shows new messages) or the **💬 Messages** button on a student's page.
+
+- **Write and attach files:** PDF, PowerPoint, Word, Excel, Keynote/Pages, pictures (shown as pictures), audio, video and ZIP, up to 15 MB each and 10 per message. Drag files in, paste a picture, or use 📎. Web pages, scripts and SVG files can't be attached.
+- **Homework:** tutors and admins tick **📝 Homework** and pick a due date. The student sees it on their home screen and taps **Mark as done**; everyone sees when it was done. **📝 Homework** at the top of a conversation shows only homework.
+- **🔒 Adults only:** parents, tutors and admins can write notes the student can't see.
+- **👥 Also send to…:** tutors and admins can send the same message and files to several students at once; each student gets it in their own conversation.
+- **Email alerts (optional):** when email is set up (see above), parents and tutors get an email about new messages, at most one per conversation every 30 minutes. Students are never emailed.
+- **Deleting:** people can delete their own messages; admins can delete any message.
+- **Storage:** attachments are kept in the database. `MESSAGE_STORAGE_MB` (default 500) caps the total; admins see the space used on the Messages page. Raise it only if your Render database has room (check its disk size in Render), and delete old attachments if it fills up. Files not attached to any message are cleaned up after a day.
+
 ## 5. Privacy and safety
 
 - Children sign in with a username and PIN; no child email is collected. Sessions for students end after 12 hours.
