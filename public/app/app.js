@@ -142,6 +142,7 @@ const NAV = {
   student: [["#/", "My tools"], ["#/messages", "Messages"], ["#/meetings", "Classes"]],
 };
 function shell(content, { sheet = false } = {}) {
+  document.body.classList.remove("msg-mobile", "kb-open");
   const u = ME.user;
   const here = location.hash || "#/";
   const nav = u ? NAV[u.role].map(([h, t]) => `<a href="${h}" class="${(h === "#/" ? here === "#/" || here === "" : here.startsWith(h)) ? "on" : ""}">${t}${h === "#/messages" ? `<span class="nbadge" id="nbadge"${UNREAD.unread ? "" : " hidden"}>${UNREAD.unread}</span>` : ""}</a>`).join("") : "";
@@ -170,6 +171,7 @@ const ROUTES = [];
 const route = (pattern, fn, opts = {}) => ROUTES.push({ re: new RegExp("^" + pattern.replace(/:(\w+)/g, "([^/?]+)") + "/?$"), fn, ...opts });
 
 async function render() {
+  document.body.classList.remove("msg-mobile", "kb-open");
   const hash = location.hash.replace(/^#/, "") || "/";
   const [path, qs] = hash.split("?");
   const query = Object.fromEntries(new URLSearchParams(qs || ""));
@@ -1192,15 +1194,34 @@ async function messagesPage(sid, key) {
     </div>`);
   page.classList.add("page-wide");
   const wrap = $(".msg-wrap", page);
-  const fit = () => { if (!document.body.contains(wrap)) return window.removeEventListener("resize", fit); const top = wrap.getBoundingClientRect().top + window.scrollY; wrap.style.height = Math.max(380, window.innerHeight - top - (window.innerWidth > 800 ? 18 : 0)) + "px"; };
+  // Fit the chat to the visible screen. On phones the chat is pinned to the visible area, so it stays usable
+  // when the on-screen keyboard opens (the keyboard shrinks window.visualViewport, not window.innerHeight).
+  const vv = window.visualViewport;
+  const fit = () => {
+    if (!document.body.contains(wrap)) { window.removeEventListener("resize", fit); if (vv) { vv.removeEventListener("resize", fit); vv.removeEventListener("scroll", fit); } document.body.classList.remove("msg-mobile", "kb-open"); return; }
+    const phone = window.innerWidth <= 800, vh = vv ? vv.height : window.innerHeight;
+    document.body.classList.toggle("msg-mobile", phone);
+    document.body.classList.toggle("kb-open", phone && vh < window.innerHeight * 0.78);
+    if (phone) {
+      const bar = $(".topbar"), barH = bar && getComputedStyle(bar).display !== "none" ? bar.getBoundingClientRect().height : 0;
+      wrap.style.top = ((vv ? vv.offsetTop : 0) + barH) + "px";
+      wrap.style.height = Math.max(200, vh - barH) + "px";
+    } else {
+      wrap.style.top = "";
+      const top = wrap.getBoundingClientRect().top + window.scrollY;
+      wrap.style.height = Math.max(380, window.innerHeight - top - 18) + "px";
+    }
+  };
   fit(); window.addEventListener("resize", fit);
+  if (vv) { vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); }
+  MSG.fit = fit;
   // ---- conversation list
   function drawList(q = "") {
     const box = $("#tlist", page); if (!box) return;
     const list = T.threads.filter(t => !q || t.name.toLowerCase().includes(q.toLowerCase()));
     box.innerHTML = list.map(t => `<a class="thread-item ${t.id === sid ? "on" : ""}" href="#/messages/${t.id}">
         <span class="avatar">${esc(t.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>
-        <span class="ti"><b>${esc(t.name)}</b>${t.grade ? ` <span class="muted small">· Gr ${t.grade}</span>` : ""}
+        <span class="ti"><span class="tn"><b>${esc(t.name)}</b>${t.grade ? ` <span class="muted small">· Gr ${t.grade}</span>` : ""}</span>
           <span class="prev">${t.last_id ? `${t.last_kind === "homework" ? "📝 " : ""}${esc(t.last_sender.split(" ")[0])}: ${esc(t.last_body || (t.last_files ? `📎 ${t.last_files} file${t.last_files === 1 ? "" : "s"}` : ""))}` : '<i class="muted">No messages yet</i>'}</span></span>
         <span class="tm">${t.last_at ? `<span class="small muted">${dayOf(t.last_at) === "Today" ? timeOf(t.last_at) : new Date(t.last_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>` : ""}${t.unread && (me.role !== "admin" || t.following) ? `<span class="nbadge">${t.unread}</span>` : t.open_homework ? `<span class="tag warn" title="Homework not done yet">📝 ${t.open_homework}</span>` : ""}</span></a>`).join("") || '<p class="muted small" style="padding:10px">No students.</p>';
   }
@@ -1270,9 +1291,12 @@ async function openThread(page, sid, T, wantKey) {
     $$("[data-done]", msgs).forEach(b => b.onclick = async () => { try { await POST(`/api/messages/${b.dataset.done}/done`, { done: b.dataset.v === "1" }); await reload(); toast(b.dataset.v === "1" ? "Marked as done 🎉" : "Marked as not done"); } catch (e) { fail(e); } });
     $$("[data-del]", msgs).forEach(b => b.onclick = async () => { if (!(await confirmBox("Delete this message?", "It is removed for everyone, with its attachments.", "Delete", true))) return; try { await DEL(`/api/messages/${b.dataset.del}`); await reload(); } catch (e) { fail(e); } });
   }
-  async function reload() { try { D = { ...D, ...(await GET(`/api/messages/threads/${sid}?key=${D.key}`)) }; draw(); $("#tabs", box).innerHTML = tabsHTML(); refreshUnread(true); } catch { /* offline: try again next tick */ } }
+  async function reload() { try { D = { ...D, ...(await GET(`/api/messages/threads/${sid}?key=${D.key}`)) }; draw(); const sx = $(".th-tabs", box) ? $(".th-tabs", box).scrollLeft : 0; $("#tabs", box).innerHTML = tabsHTML(); if ($(".th-tabs", box)) $(".th-tabs", box).scrollLeft = sx; refreshUnread(true); } catch { /* offline: try again next tick */ } }
   draw(true);
   refreshUnread(true);
+  const showTab = () => { const on = $(".th-tab.on", box); if (on) on.scrollIntoView({ block: "nearest", inline: "center" }); };
+  showTab();
+  ta.addEventListener("focus", () => setTimeout(() => { if (MSG.fit) MSG.fit(); msgs.scrollTop = msgs.scrollHeight; }, 300));
   MSG.timer = setInterval(() => { if (!document.body.contains(box)) return clearInterval(MSG.timer); if (document.visibilityState === "visible") reload(); }, 12e3);
   $("#hwOnly", box).onclick = e => { hwOnly = !hwOnly; e.currentTarget.classList.toggle("primary", hwOnly); e.currentTarget.setAttribute("aria-pressed", hwOnly); draw(true); };
   // ---- composer
