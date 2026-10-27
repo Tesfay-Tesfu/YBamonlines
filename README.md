@@ -204,6 +204,16 @@ A public sign-up page for parents is at **`/interest`** (e.g. `https://amtutorto
 - **Optional settings in Render:** `CONTACT_WHATSAPP` (your number, e.g. `12405550123`, adds "Chat with us now" after the form), `INTEREST_OFFER` (e.g. `First lesson free`, shown as a badge), `CONTACT_DEFAULT_COUNTRY` (default `1`).
 - Spam protection: a hidden bot trap, a minimum fill-in time and at most 8 answers per hour from one connection. Delete a lead to remove their details.
 
+### Classes: Google Meet links and the schedule
+
+**Classes** (in the menu for everyone) lists each online class with a **Meeting** button that opens the Google Meet (or Zoom / Teams) link, the dial-in number with its PIN (on a phone, tapping it dials and enters the PIN), and **Add to calendar** links for Google Calendar and Apple / Outlook (.ics). The next class also appears as a card at the top of the home page, and turns red when it is live.
+
+- **Only admins** can schedule, change or delete a class. Everyone else sees the link and the time but cannot change them.
+- To schedule: **Classes → Schedule a class**, then paste the whole Google Calendar invitation into the box at the top. The name, link, phone number, PIN, date, time and time zone are filled in for you. Choose *Every week* (and the days, and an optional end date) or *Only once*.
+- **Who sees a class:** the students you tick, their parents, and the tutor you choose. If you leave the tutor empty, all of the students' tutors see it. A Math tutor never sees an English class.
+- Times are kept in the class's time zone (default America/New_York), so a 3:30 pm class stays at 3:30 pm when daylight saving time changes. People in other time zones also see their own local time.
+- To change the link for all future classes, click **Edit** on the class and paste the new link.
+
 ## 5. Privacy and safety
 
 - Children sign in with a username and PIN; no child email is collected. Sessions for students end after 12 hours.

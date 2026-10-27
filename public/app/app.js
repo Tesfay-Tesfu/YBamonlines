@@ -136,10 +136,10 @@ function parseCSV(text) {
 // Afro-Merica Tutor & Training logo (top bar, browser tab)
 const LOGO_URL = "https://res.cloudinary.com/dnxsqsccu/image/upload/v1785330959/afromerica/logo.png";
 const NAV = {
-  admin: [["#/", "Overview"], ["#/students", "Students"], ["#/messages", "Messages"], ["#/admin/leads", "Leads"], ["#/admin/users", "People"], ["#/admin/tools", "Tools"], ["#/admin/invites", "Invites"], ["#/admin/audit", "Activity log"]],
-  tutor: [["#/", "My students"], ["#/messages", "Messages"], ["#/catalog", "Tools"]],
-  parent: [["#/", "My children"], ["#/messages", "Messages"]],
-  student: [["#/", "My tools"], ["#/messages", "Messages"]],
+  admin: [["#/", "Overview"], ["#/students", "Students"], ["#/messages", "Messages"], ["#/meetings", "Classes"], ["#/admin/leads", "Leads"], ["#/admin/users", "People"], ["#/admin/tools", "Tools"], ["#/admin/invites", "Invites"], ["#/admin/audit", "Activity log"]],
+  tutor: [["#/", "My students"], ["#/messages", "Messages"], ["#/meetings", "Classes"], ["#/catalog", "Tools"]],
+  parent: [["#/", "My children"], ["#/messages", "Messages"], ["#/meetings", "Classes"]],
+  student: [["#/", "My tools"], ["#/messages", "Messages"], ["#/meetings", "Classes"]],
 };
 function shell(content, { sheet = false } = {}) {
   const u = ME.user;
@@ -353,10 +353,12 @@ async function studentHome() {
       <h1>Hi ${esc(first)} <span class="eq">=</span> ready?</h1>
       ${d.streak ? `<span class="streak">🔥 ${d.streak}-day streak</span>` : ""}
     </div>
+    <div id="nextClass"></div>
     <div id="msgCallout"></div>
     ${d.tools.length ? `<div class="tool-grid">${tiles}</div>` : `<div class="panel"><h2>No tools yet</h2><p>Your tutor hasn’t given you any tools yet. Check back soon, or ask them.</p></div>`}
     ${d.badges.length ? `<h2 style="margin:34px 0 12px">Your badges</h2><div class="badges">${d.badges.map(b => `<div class="badge" title="${esc(b.tool || "")}, ${fmtDate(b.created_at)}"><span class="bi">${esc(b.icon)}</span>${esc(b.title)}</div>`).join("")}</div>` : ""}
   `, { sheet: true });
+  fillNextClass($("#nextClass"));
   GET("/api/messages/unread").then(u => {
     if (!u.unread && !u.homework) return;
     $("#msgCallout").innerHTML = `<a class="callout" href="#/messages">📬 ${u.unread ? `<b>${u.unread} new message${u.unread === 1 ? "" : "s"}</b>` : ""}${u.unread && u.homework ? " · " : ""}${u.homework ? `<b>${u.homework} homework</b> to do` : ""}<span class="go">Open messages ›</span></a>`;
@@ -397,8 +399,10 @@ async function parentHome() {
     </a>`).join("");
   // (each child's messages are under Messages, or the button on the child's page)
   shell(`<div class="page-head"><h1>My children</h1><div class="actions"><a class="btn" href="#/join">Add a child with a code</a></div></div>
+    <div id="nextClass"></div>
     ${!ME.user.email_verified ? `<div class="form-note">Please confirm your email address so you can reset your password if you forget it. <a href="#/account">Account settings</a></div>` : ""}
     ${students.length ? `<div class="grid cols-2">${cards}</div>` : `<div class="panel"><h2>No children linked yet</h2><p>Ask your child’s tutor for an invite code, then <a href="#/join">enter it here</a>.</p></div>`}`);
+  fillNextClass($("#nextClass"));
 }
 
 /* =====================================================================
@@ -412,11 +416,13 @@ async function studentsPage({ title, notutor = false }) {
   let q = "", grade = "", picked = new Set();
   const page = shell(`<div class="page-head"><h1>${esc(title)}</h1>
       <div class="actions"><button class="btn primary" id="add">Add a student</button>${isAdmin ? `<button class="btn" id="bulk">Import from a spreadsheet</button><a class="btn" href="#/admin/duplicates">Find duplicates</a><a class="btn" href="/api/admin/export/students.csv">Download list</a>` : ""}</div></div>
+    ${isAdmin ? "" : `<div id="nextClass"></div>`}
     <div class="inline" style="margin-bottom:14px"><input type="search" id="q" placeholder="Search by name or username" aria-label="Search">
       <select id="g" aria-label="Grade"><option value="">All grades</option>${[5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4].map(g => `<option value="${g}">Grade ${g}</option>`).join("")}</select>
       ${isAdmin ? `<label class="check" style="margin:0"><input type="checkbox" id="nt" ${notutor ? "checked" : ""}><span>No tutor yet</span></label>` : ""}</div>
     ${isAdmin ? `<div class="bulkbar" id="bulkbar" hidden><b id="bcount"></b><button class="btn primary small" id="bAssign">👩‍🏫 Assign a tutor</button><button class="btn small" id="bClear">Clear</button></div>` : ""}
     <div id="list"><p class="muted">Loading…</p></div>`);
+  fillNextClass($("#nextClass", page));
   async function load() {
     const { students } = await GET(`/api/students?q=${encodeURIComponent(q)}&grade=${grade}${notutor ? "&notutor=1" : ""}`);
     $("#list", page).innerHTML = students.length ? `<div class="table-wrap"><table class="data">
@@ -840,7 +846,8 @@ async function adminOverview() {
   const c = Object.fromEntries(d.counts.map(x => [x.role, x]));
   const W = d.week;
   const maxS = Math.max(1, ...d.daily.map(x => x.students));
-  shell(`<div class="page-head"><h1>Overview</h1><div class="actions"><a class="btn" href="#/students">Students</a><a class="btn" href="#/admin/tools">Tools</a></div></div>
+  shell(`<div class="page-head"><h1>Overview</h1><div class="actions"><a class="btn" href="#/students">Students</a><a class="btn" href="#/meetings">Classes</a><a class="btn" href="#/admin/tools">Tools</a></div></div>
+    <div id="nextClass"></div>
     <div class="grid cols-4" style="margin-bottom:16px">
       <div class="figure"><b>${W.active_students} of ${c.student ? c.student.active : 0}</b><span>students practiced this week</span></div>
       <div class="figure"><b>${minutes(W.seconds)}</b><span>practice this week</span></div>
@@ -867,6 +874,7 @@ async function adminOverview() {
         <p class="small" style="margin-top:14px"><a href="/api/admin/export/attempts.csv?days=30">Download all answers from the last 30 days (CSV)</a></p>
       </div>
     </div>`);
+  fillNextClass($("#nextClass"));
 }
 
 /* ---------- people (adult accounts) ---------- */
@@ -1402,6 +1410,245 @@ route("/admin/leads", async q => {
   $("#subj", page).onchange = e => { subject = e.target.value; load().catch(fail); };
   await load();
 }, { roles: ["admin"] });
+
+/* =====================================================================
+   Meetings: online classes (Google Meet link + schedule). Everyone sees their own classes; only admins change them.
+   ===================================================================== */
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MY_TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return "America/New_York"; } })();
+const TZ_LIST = ["America/New_York", "America/Chicago", "America/Denver", "America/Phoenix", "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu", "America/Toronto", "Europe/London", "Europe/Paris", "Africa/Lagos", "Africa/Nairobi", "Africa/Addis_Ababa", "Asia/Dubai"];
+const tzShort = (iso, tz) => { try { return new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "short" }).formatToParts(new Date(iso)).find(p => p.type === "timeZoneName").value; } catch { return tz; } };
+const tFmt = (iso, tz) => new Date(iso).toLocaleTimeString("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" });
+const dayFmt = (ymd, opt = { weekday: "long", month: "long", day: "numeric" }) => new Date(ymd + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", ...opt });
+const addMin = (hhmm, min) => { const [h, m] = hhmm.split(":").map(Number), t = (h * 60 + m + min) % 1440; return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`; };
+const hm12 = hhmm => { const [h, m] = hhmm.split(":").map(Number); return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
+function sessionTime(s, m) {
+  const own = `${tFmt(s.start, m.tz)} – ${tFmt(s.end, m.tz)} ${tzShort(s.start, m.tz)}`;
+  const mine = MY_TZ && MY_TZ !== m.tz && tFmt(s.start, MY_TZ) !== tFmt(s.start, m.tz) ? ` <span class="muted">(your time ${tFmt(s.start, MY_TZ)})</span>` : "";
+  return own + mine;
+}
+function repeatText(m) {
+  const t = hm12(m.start_time);
+  if (m.repeat !== "weekly") return `${dayFmt(m.start_date, { weekday: "short", month: "short", day: "numeric", year: "numeric" })} · ${t}`;
+  const days = m.days.map(d => WEEKDAYS[d] + "s").join(" & ");
+  return `Every ${days} · ${t} (${m.duration_min} min)${m.until_date ? ` · until ${dayFmt(m.until_date, { month: "short", day: "numeric", year: "numeric" })}` : ""}`;
+}
+// Phone link that dials and then enters the PIN: tel:+14144368208,,118267030%23
+function telHref(m) { const n = (m.dial || "").replace(/[^\d+]/g, ""); return n ? `tel:${n.startsWith("+") ? n : "+" + n}${m.pin ? ",," + m.pin + "%23" : ""}` : ""; }
+function gcalHref(m, s) {
+  const loc = (iso) => { const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: m.tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(iso)).map(x => [x.type, x.value])); return `${p.year}${p.month}${p.day}T${p.hour}${p.minute}00`; };
+  const first = s || null;
+  const q = new URLSearchParams({ action: "TEMPLATE", text: m.title, ctz: m.tz, location: m.meet_url,
+    details: [`Meeting: ${m.meet_url}`, m.dial ? `Dial: ${m.dial}${m.pin ? ` PIN: ${m.pin}#` : ""}` : "", m.more_url ? `More phone numbers: ${m.more_url}` : "", m.notes || ""].filter(Boolean).join("\n") });
+  if (first) q.set("dates", `${loc(first.start)}/${loc(first.end)}`);
+  else { const d = m.start_date.replace(/-/g, ""), st = m.start_time.replace(":", "") + "00", en = addMin(m.start_time, m.duration_min).replace(":", "") + "00"; q.set("dates", `${d}T${st}/${d}T${en}`); }
+  if (m.repeat === "weekly" && !s) q.set("recur", `RRULE:FREQ=WEEKLY;BYDAY=${m.days.map(d => ["SU", "MO", "TU", "WE", "TH", "FR", "SA"][d]).join(",")}${m.until_date ? `;UNTIL=${m.until_date.replace(/-/g, "")}T235959Z` : ""}`);
+  return "https://calendar.google.com/calendar/render?" + q.toString();
+}
+const pinText = p => p ? p.replace(/(\d{3})(?=\d)/g, "$1 ") + "#" : "";
+function meetLinks(m, { big = false } = {}) {
+  return `<div class="meet-links">
+    <a class="btn ${big ? "primary" : "small primary"} meet-join" href="${esc(m.meet_url)}" target="_blank" rel="noopener">🎥 Meeting</a>
+    ${m.dial ? `<a class="btn small" href="${esc(telHref(m))}" title="Call in by phone">📞 ${esc(m.dial)}${m.pin ? ` · PIN ${esc(pinText(m.pin))}` : ""}</a>` : ""}
+    ${m.more_url ? `<a class="small" href="${esc(m.more_url)}" target="_blank" rel="noopener">More phone numbers</a>` : ""}
+  </div>`;
+}
+function calLinks(m) {
+  return `<span class="cal-links small">Add to calendar: <a href="${esc(gcalHref(m))}" target="_blank" rel="noopener">Google</a> · <a href="/api/meetings/${m.id}/ics">Apple / Outlook (.ics)</a></span>`;
+}
+const whoText = m => [m.tutor_name ? `👩‍🏫 ${esc(m.tutor_name)}${m.tutor_subject ? ` (${esc(m.tutor_subject)})` : ""}` : "", m.students.length ? `👥 ${m.students.map(s => esc(s.name)).join(", ")}${m.student_count > m.students.length ? ` +${m.student_count - m.students.length}` : ""}` : ""].filter(Boolean).join(" · ");
+
+// "Next class" card on the home pages
+async function fillNextClass(el) {
+  if (!el) return;
+  try {
+    const d = await GET(`/api/meetings?from=${encodeURIComponent(new Date(Date.now() - 6 * 3600e3).toISOString())}&to=${encodeURIComponent(new Date(Date.now() + 8 * 86400e3).toISOString())}`);
+    const now = Date.now(), s = d.sessions.find(x => Date.parse(x.end) > now);
+    if (!s) return;
+    const m = d.meetings.find(x => x.id === s.meeting_id), live = Date.parse(s.start) - 10 * 60e3 <= now;
+    const soon = Date.parse(s.start) - now, when = live ? (Date.parse(s.start) <= now ? "Live now" : "Starting soon") : s.date === new Date().toLocaleDateString("en-CA", { timeZone: m.tz }) ? "Today" : dayFmt(s.date, { weekday: "long", month: "short", day: "numeric" });
+    el.innerHTML = `<div class="next-class ${live ? "live" : ""}">
+      <div class="nc-when"><span class="nc-tag">${live ? "● " : ""}${esc(when)}</span><b>${esc(m.title)}</b><span class="small">${sessionTime(s, m)}${!live && soon < 3 * 3600e3 ? ` · in ${Math.max(1, Math.round(soon / 60e3))} min` : ""}</span></div>
+      ${meetLinks(m, { big: true })}
+      <a class="small nc-all" href="#/meetings">All classes ›</a></div>`;
+  } catch { /* the card is optional */ }
+}
+
+route("/meetings", async q => {
+  loading();
+  const view = q.view === "month" ? "month" : "list";
+  const base = new Date(); base.setDate(1);
+  let month = q.m && /^\d{4}-\d{2}$/.test(q.m) ? q.m : `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}`;
+  const [Y, Mo] = month.split("-").map(Number);
+  const from = view === "month" ? new Date(Date.UTC(Y, Mo - 1, 1) - 86400e3) : new Date(Date.now() - 2 * 3600e3);
+  const to = view === "month" ? new Date(Date.UTC(Y, Mo, 1) + 86400e3) : new Date(Date.now() + 35 * 86400e3);
+  const d = await GET(`/api/meetings?from=${from.toISOString()}&to=${to.toISOString()}`);
+  const M = Object.fromEntries(d.meetings.map(m => [m.id, m])), now = Date.now();
+  const isAdmin = d.canEdit;
+  let body = "";
+  if (view === "list") {
+    const byDay = {};
+    d.sessions.forEach(s => (byDay[s.date] = byDay[s.date] || []).push(s));
+    body = Object.keys(byDay).length ? Object.entries(byDay).map(([day, list]) => `<h3 class="meet-day">${esc(dayFmt(day))}</h3>
+      ${list.map(s => { const m = M[s.meeting_id], live = Date.parse(s.start) <= now && Date.parse(s.end) > now; return `<article class="meet ${live ? "live" : ""}">
+        <div class="meet-time">${tFmt(s.start, m.tz)}<small>${tzShort(s.start, m.tz)}</small></div>
+        <div class="meet-main"><div class="meet-title">${live ? '<span class="tag bad">● Live now</span> ' : ""}<b>${esc(m.title)}</b></div>
+          <div class="small muted">${sessionTime(s, m)}${whoText(m) ? " · " + whoText(m) : ""}</div>
+          ${meetLinks(m)}</div></article>`; }).join("")}`).join("")
+      : `<div class="panel empty"><div style="font-size:2.2rem">📅</div><h3>No classes in the next 5 weeks</h3><p>${isAdmin ? "Use <b>Schedule a class</b> to add the meeting link and time." : "Your classes will appear here when they are scheduled."}</p></div>`;
+  } else {
+    const first = new Date(Date.UTC(Y, Mo - 1, 1)), days = new Date(Date.UTC(Y, Mo, 0)).getUTCDate(), lead = first.getUTCDay(), today = new Date().toLocaleDateString("en-CA");
+    const cells = [];
+    for (let i = 0; i < lead; i++) cells.push(`<div class="mc empty"></div>`);
+    for (let n = 1; n <= days; n++) {
+      const ymd = `${month}-${String(n).padStart(2, "0")}`, list = d.sessions.filter(s => s.date === ymd);
+      cells.push(`<div class="mc ${ymd === today ? "today" : ""}"><span class="mc-n">${n}</span>${list.map(s => { const m = M[s.meeting_id]; return `<a class="mc-ev" href="${esc(m.meet_url)}" target="_blank" rel="noopener" title="${esc(m.title)} · Meeting link">${tFmt(s.start, m.tz).replace(":00", "")} ${esc(m.title)}</a>`; }).join("")}</div>`);
+    }
+    const prev = new Date(Date.UTC(Y, Mo - 2, 1)), next = new Date(Date.UTC(Y, Mo, 1)), mk = x => `${x.getUTCFullYear()}-${String(x.getUTCMonth() + 1).padStart(2, "0")}`;
+    body = `<div class="month-head"><a class="btn small" href="#/meetings?view=month&m=${mk(prev)}">‹</a><h2>${first.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}</h2><a class="btn small" href="#/meetings?view=month&m=${mk(next)}">›</a></div>
+      <div class="month"><div class="mh">Sun</div><div class="mh">Mon</div><div class="mh">Tue</div><div class="mh">Wed</div><div class="mh">Thu</div><div class="mh">Fri</div><div class="mh">Sat</div>${cells.join("")}</div>`;
+  }
+  const classes = d.meetings.map(m => `<article class="meet-class">
+      <div><b>${esc(m.title)}</b><div class="small muted">${esc(repeatText(m))} · ${esc(m.tz.replace(/_/g, " "))}</div>${whoText(m) ? `<div class="small">${whoText(m)}</div>` : ""}
+        ${meetLinks(m)}${calLinks(m)}</div>
+      ${isAdmin ? `<div class="btn-row"><button class="btn small" data-edit="${m.id}">Edit</button><button class="btn small danger" data-delm="${m.id}">Delete</button></div>` : ""}
+    </article>`).join("");
+  const page = shell(`<div class="page-head"><h1>Classes</h1><div class="actions">
+      <div class="seg"><a class="${view === "list" ? "on" : ""}" href="#/meetings">Upcoming</a><a class="${view === "month" ? "on" : ""}" href="#/meetings?view=month">Month</a></div>
+      ${isAdmin ? `<button class="btn primary" id="newMeet">＋ Schedule a class</button>` : ""}</div></div>
+    <div class="split meet-split"><div>${body}</div>
+      <div class="panel"><h3>${isAdmin ? "All classes" : "Your classes"}</h3>${classes || '<p class="muted small">None yet.</p>'}
+        ${!isAdmin ? `<p class="small muted" style="margin-top:12px">Only the office can change a class link or time.</p>` : ""}</div></div>`);
+  if (isAdmin) {
+    $("#newMeet", page).onclick = () => meetingEditor(null);
+    $$("[data-edit]", page).forEach(b => b.onclick = () => meetingEditor(M[b.dataset.edit] || d.meetings.find(m => m.id === Number(b.dataset.edit))));
+    $$("[data-delm]", page).forEach(b => b.onclick = async () => {
+      const m = d.meetings.find(x => x.id === Number(b.dataset.delm));
+      if (await confirmBox(`Delete “${m.title}”?`, "The class and all its future dates disappear for students, parents and tutors.", "Delete", true)) DEL(`/api/meetings/${m.id}`).then(() => { toast("Deleted"); render(); }).catch(fail);
+    });
+  }
+});
+
+// Read a Google Calendar / Google Meet invitation that was copied as text
+function parseInvite(text) {
+  const t = String(text || "").replace(/ | /g, " "), out = {};
+  const wd = "(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)";
+  const dm = t.match(new RegExp(wd + ",?\\s+([A-Za-z]+)\\s+(\\d{1,2})(?:,?\\s*(\\d{4}))?\\s*[·⋅•\\-]?\\s*(\\d{1,2})(?::(\\d{2}))?\\s*([ap]m)?\\s*[–—-]\\s*(\\d{1,2})(?::(\\d{2}))?\\s*([ap]m)", "i"));
+  const firstLine = t.split(/\r?\n/).map(s => s.trim()).find(Boolean) || "";
+  out.title = (dm ? firstLine.slice(0, firstLine.search(new RegExp(wd, "i")) >= 0 ? firstLine.search(new RegExp(wd, "i")) : undefined) : firstLine).trim().replace(/[·,\-–]+$/, "").trim();
+  if (dm) {
+    const mon = new Date(`${dm[2]} 1, 2000`).getMonth();
+    if (!isNaN(mon)) {
+      const now = new Date(); let year = dm[4] ? Number(dm[4]) : now.getFullYear();
+      if (!dm[4] && new Date(year, mon, Number(dm[3])) < new Date(now.getTime() - 60 * 86400e3)) year++;
+      out.start_date = `${year}-${String(mon + 1).padStart(2, "0")}-${String(dm[3]).padStart(2, "0")}`;
+      const to24 = (h, m, ap) => { h = Number(h) % 12 + (ap && ap.toLowerCase() === "pm" ? 12 : 0); return h * 60 + Number(m || 0); };
+      const endAp = dm[10], startAp = dm[7] || endAp;
+      let s = to24(dm[5], dm[6], startAp), e = to24(dm[8], dm[9], endAp);
+      if (!dm[7] && s > e) s -= 720;          // "11:30 – 1:00pm": the start is in the morning
+      if (e <= s) e += 1440;
+      out.start_time = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+      out.duration_min = e - s;
+      out.weekday = new Date(out.start_date + "T12:00:00Z").getUTCDay();
+    }
+  }
+  const weekly = t.match(/Weekly on ((?:(?:Sun|Mon|Tues?|Wed(?:nes)?|Thu(?:rs)?|Fri|Sat(?:ur)?)(?:day)?s?(?:,\s*|\s+and\s+|\s*&\s*)?)+)/i);
+  if (weekly) { out.repeat = "weekly"; out.days = WEEKDAYS.map((w, i) => new RegExp(w.slice(0, 3), "i").test(weekly[1]) ? i : -1).filter(i => i >= 0); }
+  const tz = t.match(/Time zone:\s*([A-Za-z_]+(?:\/[A-Za-z_\-]+)+)/i); if (tz) out.tz = tz[1];
+  const meet = t.match(/https:\/\/meet\.google\.com\/[a-z0-9\-]+/i) || t.match(/https:\/\/[\w.-]*zoom\.us\/[^\s<>"']+/i) || t.match(/https:\/\/teams\.microsoft\.com\/[^\s<>"']+/i);
+  if (meet) out.meet_url = meet[0];
+  const dial = t.match(/(?:dial:?\s*)?\([A-Z]{2}\)\s*(\+[\d\s\-().]{7,20}\d)/i) || t.match(/dial:?\s*(\+[\d\s\-().]{7,20}\d)/i); if (dial) out.dial = dial[1].trim();
+  const pin = t.match(/PIN:?\s*([\d\s]{4,20})#?/i); if (pin) out.pin = pin[1].replace(/\s+/g, " ").trim();
+  const more = t.match(/https:\/\/tel\.meet\/[^\s<>"']+/i); if (more) out.more_url = more[0];
+  return out;
+}
+
+async function meetingEditor(m) {
+  const [{ students }, { users: tutors }] = await Promise.all([GET("/api/students"), GET("/api/admin/users?role=tutor")]);
+  const picked = new Set((m ? m.students : []).map(s => s.id));
+  const v = m || { title: "", meet_url: "", dial: "", pin: "", more_url: "", notes: "", tz: "America/New_York", start_date: new Date().toLocaleDateString("en-CA"), start_time: "15:30", duration_min: 60, repeat: "weekly", days: [], until_date: "", tutor_id: null };
+  const tzs = TZ_LIST.includes(v.tz) ? TZ_LIST : [v.tz, ...TZ_LIST];
+  modal(`<h2>${m ? "Edit class" : "Schedule a class"}</h2>
+    <form id="mf">
+      ${m ? "" : `<details class="paste-box" open><summary><b>Paste the Google Calendar invitation</b> <span class="muted small">(fills in the form for you)</span></summary>
+        <textarea id="paste" rows="4" placeholder="Afro-Merica MathG7&#10;Tuesday, October 20 · 3:30 – 4:30pm&#10;Time zone: America/New_York&#10;Google Meet joining info&#10;Video call link: https://meet.google.com/…"></textarea>
+        <div class="small muted" id="pasteMsg"></div></details>`}
+      <label class="field"><span>Class name</span><input name="title" required maxlength="120" value="${esc(v.title)}" placeholder="Afro-Merica MathG7"></label>
+      <label class="field"><span>Meeting link</span><input name="meet_url" required type="url" value="${esc(v.meet_url)}" placeholder="https://meet.google.com/abc-defg-hij"><small>Students, parents and tutors see this as a <b>Meeting</b> button.</small></label>
+      <div class="grid cols-3 tight">
+        <label class="field"><span>Dial-in number</span><input name="dial" value="${esc(v.dial || "")}" placeholder="+1 414-436-8208"></label>
+        <label class="field"><span>PIN</span><input name="pin" value="${esc(v.pin || "")}" placeholder="118 267 030" inputmode="numeric"></label>
+        <label class="field"><span>More phone numbers link</span><input name="more_url" type="url" value="${esc(v.more_url || "")}" placeholder="https://tel.meet/…"></label>
+      </div>
+      <div class="grid cols-3 tight">
+        <label class="field"><span>First class</span><input name="start_date" type="date" required value="${esc(v.start_date)}"></label>
+        <label class="field"><span>Starts</span><input name="start_time" type="time" required value="${esc(v.start_time)}"></label>
+        <label class="field"><span>Ends</span><input name="end_time" type="time" required value="${esc(addMin(v.start_time, v.duration_min))}"></label>
+      </div>
+      <div class="grid cols-2 tight">
+        <label class="field"><span>Time zone</span><select name="tz">${tzs.map(z => `<option value="${esc(z)}" ${z === v.tz ? "selected" : ""}>${esc(z.replace(/_/g, " "))}</option>`).join("")}</select></label>
+        <label class="field"><span>Repeats</span><select name="repeat"><option value="none" ${v.repeat !== "weekly" ? "selected" : ""}>Only once</option><option value="weekly" ${v.repeat === "weekly" ? "selected" : ""}>Every week</option></select></label>
+      </div>
+      <div id="weekly" ${v.repeat === "weekly" ? "" : "hidden"}>
+        <div class="field"><span>On</span><div class="daypick">${WEEKDAYS.map((w, i) => `<label><input type="checkbox" data-day="${i}" ${v.days.includes(i) ? "checked" : ""}><span>${w.slice(0, 3)}</span></label>`).join("")}</div></div>
+        <label class="field"><span>Until <span class="muted">(optional)</span></span><input name="until_date" type="date" value="${esc(v.until_date || "")}"></label>
+      </div>
+      <label class="field"><span>Tutor</span><select name="tutor_id"><option value="">No tutor (all the students’ tutors can see it)</option>${tutors.filter(t => t.active !== false).map(t => `<option value="${t.id}" ${t.id === v.tutor_id ? "selected" : ""}>${esc(t.name)}${t.subject ? ` (${esc(t.subject)})` : ""}</option>`).join("")}</select>
+        <small>Only this tutor sees the class, so a Math tutor never sees an English class.</small></label>
+      <div class="field"><span>Students <b id="pc"></b></span>
+        <div class="inline" style="margin-bottom:6px"><input type="search" id="sq" placeholder="Search students"><select id="sg"><option value="">All grades</option>${[5, 6, 7, 8, 9, 10, 11, 12].map(g => `<option value="${g}">Grade ${g}</option>`).join("")}</select>
+          <button type="button" class="btn small" id="sAll">Select shown</button><button type="button" class="btn small" id="sTut">Tutor’s students</button><button type="button" class="btn small" id="sNone">Clear</button></div>
+        <div class="stud-pick" id="sp"></div>
+        <small>Their parents see the class too.</small></div>
+      <label class="field"><span>Note <span class="muted">(optional)</span></span><textarea name="notes" rows="2" maxlength="1000" placeholder="Bring your calculator and notebook.">${esc(v.notes || "")}</textarea></label>
+      <div class="btn-row"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">${m ? "Save changes" : "Schedule"}</button></div>
+    </form>`, { wide: true, onMount: (box, close) => {
+    const f = $("#mf", box), F = n => f.elements[n];
+    let shown = students;
+    const drawStudents = () => {
+      const q = $("#sq", box).value.trim().toLowerCase(), g = $("#sg", box).value;
+      shown = students.filter(s => (!q || s.name.toLowerCase().includes(q) || (s.username || "").toLowerCase().includes(q)) && (!g || String(s.grade) === g));
+      $("#sp", box).innerHTML = shown.map(s => `<label class="check"><input type="checkbox" data-sid="${s.id}" ${picked.has(s.id) ? "checked" : ""}><span>${esc(s.name)} <span class="muted small">${gradeText(s.grade)}${s.tutors ? " · " + esc(s.tutors) : ""}</span></span></label>`).join("") || '<p class="muted small">No students match.</p>';
+      $$("[data-sid]", box).forEach(c => c.onchange = () => { c.checked ? picked.add(Number(c.dataset.sid)) : picked.delete(Number(c.dataset.sid)); count(); });
+      count();
+    };
+    const count = () => { $("#pc", box).textContent = picked.size ? `(${picked.size} chosen)` : ""; };
+    $("#sq", box).oninput = drawStudents; $("#sg", box).onchange = drawStudents;
+    $("#sAll", box).onclick = () => { shown.forEach(s => picked.add(s.id)); drawStudents(); };
+    $("#sNone", box).onclick = () => { picked.clear(); drawStudents(); };
+    $("#sTut", box).onclick = () => {
+      const t = tutors.find(x => x.id === Number(F("tutor_id").value));
+      if (!t) return toast("Choose a tutor first", true);
+      students.filter(s => (s.tutors || "").split(", ").some(n => n.replace(/ \(.*\)$/, "") === t.name)).forEach(s => picked.add(s.id)); drawStudents();
+    };
+    drawStudents();
+    F("repeat").onchange = () => { $("#weekly", box).hidden = F("repeat").value !== "weekly"; syncDay(); };
+    const syncDay = () => { if (F("repeat").value === "weekly" && !$$("[data-day]:checked", box).length && F("start_date").value) { const d = new Date(F("start_date").value + "T12:00:00Z").getUTCDay(); $(`[data-day="${d}"]`, box).checked = true; } };
+    F("start_date").onchange = syncDay; syncDay();
+    if ($("#paste", box)) $("#paste", box).oninput = e => {
+      const p = parseInvite(e.target.value), got = [];
+      const set = (n, val, label) => { if (val !== undefined && val !== "") { F(n).value = val; got.push(label); } };
+      set("title", p.title, "name"); set("meet_url", p.meet_url, "link"); set("dial", p.dial, "phone"); set("pin", p.pin, "PIN"); set("more_url", p.more_url, "more numbers");
+      if (p.start_date) { set("start_date", p.start_date, "date"); set("start_time", p.start_time, "time"); F("end_time").value = addMin(p.start_time, p.duration_min); }
+      if (p.tz) { if (![...F("tz").options].some(o => o.value === p.tz)) F("tz").add(new Option(p.tz.replace(/_/g, " "), p.tz)); F("tz").value = p.tz; got.push("time zone"); }
+      if (p.repeat === "weekly" || p.weekday !== undefined) {
+        F("repeat").value = "weekly"; $("#weekly", box).hidden = false;
+        const days = p.days && p.days.length ? p.days : [p.weekday];
+        $$("[data-day]", box).forEach(c => { c.checked = days.includes(Number(c.dataset.day)); });
+      }
+      $("#pasteMsg", box).textContent = got.length ? `✓ Filled in: ${got.join(", ")}. Check the details, then choose the students.` : "Paste the whole invitation text from Google Calendar.";
+    };
+    onSubmit(f, async x => {
+      const [sh, sm] = x.start_time.split(":").map(Number), [eh, em] = x.end_time.split(":").map(Number);
+      let dur = eh * 60 + em - (sh * 60 + sm); if (dur <= 0) dur += 1440;
+      const body = { title: x.title, meet_url: x.meet_url, dial: x.dial, pin: x.pin, more_url: x.more_url, notes: x.notes, tz: x.tz, start_date: x.start_date, start_time: x.start_time, duration_min: dur,
+        repeat: x.repeat, days: $$("[data-day]:checked", box).map(c => Number(c.dataset.day)), until_date: x.until_date || null, tutor_id: x.tutor_id ? Number(x.tutor_id) : null, students: [...picked] };
+      if (!body.students.length && !(await confirmBox("No students chosen", "Only admins will see this class until you add students. Save anyway?", "Save"))) return;
+      if (m) await PATCH(`/api/meetings/${m.id}`, body); else await POST("/api/meetings", body);
+      close(); toast(m ? "Class updated" : "Class scheduled"); render();
+    });
+  } });
+}
 
 async function refreshMe() {
   const r = await GET("/api/auth/me");
