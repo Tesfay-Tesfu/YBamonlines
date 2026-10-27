@@ -7,7 +7,7 @@
 <meta name="description" content="Hands-on visual labs for Math, Physics, Science and Python for Kids. Grades K–12, online and in person. Tell us about your child in 1 minute.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Afro-Merica Tutor & Training">
-<meta property="og:title" content="Math · Physics · Science · Python for Kids — hands-on tutoring">
+<meta property="og:title" content="Math · Physics · Science · Python for Kids · Hands-on tutoring">
 <meta property="og:description" content="Learning kids can see, touch and build. Grades K–12, online and in person. Takes 1 minute.">
 <meta property="og:url" content="{{APP_URL}}/interest">
 <meta property="og:image" content="{{APP_URL}}/promo/share-card.png">
@@ -15,6 +15,8 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#002d5f">
+<link rel="icon" href="{{LOGO_URL}}">
+<link rel="apple-touch-icon" href="{{LOGO_URL}}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -28,6 +30,7 @@
   /* brand bar */
   .brand { display:flex; align-items:center; gap:10px; padding:4px 2px 14px; }
   .mark { width:40px; height:40px; border-radius:12px; background:linear-gradient(140deg,var(--orange),var(--orange2)); color:#fff; display:grid; place-items:center; font-weight:800; letter-spacing:-.02em; box-shadow:0 6px 16px rgba(230,100,20,.35); }
+  .logo { width:48px; height:48px; border-radius:14px; object-fit:contain; background:#fff; box-shadow:0 6px 16px rgba(0,45,95,.18); flex:none; }
   .brand b { display:block; font-size:16px; color:var(--navy); line-height:1.15; } .brand span { font-size:12.5px; color:var(--muted); }
   /* hero */
   .hero { position:relative; overflow:hidden; border-radius:26px; color:#fff; padding:28px 24px 24px; background:
@@ -78,6 +81,7 @@
   .nav { display:flex; gap:10px; margin-top:6px; }
   .btn { border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:13px 18px; font-weight:600; cursor:pointer; }
   .nav .cta { flex:1; width:auto; }
+  [hidden] { display:none !important; }
   .err { color:#b42318; font-size:14px; font-weight:600; min-height:20px; margin:4px 0 0; }
   .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   .step { display:none; animation:fade .25s ease; } .step.on { display:block; }
@@ -105,12 +109,12 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="brand"><div class="mark">AM</div><div><b>Afro-Merica Tutor & Training</b><span>Math · Physics · Science · Python for Kids</span></div></div>
+  <div class="brand"><img class="logo" src="{{LOGO_URL}}" alt="Afro-Merica Tutor & Training logo" onerror="this.outerHTML='<div class=&quot;mark&quot;>AM</div>'"><div><b>Afro-Merica Tutor & Training</b><span>Math · Physics · Science · Python for Kids</span></div></div>
 
   <section class="hero" aria-label="About us">
     <span class="eyebrow">🎓 Grades K–12 · Online & in person</span>
     <h1>Learning kids can <em>see, touch & build.</em></h1>
-    <p class="lead">Expert tutoring with hands-on visual labs — so ideas finally click, and confidence grows.</p>
+    <p class="lead">Expert tutoring with hands-on visual labs, so ideas finally click and confidence grows.</p>
     <div class="subjects">
       <div class="subj"><div class="ic" style="background:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"><path d="M7 3.5v6M4 6.5h6M14 6.5h6M4.5 15l5 5M9.5 15l-5 5M14 17.5h6"/><circle cx="17" cy="14.6" r="1.1" fill="#2563eb" stroke="none"/><circle cx="17" cy="20.4" r="1.1" fill="#2563eb" stroke="none"/></svg></div>Math</div>
       <div class="subj"><div class="ic" style="background:#ffe4d1"><svg viewBox="0 0 24 24" fill="none" stroke="#e66414" stroke-width="2"><circle cx="12" cy="12" r="1.8" fill="#e66414"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/></svg></div>Physics</div>
@@ -242,7 +246,7 @@ $("f").addEventListener("submit", async e => {
   } catch (x) { err.textContent = x.message; $("next").disabled = false; $("next").textContent = "Send"; }
 });
 $("shareBtn").onclick = async () => {
-  const url = `${location.origin}/interest?src=share`, text = "Hands-on tutoring in Math, Physics, Science & Python for Kids — Afro-Merica Tutor & Training";
+  const url = `${location.origin}/interest?src=share`, text = "Hands-on tutoring in Math, Physics, Science & Python for Kids by Afro-Merica Tutor & Training";
   if (navigator.share) { try { await navigator.share({ title: "Afro-Merica Tutor & Training", text, url }); } catch {} }
   else location.href = `https://wa.me/?text=${encodeURIComponent(text + "\n" + url)}`;
 };

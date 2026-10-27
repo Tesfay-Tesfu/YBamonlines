@@ -395,3 +395,5 @@ td.pick { cursor: default; } td.pick input, #pickAll { width: 18px; height: 18px
 .schip { background: color-mix(in srgb, var(--c) 12%, #fff); color: var(--c); border: 1px solid color-mix(in srgb, var(--c) 35%, #fff); border-radius: 999px; padding: 2px 10px; font-size: .8rem; font-weight: 600; }
 .ldetail { color: var(--muted); } .lmsg { margin: 0; font-style: italic; } .lnotes { margin: 0; background: var(--amber-soft); border-radius: 8px; padding: 6px 10px; }
 @media (max-width: 700px) { .kit-grid { grid-template-columns: 1fr; } .kit-qr { max-width: 220px; margin: 0 auto; } .leads { grid-template-columns: 1fr; } }
+
+.brand img.logo-img { object-fit: contain; background: #fff; padding: 2px; }

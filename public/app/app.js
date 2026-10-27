@@ -133,6 +133,8 @@ function parseCSV(text) {
 /* =====================================================================
    Layout
    ===================================================================== */
+// Afro-Merica Tutor & Training logo (top bar, browser tab)
+const LOGO_URL = "https://res.cloudinary.com/dnxsqsccu/image/upload/v1785330959/afromerica/logo.png";
 const NAV = {
   admin: [["#/", "Overview"], ["#/students", "Students"], ["#/messages", "Messages"], ["#/admin/leads", "Leads"], ["#/admin/users", "People"], ["#/admin/tools", "Tools"], ["#/admin/invites", "Invites"], ["#/admin/audit", "Activity log"]],
   tutor: [["#/", "My students"], ["#/messages", "Messages"], ["#/catalog", "Tools"]],
@@ -145,7 +147,7 @@ function shell(content, { sheet = false } = {}) {
   const nav = u ? NAV[u.role].map(([h, t]) => `<a href="${h}" class="${(h === "#/" ? here === "#/" || here === "" : here.startsWith(h)) ? "on" : ""}">${t}${h === "#/messages" ? `<span class="nbadge" id="nbadge"${UNREAD.unread ? "" : " hidden"}>${UNREAD.unread}</span>` : ""}</a>`).join("") : "";
   app().innerHTML = `
     <header class="topbar">
-      <a class="brand" href="#/"><span class="mark">AM</span><span>AMtutorTools <span class="sub">Afro-Merica Tutor</span></span></a>
+      <a class="brand" href="#/"><img class="mark logo-img" src="${LOGO_URL}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'mark',textContent:'AM'}))"><span>AMtutorTools <span class="sub">Afro-Merica Tutor</span></span></a>
       <nav class="nav" aria-label="Main">${nav}</nav>
       ${u ? `<div class="who"><span class="name">${esc(u.name)}</span><span class="role">${roleName(u.role)}</span>
         ${u.role !== "student" ? `<button id="acct" title="Account">Account</button>` : ""}<button id="logout">Sign out</button></div>` : ""}
@@ -1330,7 +1332,7 @@ Grades K–12 · Online & in person
 👩‍🏫 1-on-1 or small groups
 📈 Progress reports for parents
 
-Tell us about your child — it takes 1 minute 👇
+Tell us about your child. It takes 1 minute 👇
 ${url}`;
 };
 function downloadQR(url, name) {
@@ -1388,7 +1390,7 @@ route("/admin/leads", async q => {
         ${l.message ? `<p class="lmsg">“${esc(l.message)}”</p>` : ""}
         ${l.notes ? `<p class="lnotes small">📝 ${esc(l.notes)}</p>` : ""}
         <div class="btn-row"><a class="btn small wa-btn" target="_blank" rel="noopener" href="https://wa.me/${esc(l.phone_digits)}?text=${encodeURIComponent(hello)}">WhatsApp</a>
-          <a class="btn small" href="tel:+${esc(l.phone_digits)}">Call ${esc(l.phone)}</a>${l.email ? `<a class="btn small" href="mailto:${esc(l.email)}?subject=${encodeURIComponent("Tutoring — Afro-Merica Tutor & Training")}&body=${encodeURIComponent(hello)}">Email</a>` : ""}
+          <a class="btn small" href="tel:+${esc(l.phone_digits)}">Call ${esc(l.phone)}</a>${l.email ? `<a class="btn small" href="mailto:${esc(l.email)}?subject=${encodeURIComponent("Tutoring with Afro-Merica Tutor & Training")}&body=${encodeURIComponent(hello)}">Email</a>` : ""}
           <span style="flex:1"></span><button class="btn small" data-note="${l.id}">Notes</button><button class="btn small danger" data-del="${l.id}">Delete</button></div>
       </article>`; }).join("")}</div>`
       : `<div class="panel empty"><div style="font-size:2.2rem">📣</div><h3>${status || subject || search ? "No leads match." : "No answers yet"}</h3><p>Open the <b>Share kit</b> above and post your link on WhatsApp, Telegram and social media.</p></div>`;

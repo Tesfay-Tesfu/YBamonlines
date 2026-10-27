@@ -29,11 +29,13 @@ function phoneDigits(p) {
 }
 
 // The page itself, with the site address filled in for link previews (WhatsApp, Telegram, Facebook)
+const DEFAULT_LOGO = 'https://res.cloudinary.com/dnxsqsccu/image/upload/v1785330959/afromerica/logo.png';
 const PAGE = path.join(config.publicDir, 'app', 'interest.html');
 r.get('/interest', (req, res) => {
   let html = fs.readFileSync(PAGE, 'utf8');
   const wa = String(process.env.CONTACT_WHATSAPP || '').replace(/\D/g, '');
-  html = html.replace(/\{\{APP_URL\}\}/g, config.appUrl)
+  const logo = /^https:\/\/[^\s"'<>]+$/.test(process.env.LOGO_URL || '') ? process.env.LOGO_URL : DEFAULT_LOGO;
+  html = html.replace(/\{\{APP_URL\}\}/g, config.appUrl).replace(/\{\{LOGO_URL\}\}/g, logo)
     .replace('{{CONTACT_WHATSAPP}}', wa)
     .replace('{{OFFER}}', clean(process.env.INTEREST_OFFER, 80).replace(/[<>&"]/g, ''));
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
