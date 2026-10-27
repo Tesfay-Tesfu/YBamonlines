@@ -30,6 +30,12 @@ services:
         sync: false
       - key: MAIL_FROM            # optional, e.g. "AMtutorTools <no-reply@yourdomain.com>"
         sync: false
+      - key: CONTACT_WHATSAPP     # optional: your WhatsApp number with country code, e.g. 12405550123 (shows "Chat with us" after the form)
+        sync: false
+      - key: INTEREST_OFFER       # optional: a short offer shown on the form, e.g. "First lesson free"
+        sync: false
+      - key: CONTACT_DEFAULT_COUNTRY  # country code added to numbers typed without one (default 1 = US/Canada)
+        value: "1"
       - key: MESSAGE_STORAGE_MB   # space for message attachments, stored in the database (default 500)
         value: "500"
 

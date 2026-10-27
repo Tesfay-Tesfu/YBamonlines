@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Afro-Merica Tutor & Training · Math, Physics, Science & Python for Kids</title>
+<meta name="description" content="Hands-on visual labs for Math, Physics, Science and Python for Kids. Grades K–12, online and in person. Tell us about your child in 1 minute.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Afro-Merica Tutor & Training">
+<meta property="og:title" content="Math · Physics · Science · Python for Kids — hands-on tutoring">
+<meta property="og:description" content="Learning kids can see, touch and build. Grades K–12, online and in person. Takes 1 minute.">
+<meta property="og:url" content="{{APP_URL}}/interest">
+<meta property="og:image" content="{{APP_URL}}/promo/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#002d5f">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#002d5f; --navy2:#0a3f7a; --orange:#e66414; --orange2:#ff8a3d; --ink:#14202e; --muted:#5d6b7b; --line:#dfe6ef; --paper:#f5f8fc;
+          --math:#2563eb; --phys:#e66414; --sci:#0d9b5c; --py:#c99400; --radius:18px; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:"Lexend",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:var(--paper); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  .wrap { max-width:720px; margin:0 auto; padding:16px 16px 40px; }
+  /* brand bar */
+  .brand { display:flex; align-items:center; gap:10px; padding:4px 2px 14px; }
+  .mark { width:40px; height:40px; border-radius:12px; background:linear-gradient(140deg,var(--orange),var(--orange2)); color:#fff; display:grid; place-items:center; font-weight:800; letter-spacing:-.02em; box-shadow:0 6px 16px rgba(230,100,20,.35); }
+  .brand b { display:block; font-size:16px; color:var(--navy); line-height:1.15; } .brand span { font-size:12.5px; color:var(--muted); }
+  /* hero */
+  .hero { position:relative; overflow:hidden; border-radius:26px; color:#fff; padding:28px 24px 24px; background:
+      radial-gradient(120% 90% at 100% 0%, rgba(230,100,20,.55) 0%, rgba(230,100,20,0) 55%),
+      linear-gradient(160deg, #003a78 0%, var(--navy) 55%, #001c3d 100%); box-shadow:0 18px 40px rgba(0,45,95,.28); }
+  .hero::before { content:""; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px); background-size:26px 26px; mask-image:linear-gradient(180deg,#000 0%,transparent 85%); pointer-events:none; }
+  .hero > * { position:relative; }
+  .eyebrow { display:inline-flex; gap:8px; align-items:center; font-size:12.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); padding:5px 12px; border-radius:999px; }
+  .hero h1 { font-size:clamp(28px, 7vw, 42px); line-height:1.08; letter-spacing:-.02em; margin:14px 0 10px; font-weight:800; }
+  .hero h1 em { font-style:normal; background:linear-gradient(90deg,#ffb27a,#ffd27a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero p.lead { margin:0 0 18px; font-size:16.5px; color:#d6e4f5; max-width:520px; }
+  .subjects { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:16px; }
+  .subj { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.16); border-radius:16px; padding:12px 8px 10px; text-align:center; font-size:13px; font-weight:600; }
+  .subj .ic { width:40px; height:40px; margin:0 auto 6px; border-radius:12px; display:grid; place-items:center; }
+  .subj svg { width:24px; height:24px; }
+  .perks { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:13.5px; color:#d6e4f5; margin-bottom:18px; }
+  .perks span::before { content:"✓"; color:#ffb27a; font-weight:800; margin-right:6px; }
+  .offer[hidden] { display:none; }
+  .offer { display:inline-block; background:#ffd27a; color:#3a2300; font-weight:700; font-size:14px; padding:7px 14px; border-radius:10px; margin-bottom:16px; transform:rotate(-1.2deg); box-shadow:0 6px 14px rgba(0,0,0,.18); }
+  .cta { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; border:none; cursor:pointer; background:linear-gradient(90deg,var(--orange),var(--orange2)); color:#fff; font-weight:700; font-size:17px; padding:15px 20px; border-radius:16px; box-shadow:0 10px 22px rgba(230,100,20,.4); text-decoration:none; }
+  .cta small { font-weight:500; opacity:.9; font-size:13px; }
+  /* form card */
+  .card { background:#fff; border:1px solid var(--line); border-radius:24px; margin-top:18px; padding:22px 20px; box-shadow:0 10px 30px rgba(0,45,95,.06); scroll-margin-top:12px; }
+  .progress { display:flex; gap:6px; margin-bottom:6px; } .progress i { flex:1; height:6px; border-radius:3px; background:#e8eef6; transition:background .3s; } .progress i.on { background:linear-gradient(90deg,var(--orange),var(--orange2)); }
+  .stepname { font-size:12.5px; color:var(--muted); font-weight:600; margin-bottom:12px; }
+  h2 { font-size:22px; letter-spacing:-.01em; margin:0 0 16px; color:var(--navy); }
+  .q { margin-bottom:20px; }
+  .q > label, .q > .ql { display:block; font-weight:600; font-size:15px; margin-bottom:8px; }
+  .q .hint { font-weight:400; color:var(--muted); font-size:13px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { position:relative; }
+  .chip input { position:absolute; opacity:0; inset:0; cursor:pointer; margin:0; }
+  .chip span { display:inline-flex; align-items:center; gap:7px; border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:9px 15px; font-size:14.5px; font-weight:500; transition:all .15s; user-select:none; }
+  .chip input:focus-visible + span { outline:3px solid rgba(230,100,20,.45); outline-offset:2px; }
+  .chip input:checked + span { background:var(--navy); border-color:var(--navy); color:#fff; box-shadow:0 4px 10px rgba(0,45,95,.18); }
+  .chips.grades .chip span { min-width:46px; justify-content:center; padding:9px 0; }
+  .chips.big { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .chips.big .chip span { width:100%; border-radius:16px; padding:13px 14px; font-weight:600; }
+  .chips.big .chip span svg { width:26px; height:26px; flex:none; }
+  .chip.math input:checked + span { background:var(--math); border-color:var(--math); } .chip.phys input:checked + span { background:var(--phys); border-color:var(--phys); }
+  .chip.sci input:checked + span { background:var(--sci); border-color:var(--sci); } .chip.py input:checked + span { background:var(--py); border-color:var(--py); }
+  .field { display:block; margin-bottom:14px; } .field > span { display:block; font-weight:600; font-size:15px; margin-bottom:6px; }
+  .field input, .field select, .field textarea { width:100%; border:1.5px solid var(--line); border-radius:14px; padding:13px 14px; font-size:16px; background:#fff; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline:none; border-color:var(--orange); box-shadow:0 0 0 4px rgba(230,100,20,.12); }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .consent { display:flex; gap:10px; align-items:flex-start; font-size:14px; background:var(--paper); border-radius:14px; padding:12px 14px; margin:4px 0 16px; cursor:pointer; }
+  .consent input { width:20px; height:20px; margin-top:2px; accent-color:var(--orange); flex:none; }
+  .nav { display:flex; gap:10px; margin-top:6px; }
+  .btn { border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:13px 18px; font-weight:600; cursor:pointer; }
+  .nav .cta { flex:1; width:auto; }
+  .err { color:#b42318; font-size:14px; font-weight:600; min-height:20px; margin:4px 0 0; }
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  .step { display:none; animation:fade .25s ease; } .step.on { display:block; }
+  @keyframes fade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  /* thank you */
+  .done { text-align:center; padding:12px 4px 4px; }
+  .done .big { width:76px; height:76px; border-radius:50%; margin:0 auto 14px; display:grid; place-items:center; font-size:38px; background:linear-gradient(140deg,#e3f7ec,#c8f0da); }
+  .done h2 { font-size:24px; } .done p { color:var(--muted); margin:0 auto 18px; max-width:440px; }
+  .done .share { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .wa { background:#25d366; color:#fff; border:none; box-shadow:0 8px 18px rgba(37,211,102,.35); }
+  .foot { text-align:center; color:var(--muted); font-size:12.5px; margin-top:18px; }
+  .foot a { color:var(--navy); font-weight:600; }
+  .labs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:18px; }
+  .lab { background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; font-size:13px; color:var(--muted); }
+  .lab b { display:block; color:var(--ink); font-size:14px; margin:6px 0 2px; }
+  .lab .ln { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; }
+  .lab svg { width:20px; height:20px; }
+  @media (max-width:520px) {
+    .wrap { padding:12px 12px 32px; } .hero { padding:22px 18px 18px; border-radius:22px; }
+    .subjects { grid-template-columns:repeat(2,minmax(0,1fr)); } .subj { display:flex; align-items:center; gap:10px; text-align:left; padding:10px; } .subj .ic { margin:0; width:36px; height:36px; flex:none; }
+    .row2 { grid-template-columns:1fr; } .card { padding:20px 16px; border-radius:22px; }
+    .labs { grid-template-columns:1fr; } .lab { display:flex; gap:12px; align-items:center; } .lab b { margin:0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><div class="mark">AM</div><div><b>Afro-Merica Tutor & Training</b><span>Math · Physics · Science · Python for Kids</span></div></div>
+
+  <section class="hero" aria-label="About us">
+    <span class="eyebrow">🎓 Grades K–12 · Online & in person</span>
+    <h1>Learning kids can <em>see, touch & build.</em></h1>
+    <p class="lead">Expert tutoring with hands-on visual labs — so ideas finally click, and confidence grows.</p>
+    <div class="subjects">
+      <div class="subj"><div class="ic" style="background:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.3" stroke-linecap="round"><path d="M7 3.5v6M4 6.5h6M14 6.5h6M4.5 15l5 5M9.5 15l-5 5M14 17.5h6"/><circle cx="17" cy="14.6" r="1.1" fill="#2563eb" stroke="none"/><circle cx="17" cy="20.4" r="1.1" fill="#2563eb" stroke="none"/></svg></div>Math</div>
+      <div class="subj"><div class="ic" style="background:#ffe4d1"><svg viewBox="0 0 24 24" fill="none" stroke="#e66414" stroke-width="2"><circle cx="12" cy="12" r="1.8" fill="#e66414"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/></svg></div>Physics</div>
+      <div class="subj"><div class="ic" style="background:#d4f3e3"><svg viewBox="0 0 24 24" fill="none" stroke="#0d9b5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7 15h10"/></svg></div>Science</div>
+      <div class="subj"><div class="ic" style="background:#fff0c2"><svg viewBox="0 0 24 24" fill="none" stroke="#b07f00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12"/></svg></div>Python for Kids</div>
+    </div>
+    <div class="perks"><span>Interactive visual labs</span><span>1-on-1 or small groups</span><span>Progress reports for parents</span></div>
+    <div class="offer" id="offer" hidden></div>
+    <a class="cta" href="#form">Tell us about your child <small>· 1 minute</small></a>
+  </section>
+
+  <div class="labs" aria-label="What makes us different">
+    <div class="lab"><div class="ln" style="background:#dbe8ff"><svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M5 20V10M10 20V4M15 20v-8M20 20v-5"/></svg></div><div><b>Visual labs</b>Graphs, simulations and games kids can play with.</div></div>
+    <div class="lab"><div class="ln" style="background:#ffe4d1"><svg viewBox="0 0 24 24" fill="none" stroke="#e66414" stroke-width="2" stroke-linecap="round"><path d="M4 19 15 8M14 4l6 6-3 3-6-6zM4 19l1-4 3 3z"/></svg></div><div><b>Live whiteboard</b>Tutor and child solve problems together.</div></div>
+    <div class="lab"><div class="ln" style="background:#d4f3e3"><svg viewBox="0 0 24 24" fill="none" stroke="#0d9b5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14l4 4L20 6"/></svg></div><div><b>You see progress</b>Every answer is tracked; you get clear reports.</div></div>
+  </div>
+
+  <section class="card" id="form" aria-label="Interest form">
+    <form id="f" novalidate>
+      <div class="progress" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+      <div class="stepname" id="stepname">Step 1 of 3 · Your child</div>
+
+      <div class="step on" data-step="1">
+        <h2>What would you like help with?</h2>
+        <div class="q"><span class="ql">Subjects <span class="hint">· choose any</span></span>
+          <div class="chips big">
+            <label class="chip math"><input type="checkbox" name="subjects" value="Math"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M7 3.5v6M4 6.5h6M14 6.5h6M4.5 15l5 5M9.5 15l-5 5M14 17.5h6"/><circle cx="17" cy="14.6" r="1.1" fill="currentColor" stroke="none"/><circle cx="17" cy="20.4" r="1.1" fill="currentColor" stroke="none"/></svg>Math</span></label>
+            <label class="chip phys"><input type="checkbox" name="subjects" value="Physics"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.8" fill="currentColor"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/></svg>Physics</span></label>
+            <label class="chip sci"><input type="checkbox" name="subjects" value="Science"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/></svg>Science</span></label>
+            <label class="chip py"><input type="checkbox" name="subjects" value="Python for Kids"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12"/></svg>Python for Kids</span></label>
+          </div></div>
+        <div class="q"><span class="ql">Child’s grade <span class="hint">· more than one child? pick all</span></span>
+          <div class="chips grades" id="grades"></div></div>
+        <div class="q"><span class="ql">Main goal</span>
+          <div class="chips" id="goals"></div></div>
+      </div>
+
+      <div class="step" data-step="2">
+        <h2>How should we teach?</h2>
+        <div class="q"><span class="ql">Format</span><div class="chips" id="formats"></div></div>
+        <div class="q"><span class="ql">Best time</span><div class="chips" id="times"></div></div>
+        <div class="q"><span class="ql">When would you like to start?</span><div class="chips" id="start"></div></div>
+      </div>
+
+      <div class="step" data-step="3">
+        <h2>Where can we reach you?</h2>
+        <label class="field"><span>Your name</span><input name="parent_name" autocomplete="name" required maxlength="80" placeholder="Parent or guardian"></label>
+        <div class="row2">
+          <label class="field"><span>WhatsApp / phone</span><input name="phone" type="tel" autocomplete="tel" required maxlength="40" placeholder="+1 240 555 0123"></label>
+          <label class="field"><span>Email <span class="hint">· optional</span></span><input name="email" type="email" autocomplete="email" maxlength="120"></label>
+        </div>
+        <div class="row2">
+          <label class="field"><span>City <span class="hint">· optional</span></span><input name="city" autocomplete="address-level2" maxlength="80"></label>
+          <label class="field"><span>How did you hear about us?</span><select name="heard" id="heard"><option value="">Choose…</option></select></label>
+        </div>
+        <label class="field"><span>Anything we should know? <span class="hint">· optional</span></span><textarea name="message" rows="3" maxlength="1000" placeholder="e.g. struggles with fractions, loves robots…"></textarea></label>
+        <label class="consent"><input type="checkbox" name="consent" required><span>Afro-Merica Tutor & Training may contact me by WhatsApp, phone or email about tutoring. We never share your details.</span></label>
+        <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
+      </div>
+
+      <p class="err" id="err" role="alert"></p>
+      <div class="nav"><button type="button" class="btn" id="back" hidden>Back</button><button type="submit" class="cta" id="next">Next</button></div>
+    </form>
+
+    <div class="done" id="done" hidden>
+      <div class="big">🎉</div>
+      <h2 id="thanks">Thank you!</h2>
+      <p>We’ve got your answers and will message you on WhatsApp soon to talk about a plan for your child.</p>
+      <div class="share"><a class="cta wa" id="chat" hidden target="_blank" rel="noopener" style="width:auto">💬 Chat with us now</a>
+        <button class="btn" id="shareBtn">📤 Share with another parent</button></div>
+    </div>
+  </section>
+
+  <p class="foot">Afro-Merica Tutor & Training · Your answers are used only to contact you about tutoring.</p>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const OPT = {
+  grades: ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+  goals: ["Catch up", "Build confidence", "Get ahead", "Test prep", "Projects & competitions"],
+  formats: ["Online 1-on-1", "Online small group", "In person"],
+  times: ["Weekday afternoons", "Weekday evenings", "Weekends"],
+  start: ["Right away", "In a few weeks", "Just exploring"],
+  heard: ["WhatsApp", "Telegram", "Facebook", "Instagram", "TikTok", "A friend or family", "School or community", "Other"],
+};
+const WA = "{{CONTACT_WHATSAPP}}", OFFER = "{{OFFER}}", T0 = Date.now();
+const src = (new URLSearchParams(location.search).get("src") || "").slice(0, 40);
+const chips = (id, name, list, type = "checkbox") => { $(id).innerHTML = list.map(v => `<label class="chip"><input type="${type}" name="${name}" value="${v}"><span>${v === "K" ? "K" : /^\d+$/.test(v) ? v : v}</span></label>`).join(""); };
+chips("grades", "grades", OPT.grades); chips("goals", "goals", OPT.goals); chips("formats", "formats", OPT.formats); chips("times", "times", OPT.times); chips("start", "start_when", OPT.start, "radio");
+$("heard").innerHTML += OPT.heard.map(h => `<option>${h}</option>`).join("");
+const guess = { whatsapp: "WhatsApp", telegram: "Telegram", facebook: "Facebook", instagram: "Instagram", tiktok: "TikTok" }[src.toLowerCase()];
+if (guess) $("heard").value = guess;
+if (OFFER && !OFFER.startsWith("{{")) { $("offer").textContent = "★ " + OFFER; $("offer").hidden = false; }
+
+const NAMES = ["Your child", "How you’d like to learn", "Your contact"];
+let step = 1;
+const vals = name => [...document.querySelectorAll(`[name="${name}"]:checked`)].map(i => i.value);
+function show(n) {
+  step = n;
+  document.querySelectorAll(".step").forEach(s => s.classList.toggle("on", +s.dataset.step === n));
+  document.querySelectorAll(".progress i").forEach((b, i) => b.classList.toggle("on", i < n));
+  $("stepname").textContent = `Step ${n} of 3 · ${NAMES[n - 1]}`;
+  $("back").hidden = n === 1; $("next").textContent = n === 3 ? "Send" : "Next"; $("err").textContent = "";
+  $("form").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+$("back").onclick = () => show(step - 1);
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target, err = $("err");
+  if (step === 1) { if (!vals("subjects").length) { err.textContent = "Please choose at least one subject."; return; } return show(2); }
+  if (step === 2) return show(3);
+  if (!f.parent_name.value.trim()) { err.textContent = "Please enter your name."; f.parent_name.focus(); return; }
+  if ((f.phone.value.match(/\d/g) || []).length < 7) { err.textContent = "Please enter a WhatsApp or phone number."; f.phone.focus(); return; }
+  if (!f.consent.checked) { err.textContent = "Please tick the box so we may contact you."; return; }
+  const body = { parent_name: f.parent_name.value, phone: f.phone.value, email: f.email.value, city: f.city.value, heard: f.heard.value, message: f.message.value,
+    consent: true, website: f.website.value, t: T0, source: src, subjects: vals("subjects"), grades: vals("grades"), goals: vals("goals"),
+    formats: vals("formats"), times: vals("times"), start_when: vals("start_when")[0] || "" };
+  $("next").disabled = true; $("next").textContent = "Sending…";
+  try {
+    const r = await fetch("/api/public/interest", { method: "POST", headers: { "Content-Type": "application/json", "X-AMT": "1" }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "Something went wrong. Please try again.");
+    f.hidden = true; $("done").hidden = false;
+    $("thanks").textContent = `Thank you, ${body.parent_name.trim().split(/\s+/)[0]}!`;
+    if (WA && /^\d{8,15}$/.test(WA)) { $("chat").hidden = false; $("chat").href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hi! I just filled in the Afro-Merica Tutor form (${body.subjects.join(", ")}).`)}`; }
+    $("form").scrollIntoView({ behavior: "smooth" });
+  } catch (x) { err.textContent = x.message; $("next").disabled = false; $("next").textContent = "Send"; }
+});
+$("shareBtn").onclick = async () => {
+  const url = `${location.origin}/interest?src=share`, text = "Hands-on tutoring in Math, Physics, Science & Python for Kids — Afro-Merica Tutor & Training";
+  if (navigator.share) { try { await navigator.share({ title: "Afro-Merica Tutor & Training", text, url }); } catch {} }
+  else location.href = `https://wa.me/?text=${encodeURIComponent(text + "\n" + url)}`;
+};
+</script>
+</body>
+</html>

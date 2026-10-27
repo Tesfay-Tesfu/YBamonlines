@@ -28,6 +28,7 @@ r.get('/overview', async (req, res) => {
       (SELECT count(*) FROM users s WHERE s.role='student' AND NOT EXISTS
           (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.relation='parent'))::int AS students_without_parent,
       (SELECT count(*) FROM tools WHERE active)::int AS active_tools,
+      (SELECT count(*) FROM leads WHERE status='new')::int AS new_leads,
       (SELECT count(*) FROM (SELECT 1 FROM users GROUP BY role = 'student', lower(regexp_replace(trim(name), '\\s+', ' ', 'g')) HAVING count(*) > 1) d)::int AS duplicate_names`);
   const topTools = await db.many(`SELECT t.name, t.icon, COALESCE(sum(v.seconds),0)::int AS seconds, count(DISTINCT v.student_id)::int AS students
       FROM tools t LEFT JOIN activity v ON v.tool_id=t.id AND v.day > current_date - 7
@@ -308,6 +309,41 @@ r.post('/allocations/bulk', async (req, res) => {
   }
   A.audit(req, req.body.action === 'revoke' ? 'bulk_revoke' : 'bulk_assign', null, { tool: tool.slug, students: ids.length });
   res.json({ ok: true, changed: n });
+});
+
+// ---------- leads (interest form) ----------
+const LEAD_STATUS = ['new', 'contacted', 'trial', 'enrolled', 'not_now'];
+r.get('/leads', async (req, res) => {
+  const params = []; let where = 'true';
+  if (LEAD_STATUS.includes(req.query.status)) { params.push(req.query.status); where += ` AND status=$${params.length}`; }
+  if (req.query.subject) { params.push(req.query.subject); where += ` AND $${params.length} = ANY(subjects)`; }
+  if (req.query.q) { params.push(`%${req.query.q}%`); where += ` AND (parent_name ILIKE $${params.length} OR phone ILIKE $${params.length} OR email ILIKE $${params.length} OR city ILIKE $${params.length})`; }
+  const leads = await db.many(`SELECT * FROM leads WHERE ${where} ORDER BY created_at DESC LIMIT 3000`, params);
+  const counts = await db.many(`SELECT status, count(*)::int AS n FROM leads GROUP BY status`);
+  const sources = await db.many(`SELECT COALESCE(source, 'direct') AS source, count(*)::int AS n FROM leads GROUP BY 1 ORDER BY n DESC`);
+  res.json({ leads, counts, sources });
+});
+r.patch('/leads/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const l = await db.one('SELECT * FROM leads WHERE id=$1', [id]);
+  if (!l) A.fail(404, 'Not found.');
+  const status = LEAD_STATUS.includes(req.body.status) ? req.body.status : l.status;
+  const notes = req.body.notes !== undefined ? String(req.body.notes).slice(0, 4000) : l.notes;
+  await db.q('UPDATE leads SET status=$2, notes=$3, updated_at=now() WHERE id=$1', [id, status, notes]);
+  res.json({ ok: true });
+});
+r.delete('/leads/:id', async (req, res) => {
+  const l = await db.one('DELETE FROM leads WHERE id=$1 RETURNING parent_name', [Number(req.params.id)]);
+  if (!l) A.fail(404, 'Not found.');
+  A.audit(req, 'delete_lead', null, { name: l.parent_name });
+  res.json({ ok: true });
+});
+r.get('/export/leads.csv', async (req, res) => {
+  const rows = await db.many('SELECT * FROM leads ORDER BY created_at DESC');
+  res.setHeader('Content-Disposition', 'attachment; filename="interest-form-leads.csv"');
+  res.send(csv([['Date', 'Parent', 'WhatsApp/phone', 'Email', 'City', 'Grades', 'Subjects', 'Goals', 'Format', 'Best time', 'Start', 'Heard about us', 'Link used', 'Message', 'Status', 'Notes'],
+    ...rows.map(l => [l.created_at.toISOString().slice(0, 16).replace('T', ' '), l.parent_name, l.phone, l.email, l.city, l.grades.join(' '), l.subjects.join('; '), l.goals.join('; '),
+      l.formats.join('; '), l.times.join('; '), l.start_when, l.heard, l.source, l.message, l.status, l.notes])]), 'text/csv; charset=utf-8');
 });
 
 // ---------- invites ----------

@@ -39,6 +39,7 @@ app.get('/healthz', async (req, res) => {
 });
 
 app.use(A.loadUser);
+app.use(require('./routes/public'));
 app.use('/api', A.csrfGuard);
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', require('./routes/catalog'));

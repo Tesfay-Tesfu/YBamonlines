@@ -195,6 +195,15 @@ Every student has **one conversation** shared by the student, their parents, the
 - **Deleting:** people can delete their own messages; admins can delete any message.
 - **Storage:** attachments are kept in the database. `MESSAGE_STORAGE_MB` (default 500) caps the total; admins see the space used on the Messages page. Raise it only if your Render database has room (check its disk size in Render), and delete old attachments if it fills up. Files not attached to any message are cleaned up after a day.
 
+### Interest form and Leads (finding new families)
+
+A public sign-up page for parents is at **`/interest`** (e.g. `https://amtutortools.onrender.com/interest`). It takes about a minute: subjects (Math, Physics, Science, Python for Kids), grades, goals, format, best time, start date and the parent's contact, with consent to be contacted. It looks good on phones and shows a preview card when the link is shared.
+
+- **Leads** (admin menu) lists every answer, newest first, with **WhatsApp** (opens a chat with a ready greeting), **Call** and **Email** buttons, a status (New → Contacted → Trial booked → Enrolled / Not now) and private notes. **Download CSV** exports everything. The Overview shows how many new parents are waiting.
+- **Share kit** (top of Leads): a separate link for WhatsApp, Telegram, Facebook, Instagram and TikTok, so you can see which channel brings parents; a ready-to-paste message; a QR code; and posters in `public/app/promo/` (`poster.png` 4:5 for posts, `story.png` 9:16 for WhatsApp Status/stories, `share-card.png` for link previews).
+- **Optional settings in Render:** `CONTACT_WHATSAPP` (your number, e.g. `12405550123`, adds "Chat with us now" after the form), `INTEREST_OFFER` (e.g. `First lesson free`, shown as a badge), `CONTACT_DEFAULT_COUNTRY` (default `1`).
+- Spam protection: a hidden bot trap, a minimum fill-in time and at most 8 answers per hour from one connection. Delete a lead to remove their details.
+
 ## 5. Privacy and safety
 
 - Children sign in with a username and PIN; no child email is collected. Sessions for students end after 12 hours.

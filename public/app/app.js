@@ -134,7 +134,7 @@ function parseCSV(text) {
    Layout
    ===================================================================== */
 const NAV = {
-  admin: [["#/", "Overview"], ["#/students", "Students"], ["#/messages", "Messages"], ["#/admin/users", "People"], ["#/admin/tools", "Tools"], ["#/admin/invites", "Invites"], ["#/admin/audit", "Activity log"]],
+  admin: [["#/", "Overview"], ["#/students", "Students"], ["#/messages", "Messages"], ["#/admin/leads", "Leads"], ["#/admin/users", "People"], ["#/admin/tools", "Tools"], ["#/admin/invites", "Invites"], ["#/admin/audit", "Activity log"]],
   tutor: [["#/", "My students"], ["#/messages", "Messages"], ["#/catalog", "Tools"]],
   parent: [["#/", "My children"], ["#/messages", "Messages"]],
   student: [["#/", "My tools"], ["#/messages", "Messages"]],
@@ -857,6 +857,7 @@ async function adminOverview() {
           <tr><td>Students with no practice this week</td><td class="num">${W.inactive_students ? `<span class="tag warn">${W.inactive_students}</span>` : '<span class="tag good">0</span>'}</td></tr>
           <tr><td><a href="#/students?notutor=1">Students without a tutor</a></td><td class="num">${W.students_without_tutor ? `<span class="tag warn">${W.students_without_tutor}</span>` : '<span class="tag good">0</span>'}</td></tr>
           <tr><td>Students without a linked parent</td><td class="num">${W.students_without_parent ? `<span class="tag warn">${W.students_without_parent}</span>` : '<span class="tag good">0</span>'}</td></tr>
+          <tr><td><a href="#/admin/leads?status=new">New parents from the interest form</a></td><td class="num">${W.new_leads ? `<a href="#/admin/leads?status=new" class="tag warn">${W.new_leads}</a>` : '<span class="tag good">0</span>'}</td></tr>
           <tr><td><a href="#/admin/duplicates">Names entered more than once</a></td><td class="num">${W.duplicate_names ? `<a href="#/admin/duplicates" class="tag warn">${W.duplicate_names}</a>` : '<span class="tag good">0</span>'}</td></tr>
         </tbody></table>
         <h3 style="margin-top:22px">Accounts</h3>
@@ -1312,6 +1313,93 @@ async function openThread(page, sid, T, wantKey) {
   });
   if (window.innerWidth > 800) ta.focus();
 }
+
+/* =====================================================================
+   Leads — answers from the public interest form (/interest), with a share kit
+   ===================================================================== */
+const LEAD_STATUS = [["new", "New", "warn"], ["contacted", "Contacted", "info"], ["trial", "Trial booked", "info"], ["enrolled", "Enrolled", "good"], ["not_now", "Not now", ""]];
+const SUBJ_COLOR = { "Math": "#2563eb", "Physics": "#e66414", "Science": "#0d9b5c", "Python for Kids": "#b07f00" };
+const CHANNELS = [["whatsapp", "WhatsApp"], ["telegram", "Telegram"], ["facebook", "Facebook"], ["instagram", "Instagram"], ["tiktok", "TikTok"], ["poster", "Poster / QR"]];
+const shareText = (ch, url) => {
+  const bold = ch === "whatsapp" ? s => `*${s}*` : ch === "telegram" ? s => `**${s}**` : s => s;
+  return `🎓 ${bold("Afro-Merica Tutor & Training")}
+Math ➗ · Physics ⚛️ · Science 🔬 · Python for Kids 🐍
+Grades K–12 · Online & in person
+
+✨ Hands-on visual labs that make ideas click
+👩‍🏫 1-on-1 or small groups
+📈 Progress reports for parents
+
+Tell us about your child — it takes 1 minute 👇
+${url}`;
+};
+function downloadQR(url, name) {
+  const q = QR.make(url, "Q"), scale = 24, n = q.size + 8, c = document.createElement("canvas"); c.width = c.height = n * scale;
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.fillStyle = "#002d5f";
+  for (let y = 0; y < q.size; y++) for (let x = 0; x < q.size; x++) if (q.get(x, y)) g.fillRect((x + 4) * scale, (y + 4) * scale, scale, scale);
+  const a = document.createElement("a"); a.href = c.toDataURL("image/png"); a.download = name; a.click();
+}
+
+route("/admin/leads", async q => {
+  loading();
+  let status = q.status || "", subject = "", search = "";
+  const page = shell(`<div class="page-head"><h1>Leads</h1><div class="actions"><a class="btn" href="/interest" target="_blank" rel="noopener">Open the form ↗</a><a class="btn" href="/api/admin/export/leads.csv">Download CSV</a></div></div>
+    <details class="panel sharekit" ${q.share ? "open" : ""}><summary><b>📣 Share kit</b> <span class="muted small">— links, messages, QR code and posters for WhatsApp, Telegram and social media</span></summary><div id="kit"></div></details>
+    <div class="inline" style="margin:16px 0 12px"><div class="chips-row" id="stat"></div>
+      <select id="subj" aria-label="Subject"><option value="">All subjects</option>${Object.keys(SUBJ_COLOR).map(s => `<option>${s}</option>`).join("")}</select>
+      <input type="search" id="q" placeholder="Search name, phone, city" aria-label="Search"></div>
+    <div id="sources" class="small muted" style="margin-bottom:10px"></div>
+    <div id="list"><p class="muted">Loading…</p></div>`);
+  // ---- share kit
+  const base = `${location.origin}/interest`;
+  let ch = "whatsapp";
+  function drawKit() {
+    const url = `${base}?src=${ch}`;
+    $("#kit", page).innerHTML = `<div class="kit-tabs">${CHANNELS.map(([k, n]) => `<button class="chip-btn ${k === ch ? "on" : ""}" data-ch="${k}">${n}</button>`).join("")}</div>
+      <div class="kit-grid"><div>
+        <label class="field"><span>Link for ${esc(CHANNELS.find(c => c[0] === ch)[1])}</span><div class="inline"><input type="text" readonly value="${esc(url)}" id="kUrl" style="flex:1"><button class="btn" id="kCopyUrl">Copy link</button></div><small>Each channel has its own link, so the Leads list shows where every parent came from.</small></label>
+        ${ch === "poster" ? `<p class="small">Print or post these. The QR code opens the form.</p><div class="btn-row"><a class="btn primary" href="/promo/poster.png" download>⬇ Poster (4:5, for posts)</a><a class="btn" href="/promo/story.png" download>⬇ Story (9:16, for Status)</a><button class="btn" id="kQR">⬇ QR code only</button></div>`
+          : `<label class="field"><span>Message to post</span><textarea id="kMsg" rows="11" readonly>${esc(shareText(ch, url))}</textarea></label>
+             <div class="btn-row"><button class="btn primary" id="kCopyMsg">Copy message</button>${ch === "whatsapp" ? `<a class="btn wa-btn" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(shareText(ch, url))}">Open WhatsApp</a>` : ch === "telegram" ? `<a class="btn" target="_blank" rel="noopener" href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText("plain", "").trim())}">Open Telegram</a>` : ch === "facebook" ? `<a class="btn" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}">Share on Facebook</a>` : ""}
+             <a class="btn" href="/promo/poster.png" download>⬇ Poster image</a></div>`}
+      </div><div class="kit-qr">${QR.svg(url, { level: "Q", color: "#002d5f" })}<div class="small muted">Scan to open the form</div></div></div>`;
+    $$("[data-ch]", page).forEach(b => b.onclick = () => { ch = b.dataset.ch; drawKit(); });
+    $("#kCopyUrl", page).onclick = () => copy(url);
+    if ($("#kCopyMsg", page)) $("#kCopyMsg", page).onclick = () => copy($("#kMsg", page).value);
+    if ($("#kQR", page)) $("#kQR", page).onclick = () => downloadQR(url, "afro-merica-tutor-qr.png");
+  }
+  drawKit();
+  // ---- list
+  async function load() {
+    const d = await GET(`/api/admin/leads?status=${status}&subject=${encodeURIComponent(subject)}&q=${encodeURIComponent(search)}`);
+    const cnt = Object.fromEntries(d.counts.map(c => [c.status, c.n])), total = d.counts.reduce((a, c) => a + c.n, 0);
+    $("#stat", page).innerHTML = [["", "All", ""], ...LEAD_STATUS].map(([k, n]) => `<button class="chip-btn ${k === status ? "on" : ""}" data-st="${k}">${n} <b>${k ? cnt[k] || 0 : total}</b></button>`).join("");
+    $$("[data-st]", page).forEach(b => b.onclick = () => { status = b.dataset.st; load().catch(fail); });
+    $("#sources", page).innerHTML = d.sources.length ? "Came from: " + d.sources.map(s => `<span class="tag">${esc(s.source)} ${s.n}</span>`).join(" ") : "";
+    $("#list", page).innerHTML = d.leads.length ? `<div class="leads">${d.leads.map(l => {
+      const first = l.parent_name.split(/\s+/)[0];
+      const hello = `Hello ${first}, this is Afro-Merica Tutor & Training 👋 Thank you for your interest in ${l.subjects.join(" & ")}${l.grades.length ? ` for grade ${l.grades.join(", ")}` : ""}. When is a good time to talk about a plan for your child?`;
+      return `<article class="lead" data-id="${l.id}">
+        <div class="lead-top"><div><b class="lname">${esc(l.parent_name)}</b> ${l.city ? `<span class="muted small">· ${esc(l.city)}</span>` : ""}
+          <div class="small muted">${fmtDateTime(l.created_at)}${l.source ? ` · via <b>${esc(l.source)}</b>` : ""}${l.heard ? ` · heard on ${esc(l.heard)}` : ""}</div></div>
+          <select class="lstat" data-ls="${l.id}" aria-label="Status">${LEAD_STATUS.map(([k, n]) => `<option value="${k}" ${k === l.status ? "selected" : ""}>${n}</option>`).join("")}</select></div>
+        <div class="lchips">${l.subjects.map(s => `<span class="schip" style="--c:${SUBJ_COLOR[s] || "#5a6878"}">${esc(s)}</span>`).join("")}${l.grades.length ? `<span class="tag">Grade ${esc(l.grades.join(", "))}</span>` : ""}${l.start_when ? `<span class="tag ${l.start_when === "Right away" ? "warn" : ""}">${esc(l.start_when)}</span>` : ""}</div>
+        <div class="ldetail small">${[l.goals.join(", "), l.formats.join(", "), l.times.join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
+        ${l.message ? `<p class="lmsg">“${esc(l.message)}”</p>` : ""}
+        ${l.notes ? `<p class="lnotes small">📝 ${esc(l.notes)}</p>` : ""}
+        <div class="btn-row"><a class="btn small wa-btn" target="_blank" rel="noopener" href="https://wa.me/${esc(l.phone_digits)}?text=${encodeURIComponent(hello)}">WhatsApp</a>
+          <a class="btn small" href="tel:+${esc(l.phone_digits)}">Call ${esc(l.phone)}</a>${l.email ? `<a class="btn small" href="mailto:${esc(l.email)}?subject=${encodeURIComponent("Tutoring — Afro-Merica Tutor & Training")}&body=${encodeURIComponent(hello)}">Email</a>` : ""}
+          <span style="flex:1"></span><button class="btn small" data-note="${l.id}">Notes</button><button class="btn small danger" data-del="${l.id}">Delete</button></div>
+      </article>`; }).join("")}</div>`
+      : `<div class="panel empty"><div style="font-size:2.2rem">📣</div><h3>${status || subject || search ? "No leads match." : "No answers yet"}</h3><p>Open the <b>Share kit</b> above and post your link on WhatsApp, Telegram and social media.</p></div>`;
+    $$("[data-ls]", page).forEach(sel => sel.onchange = () => PATCH(`/api/admin/leads/${sel.dataset.ls}`, { status: sel.value }).then(() => { toast("Saved"); load(); }).catch(fail));
+    $$("[data-del]", page).forEach(b => b.onclick = async () => { if (await confirmBox("Delete this lead?", "Their answers and contact details are removed.", "Delete", true)) DEL(`/api/admin/leads/${b.dataset.del}`).then(() => { toast("Deleted"); load(); }).catch(fail); });
+    $$("[data-note]", page).forEach(b => b.onclick = () => { const l = d.leads.find(x => x.id === Number(b.dataset.note)); modal(`<h2>Notes — ${esc(l.parent_name)}</h2><form id="nf"><label class="field"><span>Notes (only admins see these)</span><textarea name="notes" rows="6" style="width:100%">${esc(l.notes || "")}</textarea></label><div class="btn-row"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save</button></div></form>`, { onMount: (m, close) => onSubmit($("#nf", m), async f => { await PATCH(`/api/admin/leads/${l.id}`, { notes: f.notes }); close(); toast("Saved"); load(); }) }); });
+  }
+  let t; $("#q", page).oninput = e => { clearTimeout(t); t = setTimeout(() => { search = e.target.value; load().catch(fail); }, 250); };
+  $("#subj", page).onchange = e => { subject = e.target.value; load().catch(fail); };
+  await load();
+}, { roles: ["admin"] });
 
 async function refreshMe() {
   const r = await GET("/api/auth/me");
