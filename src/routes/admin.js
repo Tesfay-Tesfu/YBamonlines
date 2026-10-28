@@ -312,16 +312,19 @@ r.post('/allocations/bulk', async (req, res) => {
 });
 
 // ---------- leads (interest form) ----------
-const LEAD_STATUS = ['new', 'contacted', 'trial', 'enrolled', 'not_now'];
+const LEAD_STATUS = ['new', 'contacted', 'trial', 'enrolled', 'not_now', 'spam'];
+const spam = require('../spam');
 r.get('/leads', async (req, res) => {
   const params = []; let where = 'true';
   if (LEAD_STATUS.includes(req.query.status)) { params.push(req.query.status); where += ` AND status=$${params.length}`; }
+  else where += ` AND status <> 'spam'`;                                    // "All" means all real answers
   if (req.query.subject) { params.push(req.query.subject); where += ` AND $${params.length} = ANY(subjects)`; }
   if (req.query.q) { params.push(`%${req.query.q}%`); where += ` AND (parent_name ILIKE $${params.length} OR phone ILIKE $${params.length} OR email ILIKE $${params.length} OR city ILIKE $${params.length})`; }
   const leads = await db.many(`SELECT * FROM leads WHERE ${where} ORDER BY created_at DESC LIMIT 3000`, params);
   const counts = await db.many(`SELECT status, count(*)::int AS n FROM leads GROUP BY status`);
-  const sources = await db.many(`SELECT COALESCE(source, 'direct') AS source, count(*)::int AS n FROM leads GROUP BY 1 ORDER BY n DESC`);
-  res.json({ leads, counts, sources });
+  const sources = await db.many(`SELECT COALESCE(source, 'direct') AS source, count(*)::int AS n FROM leads WHERE status <> 'spam' GROUP BY 1 ORDER BY n DESC`);
+  const blocks = await db.many('SELECT id, kind, value, note, created_at FROM lead_blocks ORDER BY created_at DESC');
+  res.json({ leads, counts, sources, blocks, turnstile: spam.turnstileOn() });
 });
 r.patch('/leads/:id', async (req, res) => {
   const id = Number(req.params.id);
@@ -329,7 +332,7 @@ r.patch('/leads/:id', async (req, res) => {
   if (!l) A.fail(404, 'Not found.');
   const status = LEAD_STATUS.includes(req.body.status) ? req.body.status : l.status;
   const notes = req.body.notes !== undefined ? String(req.body.notes).slice(0, 4000) : l.notes;
-  await db.q('UPDATE leads SET status=$2, notes=$3, updated_at=now() WHERE id=$1', [id, status, notes]);
+  await db.q(`UPDATE leads SET status=$2, notes=$3, spam_reason=CASE WHEN $2='spam' THEN COALESCE(spam_reason, 'marked by an admin') ELSE NULL END, updated_at=now() WHERE id=$1`, [id, status, notes]);
   res.json({ ok: true });
 });
 r.delete('/leads/:id', async (req, res) => {
@@ -338,8 +341,45 @@ r.delete('/leads/:id', async (req, res) => {
   A.audit(req, 'delete_lead', null, { name: l.parent_name });
   res.json({ ok: true });
 });
+// Empty the Spam folder
+r.delete('/leads', async (req, res) => {
+  if (req.query.status !== 'spam') A.fail(400, 'Only the Spam folder can be emptied.');
+  const r2 = await db.q(`DELETE FROM leads WHERE status='spam'`);
+  A.audit(req, 'empty_spam', null, { removed: r2.rowCount });
+  res.json({ ok: true, removed: r2.rowCount });
+});
+// Block whoever sent a lead (their number, email and/or connection), and remove everything they sent
+r.post('/leads/:id/block', async (req, res) => {
+  const l = await db.one('SELECT * FROM leads WHERE id=$1', [Number(req.params.id)]);
+  if (!l) A.fail(404, 'Not found.');
+  const add = [];
+  if (req.body.phone) add.push(['phone', '+' + l.phone_digits]);
+  if (req.body.email && l.email) add.push(['email', l.email]);
+  if (req.body.ip && l.ip_hash) add.push(['ip', l.ip_hash]);
+  if (!add.length) A.fail(400, 'Choose what to block.');
+  for (const [kind, value] of add) await db.q(`INSERT INTO lead_blocks(kind, value, note, created_by) VALUES ($1,$2,$3,$4) ON CONFLICT (kind, value) DO NOTHING`, [kind, value, `from ${l.parent_name}`.slice(0, 120), req.user.id]);
+  const gone = await db.q(`DELETE FROM leads WHERE id=$1 OR ($2 AND phone_digits=$3) OR ($4 AND email IS NOT NULL AND email=$5) OR ($6 AND ip_hash=$7 AND status='spam')`,
+    [l.id, !!req.body.phone, l.phone_digits, !!(req.body.email && l.email), l.email, !!(req.body.ip && l.ip_hash), l.ip_hash]);
+  A.audit(req, 'block_lead', null, { name: l.parent_name, blocked: add.map(a => a[0]) });
+  res.json({ ok: true, removed: gone.rowCount });
+});
+// Block list: numbers, emails (or @domain) and words
+r.post('/lead-blocks', async (req, res) => {
+  const kind = ['phone', 'email', 'word'].includes(req.body.kind) ? req.body.kind : A.fail(400, 'Choose number, email or word.');
+  let value = String(req.body.value || '').trim().toLowerCase().slice(0, 120);
+  if (kind === 'phone') { const d = value.replace(/\D/g, ''); if (d.length < 7) A.fail(400, 'Enter the full phone number.'); value = '+' + d; }
+  if (kind === 'email' && !/^(@[^@\s]+\.[^@\s]+|[^@\s]+@[^@\s]+\.[^@\s]+)$/.test(value)) A.fail(400, 'Enter an email address, or @domain.com to block a whole domain.');
+  if (kind === 'word' && value.length < 3) A.fail(400, 'Enter a word or phrase of at least 3 letters.');
+  await db.q(`INSERT INTO lead_blocks(kind, value, created_by) VALUES ($1,$2,$3) ON CONFLICT (kind, value) DO NOTHING`, [kind, value, req.user.id]);
+  A.audit(req, 'add_block', null, { kind, value: kind === 'ip' ? '' : value });
+  res.json({ ok: true });
+});
+r.delete('/lead-blocks/:id', async (req, res) => {
+  await db.q('DELETE FROM lead_blocks WHERE id=$1', [Number(req.params.id)]);
+  res.json({ ok: true });
+});
 r.get('/export/leads.csv', async (req, res) => {
-  const rows = await db.many('SELECT * FROM leads ORDER BY created_at DESC');
+  const rows = await db.many(`SELECT * FROM leads WHERE status <> 'spam' ORDER BY created_at DESC`);
   res.setHeader('Content-Disposition', 'attachment; filename="interest-form-leads.csv"');
   res.send(csv([['Date', 'Parent', 'WhatsApp/phone', 'Email', 'City', 'Grades', 'Subjects', 'Goals', 'Format', 'Best time', 'Start', 'Heard about us', 'Link used', 'Message', 'Status', 'Notes'],
     ...rows.map(l => [l.created_at.toISOString().slice(0, 16).replace('T', ' '), l.parent_name, l.phone, l.email, l.city, l.grades.join(' '), l.subjects.join('; '), l.goals.join('; '),

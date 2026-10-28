@@ -202,7 +202,15 @@ A public sign-up page for parents is at **`/interest`** (e.g. `https://amtutorto
 - **Leads** (admin menu) lists every answer, newest first, with **WhatsApp** (opens a chat with a ready greeting), **Call** and **Email** buttons, a status (New → Contacted → Trial booked → Enrolled / Not now) and private notes. **Download CSV** exports everything. The Overview shows how many new parents are waiting.
 - **Share kit** (top of Leads): a separate link for WhatsApp, Telegram, Facebook, Instagram and TikTok, so you can see which channel brings parents; a ready-to-paste message; a QR code; and posters in `public/app/promo/` (`poster.png` 4:5 for posts, `story.png` 9:16 for WhatsApp Status/stories, `share-card.png` for link previews).
 - **Optional settings in Render:** `CONTACT_WHATSAPP` (your number, e.g. `12405550123`, adds "Chat with us now" after the form), `INTEREST_OFFER` (e.g. `First lesson free`, shown as a badge), `CONTACT_DEFAULT_COUNTRY` (default `1`).
-- Spam protection: a hidden bot trap, a minimum fill-in time and at most 8 answers per hour from one connection. Delete a lead to remove their details.
+- **Spam protection** (Leads → 🛡️ Spam protection). Always on:
+  - a hidden field only robots fill in (those answers are dropped);
+  - a signed, single-use form check: an answer must come from someone who really opened the form, and not in under 4 seconds;
+  - at most 8 answers an hour from one connection; above `INTEREST_MAX_PER_HOUR` (default 40) answers an hour in total, the extra ones go to Spam;
+  - content checks: web links, HTML, spam words (crypto, casino, SEO…), numbers in names and fake-looking phone numbers;
+  - the same phone number again within a day updates the first answer instead of adding a copy.
+
+  Suspicious answers go to the **🚫 Spam** folder, not your list, so a real parent is never lost: check it now and then and press **Not spam**. In Spam there are no WhatsApp/Call buttons and links are never clickable. **🚫 Block** on any answer blocks that number, email or connection and deletes what they sent; you can also block a number, an email, a whole `@domain` or a word. Spam is deleted automatically after 30 days, or press **Empty spam**.
+- **If robots still get through**, turn on Cloudflare Turnstile (free, usually invisible "I'm human" check): create a widget at dash.cloudflare.com → Turnstile for your domains (`amtutortools.onrender.com` and your own domain), then add `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in Render → Environment.
 
 ### Classes: Google Meet links and the schedule
 

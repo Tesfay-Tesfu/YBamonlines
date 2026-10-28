@@ -73,6 +73,7 @@ async function cleanup() {
   await db.q(`DELETE FROM sessions WHERE expires_at < now()`);
   await db.q(`DELETE FROM email_tokens WHERE expires_at < now()`);
   await require('./routes/messages').cleanupFiles();
+  await require('./spam').cleanupSpam();
 }
 
 async function start() {

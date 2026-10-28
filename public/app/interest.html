@@ -172,6 +172,7 @@
         </div>
         <label class="field"><span>Anything we should know? <span class="hint">· optional</span></span><textarea name="message" rows="3" maxlength="1000" placeholder="e.g. struggles with fractions, loves robots…"></textarea></label>
         <label class="consent"><input type="checkbox" name="consent" required><span>Afro-Merica Tutor & Training may contact me by WhatsApp, phone or email about tutoring. We never share your details.</span></label>
+        <div id="ts" style="margin-top:12px"></div>
         <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off"></label></div>
       </div>
 
@@ -202,7 +203,9 @@ const OPT = {
   start: ["Right away", "In a few weeks", "Just exploring"],
   heard: ["WhatsApp", "Telegram", "Facebook", "Instagram", "TikTok", "A friend or family", "School or community", "Other"],
 };
-const WA = "{{CONTACT_WHATSAPP}}", OFFER = "{{OFFER}}", T0 = Date.now();
+const WA = "{{CONTACT_WHATSAPP}}", OFFER = "{{OFFER}}", T0 = Date.now(), FT = "{{FORM_TOKEN}}", TS_KEY = "{{TURNSTILE_SITE_KEY}}";
+// Optional "I'm human" check (Cloudflare Turnstile). Only loaded when the site has keys for it.
+if (TS_KEY && !TS_KEY.startsWith("{{")) { const sc = document.createElement("script"); sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js"; sc.async = true; document.head.appendChild(sc); document.getElementById("ts").innerHTML = `<div class="cf-turnstile" data-sitekey="${TS_KEY}" data-response-field-name="cf" data-theme="light"></div>`; }
 const src = (new URLSearchParams(location.search).get("src") || "").slice(0, 40);
 const chips = (id, name, list, type = "checkbox") => { $(id).innerHTML = list.map(v => `<label class="chip"><input type="${type}" name="${name}" value="${v}"><span>${v === "K" ? "K" : /^\d+$/.test(v) ? v : v}</span></label>`).join(""); };
 chips("grades", "grades", OPT.grades); chips("goals", "goals", OPT.goals); chips("formats", "formats", OPT.formats); chips("times", "times", OPT.times); chips("start", "start_when", OPT.start, "radio");
@@ -232,7 +235,7 @@ $("f").addEventListener("submit", async e => {
   if ((f.phone.value.match(/\d/g) || []).length < 7) { err.textContent = "Please enter a WhatsApp or phone number."; f.phone.focus(); return; }
   if (!f.consent.checked) { err.textContent = "Please tick the box so we may contact you."; return; }
   const body = { parent_name: f.parent_name.value, phone: f.phone.value, email: f.email.value, city: f.city.value, heard: f.heard.value, message: f.message.value,
-    consent: true, website: f.website.value, t: T0, source: src, subjects: vals("subjects"), grades: vals("grades"), goals: vals("goals"),
+    consent: true, website: f.website.value, t: T0, ft: FT, cf: (f.elements.cf || {}).value || "", source: src, subjects: vals("subjects"), grades: vals("grades"), goals: vals("goals"),
     formats: vals("formats"), times: vals("times"), start_when: vals("start_when")[0] || "" };
   $("next").disabled = true; $("next").textContent = "Sending…";
   try {
@@ -243,7 +246,7 @@ $("f").addEventListener("submit", async e => {
     $("thanks").textContent = `Thank you, ${body.parent_name.trim().split(/\s+/)[0]}!`;
     if (WA && /^\d{8,15}$/.test(WA)) { $("chat").hidden = false; $("chat").href = `https://wa.me/${WA}?text=${encodeURIComponent(`Hi! I just filled in the Afro-Merica Tutor form (${body.subjects.join(", ")}).`)}`; }
     $("form").scrollIntoView({ behavior: "smooth" });
-  } catch (x) { err.textContent = x.message; $("next").disabled = false; $("next").textContent = "Send"; }
+  } catch (x) { err.textContent = x.message; $("next").disabled = false; $("next").textContent = "Send"; if (window.turnstile) try { window.turnstile.reset(); } catch {} }
 });
 $("shareBtn").onclick = async () => {
   const url = `${location.origin}/interest?src=share`, text = "Hands-on tutoring in Math, Physics, Science & Python for Kids by Afro-Merica Tutor & Training";

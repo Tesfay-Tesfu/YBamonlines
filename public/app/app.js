@@ -1379,6 +1379,7 @@ route("/admin/leads", async q => {
   let status = q.status || "", subject = "", search = "";
   const page = shell(`<div class="page-head"><h1>Leads</h1><div class="actions"><a class="btn" href="/interest" target="_blank" rel="noopener">Open the form ↗</a><a class="btn" href="/api/admin/export/leads.csv">Download CSV</a></div></div>
     <details class="panel sharekit" ${q.share ? "open" : ""}><summary><b>📣 Share kit</b> <span class="muted small">— links, messages, QR code and posters for WhatsApp, Telegram and social media</span></summary><div id="kit"></div></details>
+    <details class="panel sharekit" id="guardBox"><summary><b>🛡️ Spam protection</b> <span class="muted small" id="guardSum"></span></summary><div id="guard"></div></details>
     <div class="inline" style="margin:16px 0 12px"><div class="chips-row" id="stat"></div>
       <select id="subj" aria-label="Subject"><option value="">All subjects</option>${Object.keys(SUBJ_COLOR).map(s => `<option>${s}</option>`).join("")}</select>
       <input type="search" id="q" placeholder="Search name, phone, city" aria-label="Search"></div>
@@ -1403,31 +1404,71 @@ route("/admin/leads", async q => {
     if ($("#kQR", page)) $("#kQR", page).onclick = () => downloadQR(url, "afro-merica-tutor-qr.png");
   }
   drawKit();
+  // ---- spam protection panel
+  function drawGuard(d) {
+    const B = d.blocks, kinds = { phone: "📞 Number", email: "✉️ Email", word: "🔤 Word", ip: "🌐 Connection" };
+    $("#guardSum", page).textContent = `· ${B.length} blocked · ${d.turnstile ? "“I’m human” check on" : "automatic checks on"}`;
+    $("#guard", page).innerHTML = `<div class="guard-grid"><div>
+        <h3>Always on</h3>
+        <ul class="guard-list">
+          <li>✅ <b>Robot trap.</b> A hidden field only robots fill in.</li>
+          <li>✅ <b>Form check.</b> Answers must come from someone who really opened the form, and not in under 4 seconds. Each form can be sent once.</li>
+          <li>✅ <b>Speed limit.</b> 8 answers an hour from one connection; more than ${40} an hour in total go to Spam for you to check.</li>
+          <li>✅ <b>Content check.</b> Web links, HTML, spam words (crypto, casino, SEO…), numbers in names and fake phone numbers go to <b>Spam</b>, not your list.</li>
+          <li>✅ <b>No copies.</b> The same number again within a day updates the first answer.</li>
+          <li>✅ <b>Safe to read.</b> Links in answers never become clickable, and Spam has no WhatsApp or Call buttons.</li>
+          <li>${d.turnstile ? "✅" : "⚪"} <b>“I’m human” check</b> (Cloudflare Turnstile, free). ${d.turnstile ? "On." : "Off. Turn it on if robots still get through: see the README."}</li>
+        </ul></div>
+      <div><h3>Blocked</h3>
+        <form id="addBlock" class="inline" style="margin-bottom:10px"><select name="kind" aria-label="Type"><option value="phone">Number</option><option value="email">Email or @domain</option><option value="word">Word or phrase</option></select>
+          <input name="value" placeholder="+1 555 123 4567, spam@x.com, @x.com, “free money”" style="flex:2;min-width:180px"><button class="btn primary" type="submit">Block</button></form>
+        ${B.length ? `<table class="data"><tbody>${B.map(b => `<tr><td>${kinds[b.kind]}</td><td>${b.kind === "ip" ? '<span class="muted">hidden</span>' : esc(b.value)}${b.note ? ` <span class="muted small">${esc(b.note)}</span>` : ""}</td><td class="num"><button class="btn small" data-unblock="${b.id}">Unblock</button></td></tr>`).join("")}</tbody></table>` : '<p class="muted small">Nothing blocked yet. Use 🚫 Block on an answer, or add a number, email or word here.</p>'}
+      </div></div>`;
+    onSubmit($("#addBlock", page), async f => { await POST("/api/admin/lead-blocks", f); toast("Blocked"); load(); });
+    $$("[data-unblock]", page).forEach(b => b.onclick = () => DEL(`/api/admin/lead-blocks/${b.dataset.unblock}`).then(() => { toast("Unblocked"); load(); }).catch(fail));
+  }
   // ---- list
   async function load() {
     const d = await GET(`/api/admin/leads?status=${status}&subject=${encodeURIComponent(subject)}&q=${encodeURIComponent(search)}`);
-    const cnt = Object.fromEntries(d.counts.map(c => [c.status, c.n])), total = d.counts.reduce((a, c) => a + c.n, 0);
-    $("#stat", page).innerHTML = [["", "All", ""], ...LEAD_STATUS].map(([k, n]) => `<button class="chip-btn ${k === status ? "on" : ""}" data-st="${k}">${n} <b>${k ? cnt[k] || 0 : total}</b></button>`).join("");
+    const cnt = Object.fromEntries(d.counts.map(c => [c.status, c.n])), total = d.counts.filter(c => c.status !== "spam").reduce((a, c) => a + c.n, 0);
+    $("#stat", page).innerHTML = [["", "All", ""], ...LEAD_STATUS].map(([k, n]) => `<button class="chip-btn ${k === status ? "on" : ""}" data-st="${k}">${n} <b>${k ? cnt[k] || 0 : total}</b></button>`).join("")
+      + `<button class="chip-btn spam-chip ${status === "spam" ? "on" : ""}" data-st="spam">🚫 Spam <b>${cnt.spam || 0}</b></button>`
+      + (status === "spam" && cnt.spam ? `<button class="btn small danger" id="emptySpam">Empty spam</button>` : "");
+    if ($("#emptySpam", page)) $("#emptySpam", page).onclick = async () => { if (await confirmBox("Empty the Spam folder?", `All ${cnt.spam} answers in Spam are deleted. Spam is also emptied automatically after 30 days.`, "Empty spam", true)) DEL("/api/admin/leads?status=spam").then(r => { toast(`Removed ${r.removed}`); load(); }).catch(fail); };
+    drawGuard(d);
     $$("[data-st]", page).forEach(b => b.onclick = () => { status = b.dataset.st; load().catch(fail); });
     $("#sources", page).innerHTML = d.sources.length ? "Came from: " + d.sources.map(s => `<span class="tag">${esc(s.source)} ${s.n}</span>`).join(" ") : "";
     $("#list", page).innerHTML = d.leads.length ? `<div class="leads">${d.leads.map(l => {
       const first = l.parent_name.split(/\s+/)[0];
       const hello = `Hello ${first}, this is Afro-Merica Tutor & Training 👋 Thank you for your interest in ${l.subjects.join(" & ")}${l.grades.length ? ` for grade ${l.grades.join(", ")}` : ""}. When is a good time to talk about a plan for your child?`;
-      return `<article class="lead" data-id="${l.id}">
-        <div class="lead-top"><div><b class="lname">${esc(l.parent_name)}</b> ${l.city ? `<span class="muted small">· ${esc(l.city)}</span>` : ""}
+      const isSpam = l.status === "spam";
+      return `<article class="lead ${isSpam ? "is-spam" : ""}" data-id="${l.id}">
+        ${isSpam ? `<div class="spam-why">🚫 In Spam: ${esc(l.spam_reason || "marked by an admin")}. Contact buttons are hidden, and links in the message don’t work. <button class="btn small" data-notspam="${l.id}">Not spam, move to New</button></div>` : ""}
+        <div class="lead-top"><div><b class="lname">${esc(l.parent_name)}</b> ${l.city ? `<span class="muted small">· ${esc(l.city)}</span>` : ""}${l.repeats ? ` <span class="tag info" title="The same number sent the form again within a day; the answers were combined">sent ${l.repeats + 1}×</span>` : ""}
           <div class="small muted">${fmtDateTime(l.created_at)}${l.source ? ` · via <b>${esc(l.source)}</b>` : ""}${l.heard ? ` · heard on ${esc(l.heard)}` : ""}</div></div>
-          <select class="lstat" data-ls="${l.id}" aria-label="Status">${LEAD_STATUS.map(([k, n]) => `<option value="${k}" ${k === l.status ? "selected" : ""}>${n}</option>`).join("")}</select></div>
+          <select class="lstat" data-ls="${l.id}" aria-label="Status">${LEAD_STATUS.map(([k, n]) => `<option value="${k}" ${k === l.status ? "selected" : ""}>${n}</option>`).join("")}<option value="spam" ${isSpam ? "selected" : ""}>🚫 Spam</option></select></div>
         <div class="lchips">${l.subjects.map(s => `<span class="schip" style="--c:${SUBJ_COLOR[s] || "#5a6878"}">${esc(s)}</span>`).join("")}${l.grades.length ? `<span class="tag">Grade ${esc(l.grades.join(", "))}</span>` : ""}${l.start_when ? `<span class="tag ${l.start_when === "Right away" ? "warn" : ""}">${esc(l.start_when)}</span>` : ""}</div>
         <div class="ldetail small">${[l.goals.join(", "), l.formats.join(", "), l.times.join(", ")].filter(Boolean).map(esc).join(" · ")}</div>
         ${l.message ? `<p class="lmsg">“${esc(l.message)}”</p>` : ""}
         ${l.notes ? `<p class="lnotes small">📝 ${esc(l.notes)}</p>` : ""}
-        <div class="btn-row"><a class="btn small wa-btn" target="_blank" rel="noopener" href="https://wa.me/${esc(l.phone_digits)}?text=${encodeURIComponent(hello)}">WhatsApp</a>
-          <a class="btn small" href="tel:+${esc(l.phone_digits)}">Call ${esc(l.phone)}</a>${l.email ? `<a class="btn small" href="mailto:${esc(l.email)}?subject=${encodeURIComponent("Tutoring with Afro-Merica Tutor & Training")}&body=${encodeURIComponent(hello)}">Email</a>` : ""}
-          <span style="flex:1"></span><button class="btn small" data-note="${l.id}">Notes</button><button class="btn small danger" data-del="${l.id}">Delete</button></div>
+        <div class="btn-row">${isSpam ? `<span class="small muted">📞 ${esc(l.phone)}${l.email ? ` · ✉️ ${esc(l.email)}` : ""}</span>` : `<a class="btn small wa-btn" target="_blank" rel="noopener" href="https://wa.me/${esc(l.phone_digits)}?text=${encodeURIComponent(hello)}">WhatsApp</a>
+          <a class="btn small" href="tel:+${esc(l.phone_digits)}">Call ${esc(l.phone)}</a>${l.email ? `<a class="btn small" href="mailto:${esc(l.email)}?subject=${encodeURIComponent("Tutoring with Afro-Merica Tutor & Training")}&body=${encodeURIComponent(hello)}">Email</a>` : ""}`}
+          <span style="flex:1"></span>${isSpam ? "" : `<button class="btn small" data-note="${l.id}">Notes</button>`}<button class="btn small" data-block="${l.id}" title="Block this sender">🚫 Block</button><button class="btn small danger" data-del="${l.id}">Delete</button></div>
       </article>`; }).join("")}</div>`
+      : status === "spam" ? `<div class="panel empty"><div style="font-size:2.2rem">🧹</div><h3>No spam</h3><p>Answers that look like spam land here instead of in your list. Check now and then for real parents.</p></div>`
       : `<div class="panel empty"><div style="font-size:2.2rem">📣</div><h3>${status || subject || search ? "No leads match." : "No answers yet"}</h3><p>Open the <b>Share kit</b> above and post your link on WhatsApp, Telegram and social media.</p></div>`;
     $$("[data-ls]", page).forEach(sel => sel.onchange = () => PATCH(`/api/admin/leads/${sel.dataset.ls}`, { status: sel.value }).then(() => { toast("Saved"); load(); }).catch(fail));
     $$("[data-del]", page).forEach(b => b.onclick = async () => { if (await confirmBox("Delete this lead?", "Their answers and contact details are removed.", "Delete", true)) DEL(`/api/admin/leads/${b.dataset.del}`).then(() => { toast("Deleted"); load(); }).catch(fail); });
+    $$("[data-notspam]", page).forEach(b => b.onclick = () => PATCH(`/api/admin/leads/${b.dataset.notspam}`, { status: "new" }).then(() => { toast("Moved to New"); load(); }).catch(fail));
+    $$("[data-block]", page).forEach(b => b.onclick = () => {
+      const l = d.leads.find(x => x.id === Number(b.dataset.block));
+      modal(`<h2>Block ${esc(l.parent_name)}?</h2><p class="small muted">Future answers from what you tick are dropped without a trace, and everything already sent by them is deleted.</p>
+        <form id="bf"><label class="check"><input type="checkbox" name="phone" checked><span>The number <b>${esc(l.phone)}</b></span></label>
+          ${l.email ? `<label class="check"><input type="checkbox" name="email" checked><span>The email <b>${esc(l.email)}</b></span></label>` : ""}
+          ${l.ip_hash ? `<label class="check"><input type="checkbox" name="ip" ${l.status === "spam" ? "checked" : ""}><span>The internet connection it came from <small class="muted">(good against robots; may also block other people on the same Wi‑Fi)</small></span></label>` : ""}
+          <div class="btn-row"><button type="button" class="btn" data-close>Cancel</button><button class="btn danger" type="submit">Block</button></div></form>`,
+        { onMount: (m, close) => onSubmit($("#bf", m), async f => { const r = await POST(`/api/admin/leads/${l.id}/block`, f); close(); toast(`Blocked. Removed ${r.removed} answer${r.removed === 1 ? "" : "s"}.`); load(); }) });
+    });
     $$("[data-note]", page).forEach(b => b.onclick = () => { const l = d.leads.find(x => x.id === Number(b.dataset.note)); modal(`<h2>Notes — ${esc(l.parent_name)}</h2><form id="nf"><label class="field"><span>Notes (only admins see these)</span><textarea name="notes" rows="6" style="width:100%">${esc(l.notes || "")}</textarea></label><div class="btn-row"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" type="submit">Save</button></div></form>`, { onMount: (m, close) => onSubmit($("#nf", m), async f => { await PATCH(`/api/admin/leads/${l.id}`, { notes: f.notes }); close(); toast("Saved"); load(); }) }); });
   }
   let t; $("#q", page).oninput = e => { clearTimeout(t); t = setTimeout(() => { search = e.target.value; load().catch(fail); }, 250); };

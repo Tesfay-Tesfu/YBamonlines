@@ -509,3 +509,13 @@ td.pick { cursor: default; } td.pick input, #pickAll { width: 18px; height: 18px
   .topbar .who .role { display: none; }
 }
 .msg-wrap > .panel { margin-top: 0; }
+
+/* ---------- Leads: spam protection ---------- */
+.spam-chip.on { background: var(--red); border-color: var(--red); color: #fff; }
+.lead.is-spam { border-color: #f1b8b1; background: #fffafa; }
+.spam-why { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--red-soft); color: var(--red); border-radius: 8px; padding: 8px 10px; font-size: .86rem; margin-bottom: 10px; }
+.spam-why .btn { margin-left: auto; }
+.guard-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-top: 12px; }
+.guard-grid h3 { margin: 0 0 8px; font-size: 1rem; }
+.guard-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: .9rem; }
+@media (max-width: 800px) { .guard-grid { grid-template-columns: 1fr; } }

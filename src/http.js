@@ -53,8 +53,10 @@ function enhance(req, res) {
   req.path = decodeURIComponent(url.pathname);
   req.query = Object.fromEntries(url.searchParams);
   req.get = h => req.headers[h.toLowerCase()];
+  // Client address. Render sits behind Cloudflare, which sets CF-Connecting-IP / True-Client-IP itself (a visitor
+  // can't fake them). The first X-Forwarded-For entry can be typed in by anyone, so it is only the last resort.
   const fwd = req.headers['x-forwarded-for'];
-  req.ip = (fwd ? String(fwd).split(',')[0] : req.socket.remoteAddress || '').trim();
+  req.ip = String(req.headers['cf-connecting-ip'] || req.headers['true-client-ip'] || (fwd ? String(fwd).split(',')[0] : '') || req.socket.remoteAddress || '').trim();
   res.status = c => { res.statusCode = c; return res; };
   res.json = obj => {
     if (res.headersSent) return;
