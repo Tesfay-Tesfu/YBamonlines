@@ -1,0 +1,12 @@
+{
+  "name": "Writing Studio",
+  "subject": "english",
+  "grade_min": 3,
+  "grade_max": 12,
+  "icon": "✍️",
+  "version": "1.0.0",
+  "description": "English writing practice shared by the student and tutor: plan with a guided organizer (personal narrative, opinion, informative, letters, poems and more), write with a word bank, checklist and read-aloud, then get live comments, suggestions, a 6-trait rubric and Glow & Grow feedback from the tutor. Works on phones.",
+  "settings": [
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

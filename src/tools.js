@@ -8,7 +8,7 @@ const A = require('./auth');
 const { Router, mimeOf } = require('./http');
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,48}$/;
-const SUBJECTS = ['math', 'physics', 'chemistry', 'science', 'other'];
+const SUBJECTS = ['math', 'physics', 'chemistry', 'science', 'english', 'other'];
 
 function cleanMeta(m, slug) {
   const num = (v, d) => (Number.isFinite(+v) && +v >= 1 && +v <= 12 ? Math.round(+v) : d);

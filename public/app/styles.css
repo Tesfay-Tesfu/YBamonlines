@@ -203,6 +203,7 @@ table.data td.num, table.data th.num { text-align: right; }
 }
 .tool-tile.physics { border-top-color: var(--physics); }
 .tool-tile.science, .tool-tile.chemistry { border-top-color: var(--science); }
+.tool-tile.english { border-top-color: #0e7490; }
 .tool-tile:hover { border-color: var(--blue); border-top-color: inherit; box-shadow: var(--shadow); }
 .tool-tile.physics:hover { border-top-color: var(--physics); }
 .tool-tile .icon { font-size: 2.3rem; line-height: 1; margin-bottom: 12px; }

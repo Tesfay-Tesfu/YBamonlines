@@ -222,6 +222,18 @@ A public sign-up page for parents is at **`/interest`** (e.g. `https://amtutorto
 - Times are kept in the class's time zone (default America/New_York), so a 3:30 pm class stays at 3:30 pm when daylight saving time changes. People in other time zones also see their own local time.
 - To change the link for all future classes, click **Edit** on the class and paste the new link.
 
+### Writing Studio (`tools/writing-studio`): English writing practice
+
+A shared writing space for a student and their tutor, styled as a phone screen: the student's screen is dark cyan and gold, the tutor's dark blue and black. It fills the screen on phones.
+
+1. **Give it to the student.** On the student's page → Tools, give **Writing Studio** and choose their English tutor in the Tutor column, so only that tutor sees the writing.
+2. **Assign a piece (tutor).** Open Writing Studio from the student's page → **＋ Assign writing**: pick a genre (Personal Narrative, Descriptive, Opinion, Informative, Letter, Poem, Book Response, Free Write), tap an idea or write your own prompt, set a word goal and due date. Students can also start their own piece.
+3. **Student plans and writes.** **Plan** is a step-by-step organizer for the genre (for a personal narrative: moment, setting, people, hook, beginning, middle, turning point, ending, why it matters, senses), then **Start my draft from this plan**. **Write** has a word goal ring, a Word bank (transitions, feelings, senses, instead of "said"), Read aloud, Focus mode and "Stuck?" tips. **Checklist** shows the genre's checklist, a writing coach (overused words, missing dialogue, run-on sentences…) and statistics. Then **📨 Turn in**.
+4. **Tutor watches live and gives feedback.** **Read** shows the writing appear as the student types, with a gold cursor where they are. Select words to **💬 Comment** or **✏️ Suggest** new words (with quick comments). **Review** has a 6-trait rubric (ideas, organization, voice, word choice, sentence fluency, conventions; 1–4), **Glow** (what went well) and **Grow** (next step), and the buttons **Send back to revise**, **Mark reviewed** and **Done**. **Drafts** keeps a copy each time it is turned in or reviewed and shows what changed (green added, red removed).
+5. **Student revises.** **Feedback** shows Glow & Grow, the rubric and comments: **Use this ✓** applies a suggestion, **Got it ✓** closes a comment, **Reply** answers. Then turn it in again.
+
+Only the student types the text (tutors change it through suggestions), so two people never type over each other. While a piece is turned in or done, the text is locked; the student can **Take back** a piece the tutor hasn't reviewed yet. Parents can read everything but not change it. Like the whiteboard, live updates need a single server instance.
+
 ## 5. Privacy and safety
 
 - Children sign in with a username and PIN; no child email is collected. Sessions for students end after 12 hours.

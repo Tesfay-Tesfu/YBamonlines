@@ -49,6 +49,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/boards', require('./routes/boards'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/meetings', require('./routes/meetings'));
+app.use('/api/writing', require('./routes/writing'));
 app.use(tools.router);
 
 // Front-end (single page app) and the tool SDK

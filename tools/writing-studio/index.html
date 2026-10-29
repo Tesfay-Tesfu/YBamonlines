@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="amt-banner" content="off">
+<meta name="theme-color" content="#062a30">
+<title>Writing Studio</title>
+<style>
+  /* ---------- themes: student = dark cyan + dark gold, tutor = dark blue + black ---------- */
+  :root, .t-student {
+    --bg: #04161a; --page: radial-gradient(1200px 700px at 20% -10%, #0c4a54 0%, #04161a 55%, #020c0e 100%);
+    --surface: #0a3138; --surface2: #0e3f48; --surface3: #13505a; --line: rgba(160, 225, 230, .14);
+    --text: #e8f6f6; --muted: #92bfc3; --faint: #5f9095;
+    --accent: #d4a338; --accent2: #f0c35a; --accent-ink: #231802; --accent-soft: rgba(212, 163, 56, .16);
+    --cyan: #31b7c4; --good: #4fd1a5; --bad: #ff8a7a; --warn: #f0c35a;
+    --paper: #0b353d; --paper-ink: #f3f8f2; --caret: #f0c35a; --hl: rgba(240, 195, 90, .28); --hl-line: #f0c35a;
+    --bezel: #0d0f10; --shadow: 0 30px 80px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .04);
+  }
+  .t-tutor {
+    --bg: #03050a; --page: radial-gradient(1200px 700px at 80% -10%, #10264d 0%, #04070f 55%, #000 100%);
+    --surface: #0b1424; --surface2: #101d34; --surface3: #172a4a; --line: rgba(150, 180, 230, .14);
+    --text: #e6edf9; --muted: #95a8c9; --faint: #5d6f8f;
+    --accent: #3b82f6; --accent2: #6ea8ff; --accent-ink: #fff; --accent-soft: rgba(59, 130, 246, .18);
+    --cyan: #6ea8ff; --good: #4ade80; --bad: #ff7b7b; --warn: #fbbf24;
+    --paper: #0a1322; --paper-ink: #edf2fb; --caret: #fbbf24; --hl: rgba(251, 191, 36, .25); --hl-line: #fbbf24;
+    --bezel: #000; --shadow: 0 30px 80px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .05);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--page); background-color: var(--bg); color: var(--text); font: 15px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  [hidden] { display: none !important; }
+
+  /* ---------- the phone ---------- */
+  .stage { height: 100%; display: grid; place-items: center; padding: 18px; }
+  .phone { position: relative; width: 410px; height: min(880px, calc(100vh - 36px)); border-radius: 48px; background: var(--bg); border: 11px solid var(--bezel); box-shadow: var(--shadow); overflow: hidden; overflow: clip; display: flex; flex-direction: column; isolation: isolate; }
+  .phone::before { content: ""; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 112px; height: 30px; border-radius: 20px; background: #000; z-index: 50; pointer-events: none; }
+  .sbar { flex: none; height: 46px; padding: 14px 28px 0 30px; display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--text); }
+  .sbar .r { display: flex; gap: 6px; align-items: center; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .sbar .bat { width: 22px; height: 11px; border: 1.5px solid var(--muted); border-radius: 3px; position: relative; }
+  .sbar .bat::after { content: ""; position: absolute; inset: 1.5px 5px 1.5px 1.5px; background: var(--text); border-radius: 1px; }
+  .side-note { position: fixed; left: 24px; bottom: 20px; max-width: 260px; color: var(--muted); font-size: 12.5px; }
+  .side-note b { color: var(--text); }
+  @media (max-width: 560px), (max-height: 600px) {
+    .stage { padding: 0; display: block; }
+    .phone { width: 100%; height: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+    .phone::before, .sbar, .side-note { display: none; }
+  }
+  @media (max-width: 1100px) { .side-note { display: none; } }
+
+  /* ---------- app chrome ---------- */
+  .top { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px 14px 10px; min-height: 52px; }
+  .top h1 { flex: 1; margin: 0; font-size: 18px; font-weight: 750; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top .sub { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+  .ib { flex: none; width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; font-size: 17px; }
+  .ib:active { transform: scale(.96); }
+  .who { display: flex; gap: -6px; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; border: 2px solid var(--bg); margin-left: -6px; color: #fff; }
+  .dot.student { background: linear-gradient(135deg, #1aa6b3, #d4a338); } .dot.tutor, .dot.admin { background: linear-gradient(135deg, #2563eb, #111827); } .dot.parent { background: #7c3aed; }
+  main { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 0 14px 18px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  main::-webkit-scrollbar { width: 0; }
+  .tabs { flex: none; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 92%, transparent); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); }
+  .tabs button { border: 0; background: none; color: var(--faint); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 650; padding: 6px 0; border-radius: 12px; position: relative; }
+  .tabs button .i { font-size: 20px; line-height: 1; filter: grayscale(.6); opacity: .8; }
+  .tabs button.on { color: var(--accent2); } .tabs button.on .i { filter: none; opacity: 1; }
+  .tabs .badge { position: absolute; top: 2px; right: calc(50% - 22px); min-width: 17px; height: 17px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font-size: 10px; display: grid; place-items: center; padding: 0 4px; }
+
+  /* ---------- building blocks ---------- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 14px; margin-bottom: 12px; }
+  .card h3 { margin: 0 0 6px; font-size: 14px; letter-spacing: .01em; }
+  .muted { color: var(--muted); } .small { font-size: 12.5px; } .tiny { font-size: 11px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; background: var(--surface3); color: var(--muted); white-space: nowrap; }
+  .chip.draft { background: rgba(255,255,255,.08); color: var(--muted); }
+  .chip.submitted { background: var(--accent-soft); color: var(--accent2); }
+  .chip.revise { background: rgba(255, 138, 122, .16); color: var(--bad); }
+  .chip.reviewed { background: rgba(79, 209, 165, .15); color: var(--good); }
+  .chip.done { background: var(--good); color: #052e1c; }
+  .btn { border: 1px solid var(--line); background: var(--surface2); color: var(--text); border-radius: 14px; padding: 10px 14px; font-weight: 650; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn.primary { background: linear-gradient(180deg, var(--accent2), var(--accent)); border-color: transparent; color: var(--accent-ink); }
+  .btn.ghost { background: transparent; }
+  .btn.danger { color: var(--bad); }
+  .btn.sm { padding: 6px 10px; font-size: 12.5px; border-radius: 11px; }
+  .btn.block { width: 100%; }
+  .btn:disabled { opacity: .5; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .field { display: block; margin-bottom: 12px; }
+  .field > span { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; letter-spacing: .02em; }
+  .inp { width: 100%; background: var(--surface2); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; color: var(--text); font-size: 16px; }
+  .inp:focus { outline: none; border-color: var(--accent); }
+  textarea.inp { resize: none; line-height: 1.5; min-height: 64px; }
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty .e { font-size: 46px; }
+
+  /* ---------- library ---------- */
+  .hello { margin: 4px 2px 14px; }
+  .hello h2 { margin: 0; font-size: 24px; letter-spacing: -.02em; }
+  .hello p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+  .sec { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 16px 4px 8px; }
+  .piece { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 13px; margin-bottom: 10px; color: var(--text); }
+  .piece:active { transform: scale(.99); }
+  .piece .g { flex: none; width: 44px; height: 44px; border-radius: 14px; background: var(--surface3); display: grid; place-items: center; font-size: 22px; }
+  .piece .b { flex: 1; min-width: 0; }
+  .piece b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .piece .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 5px; font-size: 12px; color: var(--muted); }
+  .bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,.08); margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--cyan), var(--accent2)); }
+  .livepill { color: var(--good); font-weight: 700; }
+  .fab { position: absolute; right: 18px; bottom: 22px; z-index: 5; border: 0; border-radius: 20px; padding: 14px 18px; font-weight: 800; font-size: 15px; background: linear-gradient(180deg, var(--accent2), var(--accent)); color: var(--accent-ink); box-shadow: 0 10px 28px rgba(0,0,0,.45); }
+
+  /* ---------- writing ---------- */
+  .prompt { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 18px; padding: 11px 13px; margin-bottom: 10px; font-size: 14px; }
+  .prompt .k { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--accent2); }
+  .lockbar { display: flex; gap: 10px; align-items: center; background: var(--surface2); border: 1px dashed var(--line); border-radius: 16px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; }
+  .title-in { width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 6px 2px 8px; font-size: 22px; font-weight: 800; letter-spacing: -.01em; color: var(--text); }
+  .title-in:focus { outline: none; border-color: var(--accent); }
+  .paper { position: relative; margin-top: 10px; background: var(--paper); border: 1px solid var(--line); border-radius: 20px; }
+  #editor { display: block; width: 100%; min-height: 46vh; border: 0; background: transparent; color: var(--paper-ink); caret-color: var(--caret); padding: 16px 16px 30px; font: 18px/1.75 "Georgia", "Iowan Old Style", "Palatino", serif; resize: none; }
+  #editor:focus { outline: none; }
+  #editor::placeholder { color: var(--faint); font-style: italic; }
+  #editor[readonly] { opacity: .85; }
+  .tools { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
+  .tools::-webkit-scrollbar { display: none; }
+  .tools .btn { flex: none; }
+  .stats { flex: none; display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); background: var(--surface); }
+  .ring { --p: 0; width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(var(--accent2) calc(var(--p) * 1%), rgba(255,255,255,.1) 0); display: grid; place-items: center; flex: none; }
+  .ring::after { content: ""; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); }
+  .saved { margin-left: auto; font-weight: 700; }
+  .saved.bad { color: var(--bad); }
+
+  /* rendered text (reading, comments) */
+  .read { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 16px; color: var(--paper-ink); font: 17.5px/1.75 "Georgia", "Iowan Old Style", "Palatino", serif; white-space: pre-wrap; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; min-height: 120px; }
+  .read h2 { font: 800 21px/1.3 "Inter", system-ui, sans-serif; margin: 0 0 10px; white-space: normal; }
+  .read mark { background: var(--hl); color: inherit; border-bottom: 2px solid var(--hl-line); border-radius: 3px; padding: 0 1px; cursor: pointer; }
+  .read mark.sel { background: color-mix(in srgb, var(--hl-line) 50%, transparent); }
+  .caretmark { display: inline-block; width: 2px; height: 1.15em; margin: 0 -1px; vertical-align: -.2em; background: var(--caret); animation: blink 1s steps(2) infinite; position: relative; }
+  .caretmark::after { content: attr(data-n); position: absolute; left: -2px; top: -16px; font: 700 9.5px/1 system-ui; color: #111; background: var(--caret); padding: 2px 4px; border-radius: 4px; white-space: nowrap; }
+  @keyframes blink { 50% { opacity: .25; } }
+  .typing { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--accent2); font-weight: 700; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: bounce 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 50% { transform: translateY(-3px); opacity: .5; } }
+  .selbar { position: absolute; left: 12px; right: 12px; bottom: 76px; z-index: 30; display: flex; gap: 8px; padding: 8px; border-radius: 18px; background: var(--surface3); border: 1px solid var(--line); box-shadow: 0 12px 30px rgba(0,0,0,.5); animation: up .18s ease-out; }
+  .selbar .q { flex: 1; min-width: 0; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-self: center; padding-left: 6px; }
+  @keyframes up { from { transform: translateY(12px); opacity: 0; } }
+
+  /* plan */
+  .plan-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px; margin-bottom: 10px; }
+  .plan-card label { display: flex; gap: 8px; align-items: baseline; font-weight: 750; font-size: 14px; margin-bottom: 2px; }
+  .plan-card .hint { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
+  .plan-card textarea { width: 100%; background: var(--surface2); border: 1px solid var(--line); border-radius: 12px; padding: 9px 11px; color: var(--text); font-size: 16px; line-height: 1.5; resize: none; min-height: 52px; }
+  .plan-card textarea:focus { outline: none; border-color: var(--accent); }
+  .plan-card .ro { white-space: pre-wrap; font-size: 15px; color: var(--paper-ink); min-height: 1.4em; }
+  .plan-card .ro:empty::before { content: "Not filled in yet"; color: var(--faint); font-style: italic; }
+  .steps { display: flex; gap: 4px; margin: 2px 0 12px; }
+  .steps i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.1); }
+  .steps i.on { background: var(--accent2); }
+
+  /* feedback */
+  .glow { border-left: 4px solid var(--good); }
+  .growc { border-left: 4px solid var(--accent2); }
+  .fbtext { white-space: pre-wrap; font-size: 14.5px; }
+  .trait { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+  .trait:first-of-type { border-top: 0; }
+  .trait .n { font-weight: 700; font-size: 14px; }
+  .trait .d { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+  .score { display: flex; gap: 4px; }
+  .score button, .score span { width: 32px; height: 30px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface2); font-weight: 800; font-size: 13px; display: grid; place-items: center; color: var(--muted); }
+  .score .on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .cmt { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px; margin-bottom: 10px; }
+  .cmt.resolved { opacity: .55; }
+  .cmt .qt { font: italic 14px/1.5 Georgia, serif; color: var(--paper-ink); border-left: 3px solid var(--hl-line); padding: 2px 0 2px 10px; margin-bottom: 8px; cursor: pointer; }
+  .cmt .hd { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .cmt .hd b { color: var(--text); }
+  .cmt .tx { white-space: pre-wrap; font-size: 14.5px; }
+  .sugg { margin-top: 8px; background: var(--surface2); border-radius: 12px; padding: 8px 10px; font-size: 14px; }
+  .sugg del { color: var(--bad); } .sugg ins { color: var(--good); text-decoration: none; font-weight: 650; }
+  .reply { margin: 8px 0 0 14px; padding-left: 10px; border-left: 2px solid var(--line); font-size: 13.5px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { background: var(--surface2); border-radius: 14px; padding: 9px 8px; text-align: center; }
+  .stat b { display: block; font-size: 18px; } .stat span { font-size: 11px; color: var(--muted); }
+  .checks { list-style: none; margin: 0; padding: 0; }
+  .checks li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .checks li:first-child { border-top: 0; }
+  .checks .ck { flex: none; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 13px; }
+  .checks .ck.on { background: var(--good); border-color: var(--good); color: #052e1c; }
+  .checks .auto { font-size: 11px; color: var(--faint); }
+  .diff { white-space: pre-wrap; font: 15.5px/1.7 Georgia, serif; color: var(--paper-ink); }
+  .diff ins { background: rgba(79, 209, 165, .2); color: var(--good); text-decoration: none; border-radius: 3px; }
+  .diff del { background: rgba(255, 138, 122, .16); color: var(--bad); border-radius: 3px; }
+  .quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+  .quick button { border: 1px solid var(--line); background: var(--surface2); border-radius: 999px; padding: 5px 10px; font-size: 12.5px; color: var(--text); }
+
+  /* sheets, toasts */
+  .scrim { position: absolute; inset: 0; z-index: 40; background: rgba(0,0,0,.5); opacity: 0; transition: opacity .2s; }
+  .scrim.on { opacity: 1; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 41; max-height: 88%; display: flex; flex-direction: column; background: var(--surface); border-top: 1px solid var(--line); border-radius: 26px 26px 0 0; transform: translateY(100%); transition: transform .24s cubic-bezier(.2,.8,.2,1); padding-bottom: env(safe-area-inset-bottom); }
+  .sheet.on { transform: none; }
+  .sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 8px auto 2px; flex: none; }
+  .sheet .sh { display: flex; align-items: center; gap: 8px; padding: 6px 16px 10px; flex: none; }
+  .sheet .sh h3 { flex: 1; margin: 0; font-size: 17px; }
+  .sheet .sb { overflow-y: auto; padding: 0 16px 18px; }
+  .genres { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .genre { text-align: left; border: 1px solid var(--line); background: var(--surface2); border-radius: 16px; padding: 10px; color: var(--text); }
+  .genre.on { border-color: var(--accent); background: var(--accent-soft); }
+  .genre .e { font-size: 22px; } .genre b { display: block; font-size: 13.5px; margin-top: 2px; } .genre span { font-size: 11.5px; color: var(--muted); }
+  .ideas button { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); background: none; padding: 9px 2px; font-size: 14px; color: var(--text); }
+  .wb-tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; }
+  .wb-tabs button { flex: none; border: 1px solid var(--line); background: var(--surface2); border-radius: 999px; padding: 6px 11px; font-size: 12.5px; color: var(--muted); }
+  .wb-tabs button.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .words { display: flex; flex-wrap: wrap; gap: 6px; }
+  .words button { border: 1px solid var(--line); background: var(--surface3); border-radius: 10px; padding: 7px 10px; font-size: 14px; color: var(--text); }
+  .toast { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 60; background: var(--surface3); border: 1px solid var(--line); color: var(--text); padding: 10px 16px; border-radius: 14px; font-size: 13.5px; font-weight: 650; box-shadow: 0 10px 30px rgba(0,0,0,.4); max-width: 88%; text-align: center; animation: up .2s; }
+  .focus .top, .focus .tabs, .focus .prompt, .focus .tools, .focus .lockbar { display: none; }
+  .focus main { padding-top: 10px; }
+  .focus #editor { min-height: 70vh; }
+  .exitfocus { position: absolute; top: 54px; right: 16px; z-index: 20; }
+  @media (max-width: 560px), (max-height: 600px) { .exitfocus { top: 10px; } .selbar { bottom: calc(70px + env(safe-area-inset-bottom)); } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone" id="phone">
+    <div class="sbar"><span id="clock">9:41</span><span class="r"><span id="roleTag"></span> ▂▄▆ <span class="bat"></span></span></div>
+    <header class="top" id="top"></header>
+    <main id="main"><div class="empty"><div class="e">✍️</div><p>Loading…</p></div></main>
+    <div class="stats" id="stats" hidden></div>
+    <nav class="tabs" id="tabs" hidden></nav>
+    <div class="scrim" id="scrim" hidden></div>
+    <div class="sheet" id="sheet"><div class="grab"></div><div class="sh"><h3 id="shTitle"></h3><button class="ib" id="shClose" aria-label="Close">✕</button></div><div class="sb" id="shBody"></div></div>
+  </div>
+</div>
+<div class="side-note" id="sideNote"></div>
+<script>
+"use strict";
+/* =====================================================================
+   Context
+   ===================================================================== */
+const AM = window.AMT || null;
+const VIEWER = AM && AM.viewer ? AM.viewer : { id: 0, role: "student", name: "You" };
+const STUDENT = AM ? AM.student : null;
+const IS_STUDENT = VIEWER.role === "student";
+document.body.className = IS_STUDENT ? "t-student" : "t-tutor";
+document.querySelector('meta[name="theme-color"]').content = IS_STUDENT ? "#062a30" : "#05070d";
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const first = n => String(n || "").trim().split(/\s+/)[0] || "";
+const CID = Math.random().toString(36).slice(2, 12);
+$("roleTag").textContent = { student: "Student", tutor: "Tutor", admin: "Admin", parent: "Parent" }[VIEWER.role] || "";
+const tick = () => { $("clock").textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?[AP]M/i, ""); };
+tick(); setInterval(tick, 30e3);
+
+async function api(method, path, body) {
+  const r = await fetch(path, { method, credentials: "same-origin", headers: Object.assign({ "X-AMT": "1" }, body ? { "Content-Type": "application/json" } : {}), body: body ? JSON.stringify(body) : undefined });
+  let j = {}; try { j = await r.json(); } catch {}
+  if (!r.ok) { const e = new Error(j.error || `Something went wrong (${r.status})`); e.status = r.status; e.data = j; throw e; }
+  return j;
+}
+function toast(msg, ms = 2600) { const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; $("phone").appendChild(t); setTimeout(() => t.remove(), ms); }
+
+/* =====================================================================
+   Writing knowledge: genres, organizers, checklists, word bank, rubric
+   ===================================================================== */
+const GENRES = {
+  narrative: { name: "Personal Narrative", e: "📖", d: "A true story from your life",
+    ideas: ["A time you felt really proud of yourself", "A day that did not go as planned", "The first time you tried something new", "A moment with someone special to you", "A time you learned an important lesson", "Moving to a new place or a new school", "A time you were brave", "Your best (or worst) birthday"],
+    plan: [["moment", "My moment", "Which small moment will you tell? Zoom in on one event."], ["setting", "Where and when", "Where were you? What time of day or year?"], ["people", "Who was there", "Who is in your story?"], ["hook", "Hook", "How will you grab the reader? Try a sound, a question, dialogue or action."], ["beginning", "Beginning", "What was happening at the start?"], ["middle", "Middle: what happened", "List the events in order. Use First, Next, Then, Suddenly…"], ["climax", "Turning point", "The most important or exciting moment."], ["ending", "Ending", "How did it end?"], ["reflection", "Why it matters", "What did you learn or feel? How did you change?"], ["senses", "Senses", "What did you see, hear, smell, feel or taste?"]],
+    checks: [["hook", "Starts with a hook that grabs the reader"], ["first", "Told in first person (I, me, my)"], ["order", "Events in order, with transition words"], ["senses", "Sensory details (see, hear, smell, feel, taste)"], ["dialogue", "Dialogue: someone speaks in “quotation marks”"], ["feel", "Shows feelings, not just tells"], ["paras", "Paragraphs for beginning, middle and end"], ["reflect", "Ends with what you learned or felt"], ["caps", "Capital letters and end punctuation"]] },
+  descriptive: { name: "Descriptive", e: "🎨", d: "Paint a picture with words",
+    ideas: ["Your favorite place", "A busy market or street", "Your kitchen when food is cooking", "A storm", "A special object you own", "The best meal you ever had"],
+    plan: [["subject", "What I'm describing", ""], ["impression", "Main feeling", "What feeling should the reader get?"], ["see", "I see…", ""], ["hear", "I hear…", ""], ["smell", "I smell / taste…", ""], ["touch", "I feel / touch…", ""], ["compare", "Similes and metaphors", "It is like… / It is as … as …"], ["closing", "Closing thought", ""]],
+    checks: [["senses", "Uses at least three senses"], ["compare", "Has a simile or metaphor (like, as)"], ["adj", "Strong, specific describing words"], ["order", "Organized (near to far, top to bottom…)"], ["paras", "Paragraphs"], ["caps", "Capital letters and end punctuation"]] },
+  opinion: { name: "Opinion / Persuasive", e: "💬", d: "Convince your reader",
+    ideas: ["Should students wear school uniforms?", "Is homework helpful?", "The best pet to have", "Should kids have phones?", "Which season is the best?", "Should school start later?"],
+    plan: [["claim", "My opinion (claim)", "Say clearly what you think."], ["reason1", "Reason 1", "Why? Add a fact or example."], ["reason2", "Reason 2", ""], ["reason3", "Reason 3", ""], ["counter", "Other side", "What might someone who disagrees say? Answer them."], ["conclusion", "Conclusion", "Restate your opinion and end strong."]],
+    checks: [["claim", "States a clear opinion at the start"], ["reasons", "Gives at least three reasons"], ["evidence", "Supports reasons with facts or examples"], ["linking", "Linking words (because, for example, also, therefore)"], ["counter", "Answers the other side"], ["conclude", "Ends by restating the opinion"], ["paras", "Paragraphs"], ["caps", "Capital letters and end punctuation"]] },
+  informative: { name: "Informative", e: "🔬", d: "Teach your reader about a topic",
+    ideas: ["How plants make food", "An animal you find amazing", "A country you know well", "How to make your favorite food", "A famous inventor or scientist", "The water cycle"],
+    plan: [["topic", "Topic", ""], ["intro", "Introduction", "Hook and what the reader will learn."], ["idea1", "Main idea 1 + facts", ""], ["idea2", "Main idea 2 + facts", ""], ["idea3", "Main idea 3 + facts", ""], ["vocab", "Topic words to explain", ""], ["conclusion", "Conclusion", ""]],
+    checks: [["intro", "Introduces the topic"], ["groups", "Groups facts into paragraphs"], ["facts", "Uses facts, definitions and examples"], ["vocab", "Explains topic words"], ["linking", "Linking words (also, another, for example)"], ["conclude", "Has a conclusion"], ["caps", "Capital letters and end punctuation"]] },
+  letter: { name: "Letter", e: "✉️", d: "Write to a real person",
+    ideas: ["Thank a teacher who helped you", "Write to a relative far away", "Ask the principal for a change", "Write to your future self", "Invite a friend to an event"],
+    plan: [["to", "To", "Who is it for?"], ["purpose", "Why I'm writing", ""], ["details", "Details", "What do you want to tell or ask?"], ["closing", "Closing", "Love, Sincerely, Your friend…"]],
+    checks: [["greet", "Greeting (Dear …,)"], ["purpose", "Says why you are writing"], ["details", "Details and examples"], ["tone", "Polite, friendly tone"], ["close", "Closing and your name"], ["caps", "Capital letters and end punctuation"]] },
+  poem: { name: "Poem", e: "🌙", d: "Play with sound and images",
+    ideas: ["The ocean", "My family", "Night sky", "Rain on the roof", "Where I'm from", "A color"],
+    plan: [["topic", "Topic", ""], ["feeling", "Feeling", ""], ["images", "Pictures in words", "What images come to mind?"], ["sounds", "Sounds and rhymes", "Alliteration, rhyme, repeated lines…"], ["form", "Form", "Free verse, haiku, acrostic, rhyming…"]],
+    checks: [["images", "Strong images"], ["sound", "Uses sound (rhyme, rhythm or alliteration)"], ["lines", "Line breaks on purpose"], ["feeling", "Shows a feeling"], ["title", "Has a title"]] },
+  response: { name: "Book Response", e: "📚", d: "Write about what you read",
+    ideas: ["The book you are reading now", "A character you would like to meet", "The best ending you've read", "A book you would change"],
+    plan: [["book", "Title and author", ""], ["summary", "Short summary", "Main character, problem, solution."], ["favorite", "Favorite part", ""], ["connection", "Connection", "Does it remind you of your life, another book or the world?"], ["opinion", "My opinion", "Would you recommend it? Why?"]],
+    checks: [["names", "Names the title and author"], ["summary", "Short summary without the whole story"], ["evidence", "Uses details from the book"], ["connect", "Makes a connection"], ["opinion", "Gives an opinion with reasons"], ["caps", "Capital letters and end punctuation"]] },
+  free: { name: "Free Write", e: "✨", d: "Write about anything",
+    ideas: ["If I could fly…", "My dream job", "A day without screens", "If animals could talk", "Invent a new holiday"],
+    plan: [["idea", "My idea", ""], ["notes", "Notes", ""]],
+    checks: [["paras", "Paragraphs"], ["caps", "Capital letters and end punctuation"]] },
+};
+const WORDBANK = {
+  "Transitions": ["First", "Next", "Then", "After that", "Later", "Meanwhile", "Suddenly", "All of a sudden", "At that moment", "Before long", "Finally", "In the end", "The next day", "Earlier that morning"],
+  "Feelings": ["thrilled", "nervous", "proud", "relieved", "frustrated", "embarrassed", "curious", "anxious", "grateful", "disappointed", "confident", "terrified", "overjoyed", "lonely", "determined", "surprised"],
+  "Senses": ["crunchy", "sizzling", "fragrant", "rough", "silky", "glowing", "muffled", "echoing", "salty", "bitter", "sticky", "chilly", "humid", "dazzling", "faint", "buzzing"],
+  "Instead of “said”": ["whispered", "shouted", "replied", "asked", "explained", "laughed", "mumbled", "giggled", "announced", "cried", "admitted", "suggested", "groaned", "begged"],
+  "Instead of “good”": ["amazing", "wonderful", "excellent", "delightful", "terrific", "outstanding", "pleasant", "fantastic"],
+  "Opinion words": ["I believe", "In my opinion", "For example", "because", "Therefore", "In addition", "Most importantly", "On the other hand", "However", "To sum up"],
+};
+const TRAITS = [
+  ["ideas", "Ideas", "A clear main idea or moment, with details that support it."],
+  ["organization", "Organization", "A strong beginning, events or points in order, and a satisfying ending."],
+  ["voice", "Voice", "Sounds like the writer; shows feelings and personality."],
+  ["word_choice", "Word choice", "Precise, vivid words; strong verbs; sensory language."],
+  ["fluency", "Sentence fluency", "Sentences of different lengths and beginnings that flow when read aloud."],
+  ["conventions", "Conventions", "Spelling, capitals, punctuation, grammar and paragraphs."],
+];
+const LEVELS = ["", "Beginning", "Developing", "Proficient", "Excellent"];
+const STATUS = { draft: ["Draft", "✏️"], submitted: ["Turned in", "📨"], revise: ["Revise", "🔁"], reviewed: ["Reviewed", "⭐"], done: ["Done", "✅"] };
+const QUICK = ["Great hook! ⭐", "Strong sensory details 👀", "Show, don't tell: how did it feel?", "Add dialogue here 💬", "Good transition ➡️", "Split this run-on sentence", "Capital letter needed", "Check spelling", "Add a detail here", "Zoom in on this moment 🔍", "Vary how your sentences begin", "Love this word choice!"];
+const GLOWS = ["Your hook made me want to keep reading.", "You used vivid sensory details.", "Your events are in a clear order.", "Your voice really comes through.", "Great use of dialogue.", "Your ending shows what you learned."];
+const GROWS = ["Add more sensory details to the most important moment.", "Use transition words to connect events.", "Add dialogue to bring a character to life.", "Split long sentences and vary how they begin.", "End with what you learned or how you changed.", "Check capitals and end punctuation."];
+
+/* ---------- text analysis ---------- */
+const TRANS = ["first", "next", "then", "after that", "later", "meanwhile", "suddenly", "finally", "in the end", "before long", "at that moment", "the next day", "afterward", "soon", "eventually", "because", "for example", "also", "therefore", "however", "in addition", "another", "most importantly", "to sum up", "as a result"];
+const SENSE = ["saw", "see", "looked", "heard", "hear", "sound", "smell", "smelled", "taste", "tasted", "felt", "touch", "soft", "loud", "bright", "warm", "cold", "sweet", "bitter", "salty", "rough", "smooth", "crunch", "sizzl", "glow", "whisper", "roar", "scent", "fragran", "sticky", "chill", "humid", "buzz", "echo"];
+const FEEL = ["happy", "sad", "proud", "scared", "nervous", "excited", "angry", "relieved", "worried", "afraid", "thrilled", "embarrass", "frustrat", "grateful", "lonely", "surprised", "confident", "terrified", "heart", "tears", "smile", "laugh", "cried", "shaking", "butterflies"];
+const OVERUSED = ["very", "really", "so", "then", "good", "bad", "nice", "thing", "things", "stuff", "got", "a lot", "just", "like", "fun"];
+function analyze(text) {
+  const t = String(text || ""), low = t.toLowerCase();
+  const words = t.match(/[A-Za-z0-9À-ɏሀ-፿]+(?:['’-][A-Za-z0-9À-ɏሀ-፿]+)*/g) || [];
+  const sentences = t.split(/(?<=[.!?])["”']?\s+|\n+/).map(s => s.trim()).filter(s => /[A-Za-zሀ-፿]/.test(s));
+  const paras = t.split(/\n\s*\n|\n/).filter(p => p.trim().split(/\s+/).length >= 4).length;
+  const syl = w => { w = w.toLowerCase().replace(/[^a-z]/g, ""); if (w.length <= 3) return 1; w = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").replace(/^y/, ""); const m = w.match(/[aeiouy]{1,2}/g); return Math.max(1, m ? m.length : 1); };
+  const nSyl = words.reduce((a, w) => a + syl(w), 0);
+  const fk = words.length >= 30 && sentences.length ? Math.max(0, Math.round((0.39 * words.length / sentences.length + 11.8 * nSyl / words.length - 15.59) * 10) / 10) : null;
+  const has = list => list.filter(w => new RegExp(`\\b${w}`, "i").test(low));
+  const firstPerson = (low.match(/\b(i|me|my|mine|we|our)\b/g) || []).length;
+  const dialogue = (t.match(/["“][^"”]{2,}["”]/g) || []).length;
+  const transitions = has(TRANS);
+  const senses = has(SENSE), feelings = has(FEEL);
+  const counts = {}; for (const w of words) { const k = w.toLowerCase(); counts[k] = (counts[k] || 0) + 1; }
+  const over = OVERUSED.map(w => [w, w.includes(" ") ? (low.match(new RegExp(`\\b${w}\\b`, "g")) || []).length : counts[w] || 0]).filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1]);
+  const starts = {}; sentences.forEach(s => { const w = (s.match(/[A-Za-z]+/) || [""])[0].toLowerCase(); if (w) starts[w] = (starts[w] || 0) + 1; });
+  const sameStarts = Object.entries(starts).filter(([, n]) => n >= 3 && sentences.length >= 5).sort((a, b) => b[1] - a[1]);
+  const capsOk = sentences.length ? sentences.filter(s => /^["“(]?[A-Z0-9ሀ-፿]/.test(s)).length / sentences.length : 1;
+  const endOk = sentences.length ? sentences.filter(s => /[.!?]["”')]?$/.test(s)).length / sentences.length : 1;
+  const iLower = (t.match(/(^|\s)i(\s|'|’)/g) || []).length;
+  const long = sentences.filter(s => s.split(/\s+/).length > 30).length;
+  const similes = /\b(like a|like an|as [a-z]+ as)\b/i.test(t);
+  return { words: words.length, sentences: sentences.length, paras, avg: sentences.length ? Math.round(words.length / sentences.length * 10) / 10 : 0, fk, firstPerson, dialogue, transitions, senses, feelings, over, sameStarts, capsOk, endOk, iLower, long, similes };
+}
+// Which checklist items look done (a hint only; the student ticks them)
+function autoChecks(genre, a, text) {
+  const t = String(text || "").trim(), firstLine = t.split(/\n/)[0] || "";
+  return {
+    hook: t.length > 40 && (/[?!]/.test(firstLine.slice(0, 160)) || /^["“]/.test(t) || /^(crash|boom|bang|splash|whoosh|ring|knock)/i.test(t) || a.sentences >= 3),
+    first: a.firstPerson >= 3, order: a.transitions.length >= 3, senses: a.senses.length >= 3, dialogue: a.dialogue >= 1, feel: a.feelings.length >= 2,
+    paras: a.paras >= 3, reflect: /\b(learned|realized|taught me|now i know|i will never forget|from that day|this experience)\b/i.test(t.slice(-500)),
+    caps: a.sentences >= 2 && a.capsOk > .9 && a.endOk > .85 && !a.iLower, compare: a.similes, linking: a.transitions.length >= 3,
+    reasons: (t.match(/\b(first|second|third|another reason|also|finally|because)\b/gi) || []).length >= 3, greet: /^dear\b/i.test(t), close: /\b(sincerely|love|your friend|best wishes|regards|thank you)\b/i.test(t.slice(-200)),
+    title: true,
+  };
+}
+
+/* =====================================================================
+   State
+   ===================================================================== */
+let LIST = null, CAN = { write: false, review: false };
+let P = null;                  // the open piece
+let PERM = { canWrite: false, isOwner: false, canReview: false };
+let TAB = null, ES = null, PEOPLE = [], REMOTE = {};   // REMOTE: other people's caret/typing
+let pending = false, sending = false, sendTimer = null, lastLive = 0, lastSentAt = 0, saveState = "saved";
+let checksDone = {};           // student ticks (kept on this device)
+let focusMode = false, selRange = null, versions = [];
+
+/* =====================================================================
+   Library
+   ===================================================================== */
+async function showLibrary() {
+  closeLive(); P = null; TAB = null; focusMode = false; $("phone").classList.remove("focus");
+  $("tabs").hidden = true; $("stats").hidden = true; hideSelbar();
+  if (!STUDENT) return noStudent();
+  $("top").innerHTML = `<h1>Writing Studio<span class="sub">${IS_STUDENT ? "Your stories and essays" : `${esc(STUDENT.name)} · Grade ${esc(STUDENT.grade || "—")}`}</span></h1><span class="who">${dot(VIEWER)}</span>`;
+  try { const r = await api("GET", `/api/writing?student=${STUDENT.id}`); LIST = r.pieces; CAN = { write: r.canWrite, review: r.canReview }; }
+  catch (e) { $("main").innerHTML = `<div class="empty"><div class="e">🔒</div><p>${esc(e.message)}</p></div>`; return; }
+  const groups = [
+    ["To do", LIST.filter(p => ["draft", "revise"].includes(p.status))],
+    [IS_STUDENT ? "Waiting for feedback" : "To review", LIST.filter(p => p.status === "submitted")],
+    ["Reviewed", LIST.filter(p => p.status === "reviewed")],
+    ["Finished", LIST.filter(p => p.status === "done")],
+  ];
+  if (CAN.review) [groups[0], groups[1]] = [groups[1], groups[0]];
+  if (!IS_STUDENT && !CAN.review) { groups[0][0] = "In progress"; groups[1][0] = "Turned in"; }
+  const name = first(STUDENT.name);
+  const hello = IS_STUDENT ? `<div class="hello"><h2>Hi ${esc(name)} ✍️</h2><p>${LIST.length ? "Pick a piece to keep writing, or start a new one." : "Every great writer starts with one small moment."}</p></div>`
+    : `<div class="hello"><h2>${esc(name)}'s writing</h2><p>${CAN.review ? `${LIST.filter(p => p.status === "submitted").length} to review · ` : ""}${LIST.filter(p => ["draft", "revise"].includes(p.status)).length} in progress · ${LIST.filter(p => p.status === "done").length} finished</p></div>`;
+  $("main").innerHTML = hello + (LIST.length ? groups.filter(g => g[1].length).map(([h, list]) => `<div class="sec">${h}</div>` + list.map(pieceCard).join("")).join("")
+    : `<div class="empty"><div class="e">📝</div><p>${IS_STUDENT ? "No writing yet." : `No writing yet. Assign ${esc(name)} a prompt to start.`}</p></div>`) + `<div style="height:70px"></div>`;
+  document.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openPiece(+b.dataset.open));
+  if (CAN.write || CAN.review) {
+    const fab = document.createElement("button"); fab.className = "fab"; fab.textContent = IS_STUDENT ? "＋ New writing" : "＋ Assign writing";
+    fab.onclick = newPieceSheet; $("main").appendChild(fab);
+  }
+}
+function pieceCard(p) {
+  const g = GENRES[p.genre] || GENRES.free, [sn, si] = STATUS[p.status] || STATUS.draft;
+  const pct = p.target_words ? Math.min(100, Math.round(p.words / p.target_words * 100)) : null;
+  const due = p.due_date ? dueText(p.due_date) : "";
+  return `<button class="piece" data-open="${p.id}"><span class="g">${g.e}</span><span class="b"><b>${esc(p.title)}</b>
+    <span class="meta"><span class="chip ${p.status}">${si} ${sn}</span><span>${g.name}</span><span>· ${p.words} words${p.target_words ? ` / ${p.target_words}` : ""}</span>
+      ${p.open_comments ? `<span>· 💬 ${p.open_comments}</span>` : ""}${due ? `<span>· ${due}</span>` : ""}${p.live ? `<span class="livepill">· ● live</span>` : ""}${!IS_STUDENT && p.tutor_name ? `<span>· ${esc(first(p.tutor_name))}</span>` : ""}</span>
+    ${pct !== null ? `<span class="bar"><i style="width:${pct}%"></i></span>` : ""}</span></button>`;
+}
+function dueText(d) {
+  const days = Math.round((new Date(d + "T12:00:00") - new Date(new Date().toDateString() + " 12:00")) / 864e5);
+  return days < 0 ? `<span style="color:var(--bad)">due ${-days}d ago</span>` : days === 0 ? `<span style="color:var(--warn)">due today</span>` : days === 1 ? "due tomorrow" : `due in ${days}d`;
+}
+const dot = u => `<span class="dot ${u.role}" title="${esc(u.name)}">${esc((u.name || "?").split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>`;
+function noStudent() {
+  $("top").innerHTML = `<h1>Writing Studio</h1>`;
+  $("main").innerHTML = `<div class="empty"><div class="e">✍️</div><h3>Open it for a student</h3><p>Writing Studio is shared by a student and their tutor. Give it to a student, then open it from the student's page (Tools tab) to assign writing, watch them write and give feedback.</p></div>`;
+}
+
+/* ---------- new / assign ---------- */
+function newPieceSheet() {
+  let genre = "narrative";
+  openSheet(IS_STUDENT ? "Start writing" : `Assign writing to ${first(STUDENT.name)}`, () => `
+    <div class="genres">${Object.entries(GENRES).map(([k, g]) => `<button class="genre ${k === genre ? "on" : ""}" data-g="${k}"><span class="e">${g.e}</span><b>${g.name}</b><span>${g.d}</span></button>`).join("")}</div>
+    <div class="sec">Ideas</div><div class="ideas" id="ideas">${GENRES[genre].ideas.map(i => `<button data-idea="${esc(i)}">💡 ${esc(i)}</button>`).join("")}</div>
+    <div class="sec">${IS_STUDENT ? "Your title" : "Assignment"}</div>
+    <label class="field"><span>Title</span><input class="inp" id="nTitle" maxlength="120" placeholder="${IS_STUDENT ? "e.g. The Day I Got Lost" : "e.g. Personal Narrative: A Proud Moment"}"></label>
+    ${IS_STUDENT ? "" : `<label class="field"><span>Prompt for ${esc(first(STUDENT.name))}</span><textarea class="inp" id="nPrompt" rows="3" placeholder="Write about a time you felt proud. Zoom in on one moment, use sensory details and dialogue, and end with what you learned."></textarea></label>
+      <div class="row"><label class="field grow"><span>Target words</span><input class="inp" id="nTarget" type="number" min="0" max="10000" inputmode="numeric" placeholder="300"></label><label class="field grow"><span>Due</span><input class="inp" id="nDue" type="date"></label></div>`}
+    <button class="btn primary block" id="nGo">${IS_STUDENT ? "Start writing ✍️" : "Assign ✓"}</button>`, sb => {
+    sb.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { genre = b.dataset.g; sb.querySelectorAll("[data-g]").forEach(x => x.classList.toggle("on", x === b)); sb.querySelector("#ideas").innerHTML = GENRES[genre].ideas.map(i => `<button data-idea="${esc(i)}">💡 ${esc(i)}</button>`).join(""); wireIdeas(); });
+    const wireIdeas = () => sb.querySelectorAll("[data-idea]").forEach(b => b.onclick = () => {
+      const i = b.dataset.idea; sb.querySelector("#nTitle").value = i;
+      const pr = sb.querySelector("#nPrompt"); if (pr && !pr.value) pr.value = genre === "narrative" ? `Write a personal narrative about ${i.charAt(0).toLowerCase() + i.slice(1)}. Zoom in on one moment, use sensory details and dialogue, and end with what you learned.` : `${GENRES[genre].name}: ${i}.`;
+      sb.querySelector("#nTitle").focus();
+    });
+    wireIdeas();
+    sb.querySelector("#nGo").onclick = async () => {
+      const body = { student: STUDENT.id, genre, title: sb.querySelector("#nTitle").value };
+      if (!IS_STUDENT) Object.assign(body, { prompt: sb.querySelector("#nPrompt").value, target_words: sb.querySelector("#nTarget").value, due_date: sb.querySelector("#nDue").value });
+      try { const r = await api("POST", "/api/writing", body); closeSheet(); await openPiece(r.id, IS_STUDENT ? "plan" : "read"); toast(IS_STUDENT ? "Plan first, then write ✍️" : "Assigned ✓"); } catch (e) { toast(e.message); }
+    };
+  });
+}
+
+/* =====================================================================
+   A piece: live connection
+   ===================================================================== */
+async function openPiece(id, tab) {
+  closeLive();
+  let r; try { r = await api("GET", `/api/writing/${id}`); } catch (e) { return toast(e.message); }
+  P = r.piece; versions = r.versions; PERM = { canWrite: r.canWrite, isOwner: r.isOwner, canReview: r.canReview };
+  try { checksDone = JSON.parse(localStorage.getItem(`ws-checks-${P.id}`) || "{}"); } catch { checksDone = {}; }
+  TAB = tab || (PERM.isOwner ? (P.body.trim() ? "write" : "plan") : (P.status === "submitted" ? "review" : "read"));
+  pending = false; saveState = "saved";
+  render();
+  connect();
+}
+function connect() {
+  if (!P) return;
+  ES = new EventSource(`/api/writing/${P.id}/events?cid=${CID}`);
+  ES.addEventListener("snapshot", e => { const d = JSON.parse(e.data); PERM = { canWrite: d.canWrite, isOwner: d.isOwner, canReview: d.canReview }; if (!pending) { P = d.piece; render(true); } else { Object.assign(P, without(d.piece, ["body", "plan", "title", "version"])); } });
+  ES.addEventListener("text", e => {
+    const d = JSON.parse(e.data); if (!P) return;
+    if (PERM.isOwner && pending) return;            // my own other screen; mine wins, a conflict is caught on save
+    P.body = d.body; P.plan = d.plan; P.title = d.title; P.words = d.words; P.version = d.v;
+    liveRefresh();
+  });
+  ES.addEventListener("update", e => {
+    const d = JSON.parse(e.data); if (!P || d.id !== P.id) return;
+    const keep = PERM.isOwner && pending ? { body: P.body, plan: P.plan, title: P.title, version: P.version } : {};
+    const statusChanged = d.status !== P.status;
+    P = Object.assign(d, keep);
+    if (statusChanged) { PERM.canWrite = PERM.isOwner && ["draft", "revise", "reviewed"].includes(P.status); if (P.status !== myStatus) toast(`${STATUS[P.status][1]} ${STATUS[P.status][0]}`); myStatus = null; render(true); }
+    else liveRefresh(true);
+  });
+  ES.addEventListener("presence", e => { PEOPLE = JSON.parse(e.data); drawWho(); });
+  ES.addEventListener("live", e => { const d = JSON.parse(e.data); REMOTE[d.cid] = { ...d, at: Date.now() }; drawTyping(); if (TAB === "read") drawRead(); });
+  ES.addEventListener("deleted", () => { toast("This writing was deleted"); showLibrary(); });
+}
+function closeLive() { if (ES) ES.close(); ES = null; PEOPLE = []; REMOTE = {}; clearTimeout(sendTimer); }
+const without = (o, keys) => Object.fromEntries(Object.entries(o).filter(([k]) => !keys.includes(k)));
+setInterval(() => { const now = Date.now(); let ch = false; for (const k in REMOTE) if (now - REMOTE[k].at > 4000) { delete REMOTE[k]; ch = true; } if (ch) { drawTyping(); if (TAB === "read") drawRead(); } }, 1500);
+
+/* ---------- saving the student's text ---------- */
+function queueSave() {
+  pending = true; setSaved("typing");
+  clearTimeout(sendTimer); sendTimer = setTimeout(sendText, Date.now() - lastSentAt > 1500 ? 60 : 700);
+  const now = Date.now();
+  if (now - lastLive > 1200 && PEOPLE.length > 1) { lastLive = now; const ed = $("editor"); api("POST", `/api/writing/${P.id}/live`, { cid: CID, k: "typing", pos: ed ? ed.selectionStart : 0, field: TAB === "plan" ? "plan" : "body" }).catch(() => {}); }
+}
+async function sendText() {
+  if (!P || !pending) return;
+  if (sending) { clearTimeout(sendTimer); sendTimer = setTimeout(sendText, 400); return; }
+  sending = true; pending = false; lastSentAt = Date.now(); setSaved("saving");
+  const snap = { body: P.body, plan: P.plan, title: P.title, v: P.version, cid: CID };
+  try {
+    const r = await api("POST", `/api/writing/${P.id}/text`, snap);
+    P.version = r.v; P.words = r.words; setSaved(pending ? "typing" : "saved");
+    try { localStorage.removeItem(`ws-backup-${P.id}`); } catch {}
+  } catch (e) {
+    if (e.status === 409 && e.data && e.data.piece) {
+      // changed on another of my screens: keep a copy of what I typed, then load the newest
+      try { localStorage.setItem(`ws-backup-${P.id}`, JSON.stringify(snap)); } catch {}
+      P = e.data.piece; pending = false; render(true); toast("This writing changed on another screen. Loaded the newest version.", 4000);
+    } else if (e.status === 423 || e.status === 403) { pending = false; toast(e.message, 3500); render(true); }
+    else { pending = true; setSaved("offline"); clearTimeout(sendTimer); sendTimer = setTimeout(sendText, 4000); try { localStorage.setItem(`ws-backup-${P.id}`, JSON.stringify(snap)); } catch {} }
+  } finally { sending = false; if (pending) { clearTimeout(sendTimer); sendTimer = setTimeout(sendText, 500); } }
+}
+function setSaved(s) { saveState = s; const el = $("savedTag"); if (!el) return; el.className = "saved" + (s === "offline" ? " bad" : ""); el.textContent = { typing: "…", saving: "Saving…", saved: "Saved ✓", offline: "Offline: will retry" }[s]; }
+window.addEventListener("beforeunload", e => { if (pending || sending) { sendText(); e.preventDefault(); e.returnValue = ""; } });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && pending) sendText(); });
+
+/* =====================================================================
+   A piece: screens
+   ===================================================================== */
+function tabsFor() {
+  const open = (P.comments || []).filter(c => !c.parent && !c.resolved).length;
+  if (PERM.isOwner) return [["plan", "🗺️", "Plan"], ["write", "✍️", "Write"], ["feedback", "⭐", "Feedback", open], ["checks", "✅", "Checklist"]];
+  return [["read", "📄", "Read", 0], ["plan", "🗺️", "Plan"], ["review", PERM.canReview ? "🖊️" : "⭐", PERM.canReview ? "Review" : "Feedback", open], ["history", "🕘", "Drafts"]];
+}
+function render(keepScroll) {
+  if (!P) return;
+  const st = keepScroll ? $("main").scrollTop : 0;
+  const g = GENRES[P.genre] || GENRES.free, [sn, si] = STATUS[P.status] || STATUS.draft;
+  $("top").innerHTML = `<button class="ib" id="back" aria-label="Back">‹</button><h1>${esc(P.title)}<span class="sub">${g.e} ${g.name} · <span class="chip ${P.status}" style="padding:1px 7px">${si} ${sn}</span></span></h1><span class="who" id="who"></span>`;
+  $("back").onclick = async () => { if (pending) await sendText(); showLibrary(); };
+  drawWho();
+  $("tabs").hidden = false;
+  $("tabs").innerHTML = tabsFor().map(([k, i, n, b]) => `<button data-tab="${k}" class="${k === TAB ? "on" : ""}"><span class="i">${i}</span>${n}${b ? `<span class="badge">${b}</span>` : ""}</button>`).join("");
+  $("tabs").querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { TAB = b.dataset.tab; hideSelbar(); render(); });
+  hideSelbar();
+  ({ plan: drawPlan, write: drawWrite, feedback: drawFeedback, checks: drawChecks, read: drawRead, review: drawReview, history: drawHistory }[TAB] || drawRead)();
+  drawStats();
+  if (keepScroll) $("main").scrollTop = st;
+}
+// Something changed remotely: refresh only what the viewer is looking at, without disturbing typing
+function liveRefresh(meta) {
+  if (!P) return;
+  const h1 = $("top").querySelector("h1"); if (h1 && h1.firstChild) h1.firstChild.textContent = P.title;
+  if (TAB === "read") drawRead();
+  else if (TAB === "plan" && !PERM.canWrite) drawPlan();
+  else if (TAB === "write" && PERM.isOwner) { const ed = $("editor"), ti = $("titleIn"); if (ed && ed.value !== P.body && document.activeElement !== ed) ed.value = P.body; if (ti && document.activeElement !== ti) ti.value = P.title; }
+  else if (meta && ["feedback", "review", "history"].includes(TAB) && !document.activeElement.matches("textarea, input")) render(true);
+  else if (meta) { const tb = tabsFor(); $("tabs").querySelectorAll("[data-tab]").forEach((b, i) => { const s = b.querySelector(".badge"); if (s) s.textContent = tb[i][3] || ""; }); }
+  drawStats();
+}
+function drawWho() {
+  const w = $("who"); if (!w) return;
+  const seen = new Set(), list = PEOPLE.filter(p => !seen.has(p.id) && seen.add(p.id));
+  w.innerHTML = (list.length ? list : [{ ...VIEWER }]).map(dot).join("");
+  w.title = list.map(p => p.name).join(", ") + (list.length > 1 ? " are here" : "");
+}
+function drawTyping() {
+  const el = $("typingTag"); if (!el) return;
+  const t = Object.values(REMOTE).find(r => r.k === "typing");
+  el.innerHTML = t ? `<span class="typing"><i></i><i></i><i></i> ${esc(first(t.name))} is writing</span>` : "";
+}
+function drawStats() {
+  const show = TAB === "write" || TAB === "read" || TAB === "plan";
+  $("stats").hidden = !show;
+  if (!show) return;
+  const words = TAB === "plan" ? null : analyze(P.body).words;
+  const pct = P.target_words && words !== null ? Math.min(100, Math.round(words / P.target_words * 100)) : 0;
+  $("stats").innerHTML = words === null ? `<span id="typingTag"></span><span class="saved" id="savedTag"></span>`
+    : `${P.target_words ? `<span class="ring" style="--p:${pct}"></span>` : ""}<span><b style="color:var(--text)">${words}</b> ${P.target_words ? `/ ${P.target_words} ` : ""}words</span><span id="typingTag"></span><span class="saved" id="savedTag"></span>`;
+  drawTyping();
+  if (PERM.isOwner && PERM.canWrite && TAB === "write") { const b = document.createElement("button"); b.className = "btn sm primary"; b.id = "tSubmit"; b.textContent = "📨 Turn in"; b.style.marginLeft = "8px"; b.onclick = submitSheet; $("stats").appendChild(b); }
+  if (PERM.isOwner) setSaved(saveState); else $("savedTag").innerHTML = PEOPLE.some(p => p.role === "student") ? `<span class="livepill">● Live</span>` : `<span class="muted">${P.words} words saved</span>`;
+}
+
+/* ---------- prompt + lock banners ---------- */
+function promptCard() {
+  const note = AM && AM.settings && AM.settings.note;
+  return (P.prompt ? `<div class="prompt"><div class="k">✍️ Prompt${P.due_date ? ` · ${dueText(P.due_date)}` : ""}${P.target_words ? ` · ${P.target_words} words` : ""}</div>${esc(P.prompt)}</div>` : "")
+    + (note && IS_STUDENT ? `<div class="prompt"><div class="k">📌 Note from your tutor</div>${esc(note)}</div>` : "");
+}
+function lockBar() {
+  if (!PERM.isOwner) return "";
+  if (P.status === "submitted") return `<div class="lockbar">📨 <span class="grow">Turned in. Your tutor will read it soon.</span><button class="btn sm" id="takeBack">Take back</button></div>`;
+  if (P.status === "done") return `<div class="lockbar">✅ <span class="grow">Finished. Great work!</span></div>`;
+  if (P.status === "revise") return `<div class="lockbar">🔁 <span class="grow">Your tutor asked you to revise. See <b>Feedback</b>, then turn it in again.</span></div>`;
+  return "";
+}
+function wireLock() {
+  const tb = $("takeBack"); if (tb) tb.onclick = () => setStatus("draft");
+}
+let myStatus = null;
+async function setStatus(s, msg) {
+  myStatus = s;
+  try { if (pending) await sendText(); await api("PATCH", `/api/writing/${P.id}`, { status: s }); if (msg) toast(msg); } catch (e) { toast(e.message); }
+}
+
+/* ---------- PLAN ---------- */
+function drawPlan() {
+  const g = GENRES[P.genre] || GENRES.free, plan = P.plan || {}, can = PERM.canWrite;
+  const filled = g.plan.filter(([k]) => (plan[k] || "").trim()).length;
+  $("main").innerHTML = promptCard() + lockBar() + `<div class="row" style="margin:2px 2px 6px"><b class="grow">${g.e} Plan your ${g.name.toLowerCase()}</b><span class="small muted">${filled}/${g.plan.length}</span></div>
+    <div class="steps">${g.plan.map(([k]) => `<i class="${(plan[k] || "").trim() ? "on" : ""}"></i>`).join("")}</div>
+    ${g.plan.map(([k, label, hint]) => `<div class="plan-card"><label>${esc(label)}</label>${hint ? `<p class="hint">${esc(hint)}</p>` : ""}
+      ${can ? `<textarea data-plan="${k}" rows="2" placeholder="${esc(hint || label)}">${esc(plan[k] || "")}</textarea>` : `<div class="ro">${esc(plan[k] || "")}</div>`}</div>`).join("")}
+    ${can ? `<button class="btn primary block" id="toWrite">${P.body.trim() ? "Go to my writing ✍️" : "Start my draft from this plan ✍️"}</button>` : ""}<div style="height:12px"></div>`;
+  wireLock();
+  document.querySelectorAll("[data-plan]").forEach(t => { autoGrow(t); t.oninput = () => { P.plan = { ...(P.plan || {}), [t.dataset.plan]: t.value }; autoGrow(t); queueSave(); }; });
+  if ($("toWrite")) $("toWrite").onclick = () => {
+    if (!P.body.trim()) {
+      const p = P.plan || {}, parts = P.genre === "narrative" ? [p.hook, p.beginning, p.middle, p.climax, [p.ending, p.reflection].filter(Boolean).join(" ")] : g.plan.map(([k]) => p[k]);
+      const draft = parts.map(x => (x || "").trim()).filter(Boolean).join("\n\n");
+      if (draft) { P.body = draft + "\n\n"; queueSave(); }
+    }
+    TAB = "write"; render();
+  };
+}
+const autoGrow = t => { t.style.height = "auto"; t.style.height = Math.min(400, t.scrollHeight + 2) + "px"; };
+
+/* ---------- WRITE (student) ---------- */
+function drawWrite() {
+  const can = PERM.canWrite;
+  $("main").innerHTML = promptCard() + lockBar() + `
+    <input class="title-in" id="titleIn" value="${esc(P.title)}" maxlength="120" ${can ? "" : "readonly"} aria-label="Title">
+    ${can ? `<div class="tools"><button class="btn sm" id="tSpeak">🔊 Read aloud</button><button class="btn sm" id="tWords">📚 Word bank</button><button class="btn sm" id="tFocus">🎯 Focus</button><button class="btn sm" id="tIdeas">💡 Stuck?</button>
+</div>` : ""}
+    <div class="paper"><textarea id="editor" spellcheck="true" autocapitalize="sentences" placeholder="${can ? "Start writing here… Tell your story one moment at a time." : ""}" ${can ? "" : "readonly"}>${esc(P.body)}</textarea></div>`;
+  wireLock();
+  const ed = $("editor"), ti = $("titleIn");
+  const grow = () => { ed.style.height = "auto"; ed.style.height = Math.max(ed.scrollHeight + 4, window.innerHeight * .46) + "px"; };
+  grow();
+  if (!can) return;
+  ed.oninput = () => { P.body = ed.value; grow(); queueSave(); drawStatsLight(); };
+  ti.oninput = () => { P.title = ti.value; const h1 = $("top").querySelector("h1"); if (h1 && h1.firstChild) h1.firstChild.textContent = ti.value || "Untitled"; queueSave(); };
+  $("tSpeak").onclick = () => speak(ed.value.slice(ed.selectionStart !== ed.selectionEnd ? ed.selectionStart : 0, ed.selectionStart !== ed.selectionEnd ? ed.selectionEnd : undefined));
+  $("tWords").onclick = () => wordBank(ed);
+  $("tFocus").onclick = () => toggleFocus(true);
+  $("tIdeas").onclick = stuckSheet;
+  // restore a backup that never reached the server (e.g. phone went offline and the page was closed)
+  try { const bk = JSON.parse(localStorage.getItem(`ws-backup-${P.id}`) || "null"); if (bk && bk.body && bk.body !== P.body) { localStorage.removeItem(`ws-backup-${P.id}`); toast("We kept a copy of writing that wasn't saved. It's below your text.", 5000); P.body = P.body + (P.body.trim() ? "\n\n" : "") + bk.body; ed.value = P.body; grow(); queueSave(); } } catch {}
+}
+function drawStatsLight() { const a = analyze(P.body); const b = $("stats").querySelector("b"); if (b) b.textContent = a.words; const ring = $("stats").querySelector(".ring"); if (ring && P.target_words) ring.style.setProperty("--p", Math.min(100, Math.round(a.words / P.target_words * 100))); }
+function toggleFocus(on) {
+  focusMode = on; $("phone").classList.toggle("focus", on);
+  const old = document.querySelector(".exitfocus"); if (old) old.remove();
+  if (on) { const b = document.createElement("button"); b.className = "btn sm exitfocus"; b.textContent = "Exit focus"; b.onclick = () => toggleFocus(false); $("phone").appendChild(b); setTimeout(() => $("editor") && $("editor").focus(), 50); }
+}
+function speak(text) {
+  if (!("speechSynthesis" in window)) return toast("Read aloud isn't available on this device.");
+  if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
+  text = String(text || "").trim(); if (!text) return toast("Write something first.");
+  const u = new SpeechSynthesisUtterance(text); u.rate = .95; u.lang = "en-US";
+  speechSynthesis.speak(u); toast("Listening… tap again to stop. Does it sound right?");
+}
+function insertAt(ed, word) {
+  const s = ed.selectionStart, e = ed.selectionEnd, before = ed.value.slice(0, s), after = ed.value.slice(e);
+  const pad = before && !/\s$/.test(before) ? " " : "", tail = after && !/^[\s.,!?]/.test(after) ? " " : "";
+  ed.value = before + pad + word + tail + after; const pos = (before + pad + word + tail).length;
+  ed.setSelectionRange(pos, pos); ed.dispatchEvent(new Event("input"));
+}
+function wordBank(ed) {
+  let cat = Object.keys(WORDBANK)[0];
+  const sel = [ed.selectionStart, ed.selectionEnd];
+  openSheet("📚 Word bank", () => `<div class="wb-tabs">${Object.keys(WORDBANK).map(k => `<button data-c="${esc(k)}" class="${k === cat ? "on" : ""}">${esc(k)}</button>`).join("")}</div>
+    <div class="words">${WORDBANK[cat].map(w => `<button data-w="${esc(w)}">${esc(w)}</button>`).join("")}</div><p class="small muted" style="margin-top:12px">Tap a word to add it where your cursor is.</p>`, function wire(sb) {
+    sb.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { cat = b.dataset.c; sb.innerHTML = this.html(); wire.call(this, sb); });
+    sb.querySelectorAll("[data-w]").forEach(b => b.onclick = () => { ed.setSelectionRange(sel[0], sel[1]); insertAt(ed, b.dataset.w); sel[0] = sel[1] = ed.selectionStart; toast(`Added “${b.dataset.w}”`, 1200); });
+  });
+}
+function stuckSheet() {
+  const g = GENRES[P.genre] || GENRES.free;
+  const tips = P.genre === "narrative" ? ["What did you hear at that moment? Write the sound.", "What did someone say? Add it in “quotation marks”.", "How did your body feel? (shaking hands, racing heart…)", "Slow down the most important moment: write it second by second.", "What were you thinking right then?", "What did you learn? How are you different now?"]
+    : ["Read your plan again: which part haven't you written yet?", "Add an example: “For example, …”", "Explain why it matters.", "Add one more detail to your last sentence.", "Read it aloud. Where does it sound unclear?"];
+  openSheet("💡 Stuck? Try one", () => `<div class="ideas">${tips.map(t => `<button>${esc(t)}</button>`).join("")}</div><div class="sec">Your plan</div>${g.plan.map(([k, l]) => (P.plan || {})[k] ? `<p class="small"><b>${esc(l)}:</b> ${esc(P.plan[k])}</p>` : "").join("") || '<p class="small muted">Your plan is empty. Fill it in on the Plan tab.</p>'}`, sb => sb.querySelectorAll(".ideas button").forEach(b => b.onclick = closeSheet));
+}
+function submitSheet() {
+  const g = GENRES[P.genre] || GENRES.free, a = analyze(P.body), auto = autoChecks(P.genre, a, P.body);
+  const todo = g.checks.filter(([k]) => !(checksDone[k] || auto[k]));
+  openSheet("📨 Turn it in?", () => `<p>You wrote <b>${a.words} words</b>${P.target_words ? ` (goal ${P.target_words})` : ""}.</p>
+    ${todo.length ? `<div class="card"><h3>Before you turn it in, check:</h3><ul class="checks">${todo.map(([, t]) => `<li><span class="ck"></span>${esc(t)}</li>`).join("")}</ul></div>` : `<div class="card glow"><b>Your checklist looks great! ⭐</b></div>`}
+    <p class="small muted">After you turn it in, the text is locked until your tutor reviews it. You can take it back before they do.</p>
+    <div class="row"><button class="btn grow" id="sNo">Keep writing</button><button class="btn primary grow" id="sYes">Turn in 📨</button></div>`, sb => {
+    sb.querySelector("#sNo").onclick = closeSheet;
+    sb.querySelector("#sYes").onclick = async () => { closeSheet(); await setStatus("submitted", "Turned in! 🎉 Your tutor will read it."); };
+  });
+}
+
+/* ---------- CHECKLIST (student) ---------- */
+function drawChecks() {
+  const g = GENRES[P.genre] || GENRES.free, a = analyze(P.body), auto = autoChecks(P.genre, a, P.body);
+  $("main").innerHTML = `<div class="card"><h3>✅ ${g.name} checklist</h3><p class="small muted" style="margin:0 0 6px">Tick each one when your writing does it. ✨ means it looks done to us.</p>
+    <ul class="checks">${g.checks.map(([k, t]) => `<li data-ck="${k}"><span class="ck ${checksDone[k] ? "on" : ""}">${checksDone[k] ? "✓" : ""}</span><span class="grow">${esc(t)} ${auto[k] && !checksDone[k] ? '<span class="auto">✨ looks done</span>' : ""}</span></li>`).join("")}</ul></div>` + coachCard(a) + statsCard(a);
+  document.querySelectorAll("[data-ck]").forEach(li => li.onclick = () => { const k = li.dataset.ck; checksDone[k] = !checksDone[k]; try { localStorage.setItem(`ws-checks-${P.id}`, JSON.stringify(checksDone)); } catch {} drawChecks(); });
+}
+function coachCard(a) {
+  const tips = [];
+  if (a.words >= 40 && !a.dialogue && P.genre === "narrative") tips.push("💬 Add a line of dialogue to bring someone to life.");
+  if (a.words >= 60 && a.senses.length < 2) tips.push("👀 Add sensory details: what did you see, hear or smell?");
+  if (a.sentences >= 4 && a.transitions.length < 2) tips.push("➡️ Use transition words (Then, Suddenly, Finally) to connect events.");
+  if (a.over.length) tips.push(`🔁 You used ${a.over.slice(0, 3).map(([w, n]) => `“${w}” ${n}×`).join(", ")}. Try the Word bank for stronger words.`);
+  if (a.sameStarts.length) tips.push(`🔀 ${a.sameStarts[0][1]} sentences start with “${a.sameStarts[0][0]}”. Mix up your sentence beginnings.`);
+  if (a.long) tips.push(`✂️ ${a.long} very long sentence${a.long > 1 ? "s" : ""}. Read it aloud and split it where you take a breath.`);
+  if (a.iLower) tips.push("🔠 Write “I” as a capital letter.");
+  if (a.words >= 80 && a.paras < 2) tips.push("¶ Break your writing into paragraphs: beginning, middle and end.");
+  return tips.length ? `<div class="card"><h3>🧭 Writing coach</h3>${tips.map(t => `<p class="small" style="margin:6px 0">${esc(t)}</p>`).join("")}</div>` : "";
+}
+function statsCard(a) {
+  return `<div class="card"><h3>📊 Your writing</h3><div class="stat-grid">
+    <div class="stat"><b>${a.words}</b><span>words</span></div><div class="stat"><b>${a.sentences}</b><span>sentences</span></div><div class="stat"><b>${a.paras}</b><span>paragraphs</span></div>
+    <div class="stat"><b>${a.avg || "—"}</b><span>words / sentence</span></div><div class="stat"><b>${a.dialogue}</b><span>dialogue</span></div><div class="stat"><b>${a.fk !== null ? a.fk : "—"}</b><span>reading grade</span></div></div>
+    ${a.transitions.length ? `<p class="small muted" style="margin:10px 0 0">Transitions: ${a.transitions.slice(0, 10).map(esc).join(", ")}</p>` : ""}</div>`;
+}
+
+/* ---------- reading view with highlights and the live caret ---------- */
+function locate(body, quote, start) { if (!quote) return -1; let best = -1, bd = Infinity, i = body.indexOf(quote); while (i >= 0) { const d = Math.abs(i - start); if (d < bd) { best = i; bd = d; } i = body.indexOf(quote, i + 1); } return best; }
+function markedHTML(body, { caret = null, caretName = "", activeId = null } = {}) {
+  const ranges = [];
+  (P.comments || []).filter(c => !c.parent && !c.resolved && c.quote).forEach(c => { const at = locate(body, c.quote, c.start); if (at >= 0) ranges.push([at, at + c.quote.length, c.id]); });
+  const cuts = new Set([0, body.length]); ranges.forEach(([a, b]) => { cuts.add(a); cuts.add(b); }); if (caret !== null) cuts.add(Math.min(caret, body.length));
+  const pts = [...cuts].sort((x, y) => x - y); let html = "";
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[i + 1];
+    if (caret !== null && a === Math.min(caret, body.length)) html += `<span class="caretmark" data-n="${esc(caretName)}"></span>`;
+    if (b === undefined || b <= a) continue;
+    const seg = esc(body.slice(a, b)), hit = ranges.filter(([x, y]) => x <= a && y >= b);
+    html += hit.length ? `<mark data-o="${a}" data-c="${hit.map(h => h[2]).join(" ")}" class="${hit.some(h => h[2] === activeId) ? "sel" : ""}">${seg}</mark>` : `<span data-o="${a}">${seg}</span>`;
+  }
+  return html || `<span data-o="0"></span>`;
+}
+function drawRead() {
+  if (!P) return;
+  const typing = Object.values(REMOTE).find(r => r.field === "body" && r.role === "student");
+  const s = window.getSelection(), rb = $("readBox");
+  if (s && !s.isCollapsed && rb && rb.contains(s.anchorNode)) return;   // don't re-render while the tutor is selecting
+  const st = $("main").scrollTop;
+  $("main").innerHTML = promptCard() + `<div class="read" id="readBox"><h2>${esc(P.title)}</h2>${P.body.trim() ? markedHTML(P.body, typing ? { caret: typing.pos, caretName: first(typing.name) } : {}) : `<span class="muted" style="font-style:italic">${esc(first(STUDENT.name))} hasn't written anything yet.${PEOPLE.some(p => p.role === "student") ? " They're here now." : ""}</span>`}</div>
+    ${PERM.canReview ? `<p class="small muted" style="margin:10px 4px">Select words to comment or suggest a change.</p>` : ""}<div style="height:30px"></div>`;
+  $("main").scrollTop = st;
+  wireMarks($("readBox"));
+}
+function wireMarks(box) {
+  box.querySelectorAll("mark").forEach(m => m.onclick = () => { const id = m.dataset.c.split(" ")[0]; openComment(id); });
+}
+function openComment(id) {
+  const c = P.comments.find(x => x.id === id); if (!c) return;
+  openSheet("💬 Comment", () => commentHTML(c, true), sb => wireComments(sb));
+}
+
+/* ---------- selecting text to comment (tutor) ---------- */
+function offsetIn(node, off) {
+  let el = node.nodeType === 3 ? node.parentElement : node;
+  if (node.nodeType !== 3) { const ch = node.childNodes[off]; if (ch && ch.dataset && ch.dataset.o !== undefined) return +ch.dataset.o; if (ch && ch.nodeType === 1) { const s = ch.querySelector && ch.querySelector("[data-o]"); if (s) return +s.dataset.o; } const prev = node.childNodes[off - 1]; if (prev && prev.dataset && prev.dataset.o !== undefined) return +prev.dataset.o + prev.textContent.length; return null; }
+  const span = el.closest("[data-o]"); if (!span) return null;
+  return +span.dataset.o + off;
+}
+document.addEventListener("selectionchange", () => {
+  if (!P || !PERM.canReview || !["read", "review"].includes(TAB)) return;
+  const s = window.getSelection(); if (!s.rangeCount) return;
+  const r = s.getRangeAt(0), box = $("readBox");
+  if (!box || s.isCollapsed || !box.contains(r.commonAncestorContainer)) { if (!s.isCollapsed) return; setTimeout(() => { if (window.getSelection().isCollapsed && !document.querySelector(".sheet.on")) hideSelbar(); }, 250); return; }
+  let a = offsetIn(r.startContainer, r.startOffset), b = offsetIn(r.endContainer, r.endOffset);
+  if (a === null || b === null || b <= a) return;
+  // trim spaces at the edges
+  while (a < b && /\s/.test(P.body[a])) a++; while (b > a && /\s/.test(P.body[b - 1])) b--;
+  if (b <= a) return;
+  selRange = { start: a, quote: P.body.slice(a, b).slice(0, 600) };
+  showSelbar();
+});
+function showSelbar() {
+  let bar = document.querySelector(".selbar");
+  if (!bar) { bar = document.createElement("div"); bar.className = "selbar"; $("phone").appendChild(bar); }
+  bar.innerHTML = `<span class="q">“${esc(selRange.quote)}”</span><button class="btn sm primary" id="sbC">💬 Comment</button><button class="btn sm" id="sbS">✏️ Suggest</button>`;
+  bar.querySelector("#sbC").onclick = () => commentSheet(false);
+  bar.querySelector("#sbS").onclick = () => commentSheet(true);
+}
+function hideSelbar() { const b = document.querySelector(".selbar"); if (b) b.remove(); }
+function commentSheet(suggest) {
+  const sel = { ...selRange };
+  hideSelbar();
+  openSheet(suggest ? "✏️ Suggest a change" : "💬 Comment", () => `<div class="cmt" style="margin-bottom:12px"><div class="qt">“${esc(sel.quote)}”</div></div>
+    ${suggest ? `<label class="field"><span>Change it to</span><textarea class="inp" id="cSug" rows="2">${esc(sel.quote)}</textarea></label>` : ""}
+    <label class="field"><span>${suggest ? "Why? (optional)" : "Comment"}</span><textarea class="inp" id="cTxt" rows="3" placeholder="${suggest ? "e.g. A stronger verb shows the action." : "What should they notice or try?"}"></textarea></label>
+    <div class="quick">${QUICK.map(q => `<button data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+    <button class="btn primary block" id="cGo">Add ${suggest ? "suggestion" : "comment"}</button>`, sb => {
+    sb.querySelectorAll("[data-q]").forEach(b => b.onclick = () => { const t = sb.querySelector("#cTxt"); t.value = (t.value ? t.value + " " : "") + b.dataset.q; t.focus(); });
+    sb.querySelector("#cGo").onclick = async () => {
+      const body = { quote: sel.quote, start: sel.start, text: sb.querySelector("#cTxt").value };
+      if (suggest) body.suggest = sb.querySelector("#cSug").value;
+      try { await api("POST", `/api/writing/${P.id}/comments`, body); closeSheet(); window.getSelection().removeAllRanges(); selRange = null; toast(suggest ? "Suggestion added" : "Comment added"); } catch (e) { toast(e.message); }
+    };
+    setTimeout(() => (sb.querySelector(suggest ? "#cSug" : "#cTxt") || {}).focus && sb.querySelector(suggest ? "#cSug" : "#cTxt").focus(), 260);
+  });
+}
+
+/* ---------- comments list (both) ---------- */
+function commentHTML(c, full) {
+  const replies = (P.comments || []).filter(r => r.parent === c.id);
+  const mine = c.by === VIEWER.id, at = locate(P.body, c.quote, c.start);
+  const canAct = PERM.isOwner || PERM.canReview;
+  return `<div class="cmt ${c.resolved ? "resolved" : ""}" data-cid="${c.id}">
+    ${c.quote ? `<div class="qt" data-jump="${c.id}">“${esc(c.quote)}”${at < 0 ? ' <span class="tiny muted">(text changed)</span>' : ""}</div>` : ""}
+    <div class="hd"><b>${esc(first(c.name))}</b><span>${c.role === "student" ? "student" : c.role}</span><span>· ${ago(c.at)}</span>${c.resolved ? `<span>· ${c.accepted ? "✓ used" : "✓ done"}</span>` : ""}</div>
+    ${c.text ? `<div class="tx">${esc(c.text)}</div>` : ""}
+    ${c.suggest !== null && c.suggest !== undefined ? `<div class="sugg"><del>${esc(c.quote)}</del> → <ins>${esc(c.suggest) || "<i>(delete)</i>"}</ins></div>` : ""}
+    ${replies.map(r => `<div class="reply"><b>${esc(first(r.name))}:</b> ${esc(r.text)}</div>`).join("")}
+    ${canAct ? `<div class="row" style="margin-top:9px">
+      ${PERM.isOwner && !c.resolved && c.suggest !== null && c.suggest !== undefined && at >= 0 && PERM.canWrite ? `<button class="btn sm primary" data-accept="${c.id}">Use this ✓</button>` : ""}
+      ${!c.resolved ? `<button class="btn sm" data-resolve="${c.id}">${PERM.isOwner ? "Got it ✓" : "Resolve"}</button>` : `<button class="btn sm ghost" data-unresolve="${c.id}">Reopen</button>`}
+      <button class="btn sm ghost" data-reply="${c.id}">Reply</button>
+      ${mine || VIEWER.role === "admin" ? `<button class="btn sm ghost danger" data-delc="${c.id}">Delete</button>` : ""}</div>` : ""}
+    ${full ? "" : ""}</div>`;
+}
+function wireComments(root) {
+  const act = async (fn, msg) => { try { await fn(); if (msg) toast(msg); } catch (e) { toast(e.message); } };
+  root.querySelectorAll("[data-accept]").forEach(b => b.onclick = () => act(async () => { if (pending) await sendText(); const r = await api("PATCH", `/api/writing/${P.id}/comments/${b.dataset.accept}`, { accept: true }); if (r.piece) { P = r.piece; } closeSheet(); render(true); }, "Changed ✓"));
+  root.querySelectorAll("[data-resolve]").forEach(b => b.onclick = () => act(() => api("PATCH", `/api/writing/${P.id}/comments/${b.dataset.resolve}`, { resolved: true })));
+  root.querySelectorAll("[data-unresolve]").forEach(b => b.onclick = () => act(() => api("PATCH", `/api/writing/${P.id}/comments/${b.dataset.unresolve}`, { resolved: false })));
+  root.querySelectorAll("[data-delc]").forEach(b => b.onclick = () => act(() => api("DELETE", `/api/writing/${P.id}/comments/${b.dataset.delc}`), "Deleted"));
+  root.querySelectorAll("[data-reply]").forEach(b => b.onclick = () => {
+    const id = b.dataset.reply;
+    openSheet("Reply", () => `<textarea class="inp" id="rTxt" rows="3" placeholder="Write a reply…"></textarea><div style="height:10px"></div><button class="btn primary block" id="rGo">Reply</button>`, sb => {
+      setTimeout(() => sb.querySelector("#rTxt").focus(), 250);
+      sb.querySelector("#rGo").onclick = () => act(async () => { await api("POST", `/api/writing/${P.id}/comments`, { parent: id, text: sb.querySelector("#rTxt").value }); closeSheet(); }, "Replied");
+    });
+  });
+  root.querySelectorAll("[data-jump]").forEach(q => q.onclick = () => { if (!document.querySelector(".sheet.on")) { TAB = PERM.isOwner ? "feedback" : "read"; render(); } });
+}
+function ago(t) { const s = (Date.now() - new Date(t)) / 1000; return s < 60 ? "now" : s < 3600 ? `${Math.floor(s / 60)}m` : s < 86400 ? `${Math.floor(s / 3600)}h` : new Date(t).toLocaleDateString([], { month: "short", day: "numeric" }); }
+
+/* ---------- FEEDBACK (student) ---------- */
+function drawFeedback() {
+  const ru = P.rubric || {}, scored = TRAITS.filter(([k]) => ru[k]);
+  const tops = (P.comments || []).filter(c => !c.parent);
+  const open = tops.filter(c => !c.resolved), done = tops.filter(c => c.resolved);
+  const nothing = !P.glow && !P.grow && !scored.length && !tops.length;
+  $("main").innerHTML = lockBar() + (nothing ? `<div class="empty"><div class="e">⭐</div><p>${P.status === "submitted" ? "Your tutor will leave feedback here soon." : "When you turn in your writing, your tutor's feedback shows up here."}</p></div>` : "")
+    + (P.glow ? `<div class="card glow"><h3>✨ Glow: what went well</h3><div class="fbtext">${esc(P.glow)}</div></div>` : "")
+    + (P.grow ? `<div class="card growc"><h3>🌱 Grow: your next step</h3><div class="fbtext">${esc(P.grow)}</div></div>` : "")
+    + (open.length ? `<div class="sec">To look at (${open.length})</div>${open.map(c => commentHTML(c)).join("")}` : "")
+    + (scored.length ? `<div class="card"><h3>📏 Rubric</h3>${TRAITS.map(([k, n, d]) => ru[k] ? `<div class="trait"><span class="n">${n}</span><span class="score">${[1, 2, 3, 4].map(i => `<span class="${i <= ru[k] ? "on" : ""}">${i}</span>`).join("")}</span><span class="d">${LEVELS[ru[k]]}: ${esc(d)}</span></div>` : "").join("")}</div>` : "")
+    + (P.body.trim() && tops.length ? `<div class="sec">Your writing</div><div class="read" id="readBox"><h2>${esc(P.title)}</h2>${markedHTML(P.body)}</div>` : "")
+    + (done.length ? `<div class="sec">Done (${done.length})</div>${done.map(c => commentHTML(c)).join("")}` : "") + `<div style="height:16px"></div>`;
+  wireLock(); wireComments($("main")); if ($("readBox")) wireMarks($("readBox"));
+}
+
+/* ---------- REVIEW (tutor; parents see it read-only) ---------- */
+let fbTimer = null;
+function drawReview() {
+  const ru = P.rubric || {}, can = PERM.canReview, a = analyze(P.body);
+  const tops = (P.comments || []).filter(c => !c.parent), open = tops.filter(c => !c.resolved);
+  const total = TRAITS.reduce((s, [k]) => s + (ru[k] || 0), 0), n = TRAITS.filter(([k]) => ru[k]).length;
+  $("main").innerHTML = (can ? `<div class="card"><h3>Status: ${STATUS[P.status][1]} ${STATUS[P.status][0]}</h3>
+      <div class="row" style="margin-top:8px">
+        ${P.status !== "revise" ? `<button class="btn sm" data-st="revise">🔁 Send back to revise</button>` : ""}
+        ${P.status !== "reviewed" ? `<button class="btn sm" data-st="reviewed">⭐ Mark reviewed</button>` : ""}
+        ${P.status !== "done" ? `<button class="btn sm primary" data-st="done">✅ Done</button>` : `<button class="btn sm" data-st="draft">↩ Reopen</button>`}
+      </div><p class="small muted" style="margin:8px 0 0">${esc(first(STUDENT.name))} sees your feedback right away.</p></div>
+      <div class="card glow"><h3>✨ Glow: what went well</h3><textarea class="inp" id="fGlow" rows="3" placeholder="Your hook made me want to keep reading…">${esc(P.glow || "")}</textarea>
+        <div class="quick">${GLOWS.map(q => `<button data-to="fGlow" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div></div>
+      <div class="card growc"><h3>🌱 Grow: next step</h3><textarea class="inp" id="fGrow" rows="3" placeholder="Next, add sensory details to…">${esc(P.grow || "")}</textarea>
+        <div class="quick">${GROWS.map(q => `<button data-to="fGrow" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div></div>`
+    : (P.glow ? `<div class="card glow"><h3>✨ Glow</h3><div class="fbtext">${esc(P.glow)}</div></div>` : "") + (P.grow ? `<div class="card growc"><h3>🌱 Grow</h3><div class="fbtext">${esc(P.grow)}</div></div>` : ""))
+    + `<div class="card"><h3>📏 Rubric ${n ? `<span class="muted small">· ${total}/${n * 4}</span>` : ""}</h3>${TRAITS.map(([k, nm, d]) => `<div class="trait"><span class="n">${nm}</span><span class="score">${[1, 2, 3, 4].map(i => can ? `<button data-tr="${k}" data-v="${i}" class="${ru[k] === i ? "on" : ""}" title="${LEVELS[i]}">${i}</button>` : `<span class="${i <= (ru[k] || 0) ? "on" : ""}">${i}</span>`).join("")}</span><span class="d">${ru[k] ? `<b>${LEVELS[ru[k]]}.</b> ` : ""}${esc(d)}</span></div>`).join("")}
+      <p class="tiny muted" style="margin:8px 0 0">1 Beginning · 2 Developing · 3 Proficient · 4 Excellent</p></div>`
+    + `<div class="sec">Comments (${open.length} open)</div>${tops.length ? tops.map(c => commentHTML(c)).join("") : `<p class="small muted" style="margin:0 4px 12px">${can ? "Open the Read tab and select words to comment." : "No comments yet."}</p>`}`
+    + (can ? coachForTutor(a) : "") + statsCard(a) + `<div style="height:16px"></div>`;
+  wireComments($("main"));
+  if (!can) return;
+  document.querySelectorAll("[data-st]").forEach(b => b.onclick = async () => { await saveFeedback(); setStatus(b.dataset.st, { revise: "Sent back to revise", reviewed: "Marked reviewed ⭐", done: "Marked done ✅", draft: "Reopened" }[b.dataset.st]); });
+  document.querySelectorAll("[data-tr]").forEach(b => b.onclick = async () => { const k = b.dataset.tr, v = +b.dataset.v; P.rubric = { ...(P.rubric || {}), [k]: P.rubric && P.rubric[k] === v ? undefined : v }; try { await api("PATCH", `/api/writing/${P.id}`, { rubric: P.rubric }); } catch (e) { toast(e.message); } });
+  ["fGlow", "fGrow"].forEach(id => { const t = $(id); autoGrow(t); t.oninput = () => { autoGrow(t); clearTimeout(fbTimer); fbTimer = setTimeout(saveFeedback, 900); }; t.onblur = saveFeedback; });
+  document.querySelectorAll("[data-to]").forEach(b => b.onclick = () => { const t = $(b.dataset.to); t.value = (t.value.trim() ? t.value.trim() + " " : "") + b.dataset.q; autoGrow(t); saveFeedback(); });
+}
+async function saveFeedback() {
+  clearTimeout(fbTimer);
+  const g = $("fGlow"), r = $("fGrow"); if (!g || !r) return;
+  if (g.value === (P.glow || "") && r.value === (P.grow || "")) return;
+  P.glow = g.value; P.grow = r.value;
+  try { await api("PATCH", `/api/writing/${P.id}`, { glow: g.value, grow: r.value }); toast("Feedback saved ✓", 1200); } catch (e) { toast(e.message); }
+}
+function coachForTutor(a) {
+  const n = [];
+  if (a.over.length) n.push(`Overused: ${a.over.slice(0, 4).map(([w, c]) => `“${w}” ${c}×`).join(", ")}`);
+  if (a.sameStarts.length) n.push(`${a.sameStarts[0][1]} sentences start with “${a.sameStarts[0][0]}”`);
+  if (a.long) n.push(`${a.long} sentence${a.long > 1 ? "s" : ""} over 30 words (possible run-ons)`);
+  if (a.iLower) n.push(`Lower-case “i” ${a.iLower}×`);
+  if (a.capsOk < .9 && a.sentences > 2) n.push(`${Math.round((1 - a.capsOk) * 100)}% of sentences don't start with a capital`);
+  if (P.genre === "narrative") { if (!a.dialogue) n.push("No dialogue yet"); if (a.senses.length < 2) n.push("Few sensory words"); if (a.transitions.length < 2) n.push("Few transition words"); }
+  return n.length ? `<div class="card"><h3>🧭 Things to look at</h3>${n.map(x => `<p class="small" style="margin:5px 0">• ${esc(x)}</p>`).join("")}</div>` : "";
+}
+
+/* ---------- DRAFTS: versions and what changed ---------- */
+async function drawHistory() {
+  $("main").innerHTML = `<p class="muted small">Loading…</p>`;
+  try { const r = await api("GET", `/api/writing/${P.id}`); versions = r.versions; } catch {}
+  $("main").innerHTML = `<div class="card"><h3>🕘 Drafts</h3><p class="small muted" style="margin:0 0 8px">A copy is kept every time ${esc(first(STUDENT.name))} turns it in and every time you review it. Tap one to see what changed since.</p>
+    ${versions.length ? versions.slice().reverse().map(v => `<button class="piece" data-v="${v.id}" style="margin:8px 0 0"><span class="g">📄</span><span class="b"><b>${esc(v.label)}</b><span class="meta">${new Date(v.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · ${v.words} words</span></span></button>`).join("") : `<p class="small muted">No drafts yet.</p>`}</div><div id="diffBox"></div>`;
+  document.querySelectorAll("[data-v]").forEach(b => b.onclick = async () => {
+    try { const r = await api("GET", `/api/writing/${P.id}/versions/${b.dataset.v}`); const box = $("diffBox");
+      box.innerHTML = `<div class="card"><h3>Changes from “${esc(r.version.label)}” to now</h3><p class="tiny muted" style="margin:0 0 8px"><ins style="color:var(--good);text-decoration:none">green = added</ins> · <del style="color:var(--bad)">red = removed</del></p><div class="diff">${diffHTML(r.version.body, P.body)}</div></div>`;
+      $("main").scrollTo({ top: box.offsetTop - 8, behavior: "smooth" }); } catch (e) { toast(e.message); }
+  });
+}
+function diffHTML(a, b) {
+  const A = a.match(/\s+|[^\s]+/g) || [], B = b.match(/\s+|[^\s]+/g) || [];
+  if (A.length * B.length > 4e6) return esc(b) + `<p class="tiny muted">(Too long to compare word by word.)</p>`;
+  const n = A.length, m = B.length, L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  let i = 0, j = 0, out = "", cur = null, buf = "";
+  const flush = () => { if (buf) out += cur === "+" ? `<ins>${esc(buf)}</ins>` : cur === "-" ? `<del>${esc(buf)}</del>` : esc(buf); buf = ""; };
+  const push = (t, s) => { if (t !== cur) { flush(); cur = t; } buf += s; };
+  while (i < n && j < m) { if (A[i] === B[j]) { push("=", A[i]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) push("-", A[i++]); else push("+", B[j++]); }
+  while (i < n) push("-", A[i++]); while (j < m) push("+", B[j++]); flush();
+  return out || '<span class="muted">No changes.</span>';
+}
+
+/* =====================================================================
+   Sheets
+   ===================================================================== */
+function openSheet(title, html, wire) {
+  const ctx = { html: typeof html === "function" ? html : () => html };
+  $("shTitle").textContent = title; $("shBody").innerHTML = ctx.html(); $("shBody").scrollTop = 0;
+  $("scrim").hidden = false; requestAnimationFrame(() => { $("scrim").classList.add("on"); $("sheet").classList.add("on"); });
+  if (wire) wire.call(ctx, $("shBody"));
+}
+function closeSheet() { $("scrim").classList.remove("on"); $("sheet").classList.remove("on"); setTimeout(() => { $("scrim").hidden = true; }, 220); }
+$("scrim").onclick = closeSheet; $("shClose").onclick = closeSheet;
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if ($("sheet").classList.contains("on")) closeSheet(); else if (focusMode) toggleFocus(false); } });
+
+/* =====================================================================
+   Start
+   ===================================================================== */
+$("sideNote").innerHTML = IS_STUDENT || VIEWER.role === "parent" ? "" : `<b>Tip:</b> open this on your phone too. ${STUDENT ? esc(first(STUDENT.name)) + "'s" : "The student's"} writing appears here live as they type, with a gold cursor showing where they are.`;
+(async () => {
+  const want = new URLSearchParams(location.search).get("piece");
+  await showLibrary();
+  if (want && LIST && LIST.some(p => p.id === +want)) openPiece(+want);
+})();
+</script>
+</body>
+</html>

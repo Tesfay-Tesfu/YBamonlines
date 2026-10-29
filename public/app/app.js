@@ -1013,7 +1013,7 @@ route("/admin/tools", async () => {
   $$("[data-assign]", page).forEach(b => b.onclick = () => bulkAssignModal(tools.find(t => t.id === Number(b.dataset.assign))));
 }, { roles: ["admin"] });
 
-const subjectOptions = cur => ["math", "physics", "chemistry", "science", "other"].map(s => `<option ${s === cur ? "selected" : ""}>${s}</option>`).join("");
+const subjectOptions = cur => ["math", "physics", "chemistry", "science", "english", "other"].map(s => `<option ${s === cur ? "selected" : ""}>${s}</option>`).join("");
 const gradeOptions = cur => Array.from({ length: 12 }, (_, i) => `<option ${Number(cur) === i + 1 ? "selected" : ""}>${i + 1}</option>`).join("");
 
 function uploadToolModal(existing) {
