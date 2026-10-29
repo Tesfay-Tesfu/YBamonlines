@@ -69,6 +69,31 @@ const publicPiece = w => ({ ...w, words: w.words });
 async function pushUpdate(id, exceptCid) { const w = await loadPiece(id); if (w) broadcast(id, 'update', publicPiece(w), exceptCid); return w; }
 
 // ---------------------------------------------------------------- list / create
+// Students this adult can open Writing Studio for (shown when the tool is opened without a student)
+r.get('/students', async (req, res) => {
+  const u = req.user;
+  if (!['admin', 'tutor', 'parent'].includes(u.role)) A.fail(403, 'Not available.');
+  const tool = await toolRow();
+  const params = [tool ? tool.id : 0];
+  let who = '';
+  if (u.role !== 'admin') { params.push(u.id); who = ` AND EXISTS (SELECT 1 FROM student_links l WHERE l.student_id=s.id AND l.adult_id=$2)`; }
+  const rows = await db.many(`SELECT s.id, s.name, s.grade, al.tutor_id, t.name AS tutor_name, (al.student_id IS NOT NULL) AS given,
+      (SELECT count(*)::int FROM writings w WHERE w.student_id=s.id) AS pieces,
+      (SELECT count(*)::int FROM writings w WHERE w.student_id=s.id AND w.status='submitted') AS to_review
+    FROM users s
+    LEFT JOIN allocations al ON al.student_id=s.id AND al.tool_id=$1 AND al.status='active' AND (al.expires_at IS NULL OR al.expires_at > now())
+    LEFT JOIN users t ON t.id=al.tutor_id
+    WHERE s.role='student' AND s.active${who} ORDER BY (al.student_id IS NULL), s.name`, params);
+  // a tutor only sees students whose Writing Studio is theirs (or shared)
+  const list = u.role === 'tutor' ? rows.filter(r2 => !r2.given || !r2.tutor_id || r2.tutor_id === u.id) : rows;
+  // pieces filed under another tutor are not counted for this tutor
+  if (u.role === 'tutor') for (const r2 of list) {
+    const c = await db.one(`SELECT count(*)::int AS pieces, count(*) FILTER (WHERE status='submitted')::int AS to_review FROM writings WHERE student_id=$1 AND tutor_key IN (0, $2)`, [r2.id, u.id]);
+    Object.assign(r2, c);
+  }
+  res.json({ students: list, toolId: tool ? tool.id : null, canGive: u.role === 'admin' || u.role === 'tutor' });
+});
+
 r.get('/', async (req, res) => {
   const sid = Number(req.query.student) || (req.user.role === 'student' ? req.user.id : 0);
   if (!sid) A.fail(400, 'Choose a student.');

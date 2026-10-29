@@ -415,9 +415,33 @@ function dueText(d) {
   return days < 0 ? `<span style="color:var(--bad)">due ${-days}d ago</span>` : days === 0 ? `<span style="color:var(--warn)">due today</span>` : days === 1 ? "due tomorrow" : `due in ${days}d`;
 }
 const dot = u => `<span class="dot ${u.role}" title="${esc(u.name)}">${esc((u.name || "?").split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase())}</span>`;
-function noStudent() {
-  $("top").innerHTML = `<h1>Writing Studio</h1>`;
-  $("main").innerHTML = `<div class="empty"><div class="e">✍️</div><h3>Open it for a student</h3><p>Writing Studio is shared by a student and their tutor. Give it to a student, then open it from the student's page (Tools tab) to assign writing, watch them write and give feedback.</p></div>`;
+async function noStudent() {
+  $("top").innerHTML = `<h1>Writing Studio<span class="sub">Choose a student</span></h1><span class="who">${dot(VIEWER)}</span>`;
+  if (IS_STUDENT || !AM) { $("main").innerHTML = `<div class="empty"><div class="e">✍️</div><p>Open Writing Studio from your home page.</p></div>`; return; }
+  let d; try { d = await api("GET", "/api/writing/students"); } catch (e) { $("main").innerHTML = `<div class="empty"><div class="e">🔒</div><p>${esc(e.message)}</p></div>`; return; }
+  const given = d.students.filter(x => x.given), not = d.students.filter(x => !x.given);
+  const card = x => `<button class="piece" data-stu="${x.id}" data-given="${x.given ? 1 : 0}"><span class="g">${x.given ? "✍️" : "➕"}</span><span class="b"><b>${esc(x.name)}</b>
+      <span class="meta">${x.grade ? `<span>Grade ${esc(x.grade)}</span>` : ""}${x.given ? `<span>· ${x.pieces} piece${x.pieces === 1 ? "" : "s"}</span>${x.to_review ? `<span class="chip submitted">📨 ${x.to_review} to review</span>` : ""}${x.tutor_name ? `<span>· ${esc(first(x.tutor_name))}</span>` : ""}` : `<span>· not given yet${d.canGive ? ": tap to give it" : ""}</span>`}</span></span></button>`;
+  const draw = (q = "") => {
+    const f = list => list.filter(x => !q || x.name.toLowerCase().includes(q.toLowerCase()));
+    $("list").innerHTML = (f(given).length ? `<div class="sec">Has Writing Studio</div>${f(given).map(card).join("")}` : "")
+      + (f(not).length && d.canGive ? `<div class="sec">Not given yet</div>${f(not).map(card).join("")}` : "")
+      + (!f(given).length && !(d.canGive && f(not).length) ? `<div class="empty"><div class="e">🔎</div><p>No students${q ? " match" : " yet"}.</p></div>` : "");
+    document.querySelectorAll("[data-stu]").forEach(b => b.onclick = () => go(+b.dataset.stu, b.dataset.given === "1"));
+  };
+  $("main").innerHTML = `<div class="hello"><h2>Whose writing?</h2><p>${VIEWER.role === "parent" ? "Choose your child." : `Pick a student to assign writing, watch them write and give feedback.${d.canGive ? " Students need Writing Studio given to them first." : ""}`}</p></div>
+    ${d.students.length > 6 ? `<input class="inp" id="q" placeholder="Search students" style="margin-bottom:6px">` : ""}<div id="list"></div>`;
+  draw(); if ($("q")) $("q").oninput = e => draw(e.target.value);
+}
+// Open a student's Writing Studio (in the platform: keep its Back button working)
+function go(id, given) {
+  let top = null; try { top = window.top !== window && window.top.location.origin === location.origin ? window.top : null; } catch {}
+  if (!given) {
+    const url = `#/student/${id}?tab=tools`;
+    if (top) top.location.hash = url; else location.href = "/" + url;
+    return;
+  }
+  if (top) top.location.hash = `#/play/writing-studio?student=${id}`; else location.href = `?student=${id}`;
 }
 
 /* ---------- new / assign ---------- */
