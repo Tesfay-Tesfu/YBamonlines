@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="amt-banner" content="off">
+<meta name="theme-color" content="#030716">
+<title>Space Lab · Afro-Merica Tutor & Training</title>
+<meta name="description" content="A free space mission for kids: fly through the Solar System, launch a rocket into orbit, build planets, make eclipses and race light. Grades 5–12.">
+<meta property="og:title" content="Free Space Mission for Kids · Afro-Merica Tutor & Training">
+<meta property="og:description" content="Fly through the Solar System, launch a rocket into orbit and earn a Space Cadet certificate. Grades 5–12.">
+<meta property="og:image" content="{{LOGO_URL}}">
+<!--SPACE-BOOT-->
+<style>
+  :root {
+    --navy: #0a1a3f; --deep: #030716; --panel: rgba(10, 20, 48, .86); --panel2: rgba(20, 36, 78, .9); --line: rgba(160, 190, 255, .16);
+    --text: #eef3ff; --muted: #9fb0d6; --faint: #6b7da6;
+    --red: #e0323f; --red2: #ff5866; --blue: #2a5bd7; --blue2: #6c9bff; --white: #ffffff; --gold: #f5c451; --gold2: #ffdd7a; --good: #3ddc97; --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--deep); color: var(--text); font: 15px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  [hidden] { display: none !important; }
+  #sky { position: fixed; inset: 0; z-index: 0; }
+  .app { position: relative; z-index: 1; height: 100%; height: 100dvh; display: flex; flex-direction: column; }
+
+  /* top bar with the stars and stripes */
+  .top { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: linear-gradient(180deg, rgba(3, 7, 22, .95), rgba(3, 7, 22, .6)); }
+  .top .logo { width: 36px; height: 36px; border-radius: 50%; background: #fff; object-fit: contain; flex: none; }
+  .top .brand { line-height: 1.1; min-width: 0; }
+  .top .brand b { display: block; font-size: 15px; letter-spacing: .01em; white-space: nowrap; }
+  .top .brand span { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+  .top .flag { flex: none; height: 22px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255,255,255,.2); }
+  .top .sp { flex: 1; }
+  .dots { display: flex; gap: 5px; }
+  .dots i { width: 22px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.14); }
+  .dots i.done { background: var(--gold); } .dots i.on { background: linear-gradient(90deg, var(--red2), var(--white), var(--blue2)); }
+  .stripes { flex: none; height: 4px; background: repeating-linear-gradient(90deg, var(--red) 0 22px, var(--white) 22px 44px); opacity: .9; }
+  .pts { flex: none; font-weight: 800; font-size: 13px; background: rgba(245, 196, 81, .14); color: var(--gold2); border: 1px solid rgba(245, 196, 81, .35); padding: 4px 10px; border-radius: 999px; }
+
+  /* mission layout: picture on the left/top, panel on the right/bottom */
+  .stage { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 390px; }
+  .view { position: relative; min-height: 0; }
+  #c { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
+  .panel { min-height: 0; overflow-y: auto; padding: 16px 18px 22px; background: var(--panel); border-left: 1px solid var(--line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .panel::-webkit-scrollbar { width: 6px; } .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+  @media (max-width: 820px) {
+    .stage { grid-template-columns: 1fr; grid-template-rows: minmax(240px, 52%) minmax(0, 1fr); }
+    .panel { border-left: 0; border-top: 1px solid var(--line); padding: 14px 14px 22px; }
+    .top .brand span, .dots { display: none; }
+  }
+  .kicker { font-size: 11.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+  h1 { font-size: 24px; line-height: 1.15; margin: 4px 0 8px; letter-spacing: -.01em; }
+  h2 { font-size: 18px; margin: 0 0 6px; }
+  h3 { font-size: 14.5px; margin: 0 0 6px; }
+  p { margin: 0 0 10px; }
+  .muted { color: var(--muted); } .small { font-size: 13px; } .tiny { font-size: 11.5px; }
+  .card { background: var(--panel2); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin: 10px 0; }
+  .goal { display: flex; gap: 10px; align-items: flex-start; background: rgba(42, 91, 215, .18); border: 1px solid rgba(108, 155, 255, .35); border-radius: 14px; padding: 10px 12px; margin: 10px 0; font-size: 14px; }
+  .goal.done { background: rgba(61, 220, 151, .14); border-color: rgba(61, 220, 151, .45); }
+  .goal .gi { font-size: 18px; }
+  .btn { border: 1px solid var(--line); background: rgba(255,255,255,.07); color: var(--text); border-radius: 12px; padding: 10px 14px; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn:hover { background: rgba(255,255,255,.12); }
+  .btn.go { background: linear-gradient(180deg, var(--red2), var(--red)); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(224, 50, 63, .35); }
+  .btn.blue { background: linear-gradient(180deg, var(--blue2), var(--blue)); border-color: transparent; color: #fff; }
+  .btn.gold { background: linear-gradient(180deg, var(--gold2), var(--gold)); border-color: transparent; color: #241800; }
+  .btn.sm { padding: 6px 10px; font-size: 12.5px; border-radius: 10px; }
+  .btn.block { width: 100%; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .seg { display: inline-flex; background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
+  .seg button { border: 0; background: none; padding: 6px 10px; border-radius: 9px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+  .seg button.on { background: var(--blue); color: #fff; }
+  label.sl { display: block; margin: 10px 0; font-size: 13px; color: var(--muted); }
+  label.sl b { color: var(--text); }
+  input[type=range] { width: 100%; accent-color: var(--red2); height: 28px; }
+  .inp { width: 100%; background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 16px; color: var(--text); }
+  .inp:focus { outline: none; border-color: var(--blue2); }
+  .readout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
+  .readout div { background: rgba(255,255,255,.05); border-radius: 12px; padding: 7px 6px; text-align: center; }
+  .readout b { display: block; font-size: 16px; } .readout span { font-size: 11px; color: var(--muted); }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 13px; margin: 8px 0; }
+  .facts span { color: var(--muted); display: block; font-size: 11.5px; }
+  .big { font-size: 22px; font-weight: 800; color: var(--gold2); }
+  .toast { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); z-index: 50; background: rgba(10, 20, 48, .96); border: 1px solid var(--line); border-radius: 14px; padding: 10px 16px; font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,.5); text-align: center; max-width: 90vw; animation: pop .25s; }
+  .toast.win { border-color: var(--gold); color: var(--gold2); }
+  @keyframes pop { from { transform: translate(-50%, -8px) scale(.96); opacity: 0; } }
+  .hud { position: absolute; left: 12px; top: 12px; z-index: 2; font-size: 12.5px; color: var(--muted); background: rgba(3, 7, 22, .6); border: 1px solid var(--line); padding: 6px 10px; border-radius: 10px; pointer-events: none; max-width: calc(100% - 24px); }
+  .hud b { color: var(--text); }
+  .banner { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 2; background: rgba(3, 7, 22, .78); border: 1px solid var(--line); border-radius: 14px; padding: 8px 14px; font-size: 13.5px; text-align: center; width: max-content; max-width: calc(100% - 24px); }
+
+  /* questions */
+  .q { margin-top: 12px; }
+  .q .opts { display: grid; gap: 7px; margin-top: 8px; }
+  .q .opts button { text-align: left; border: 1px solid var(--line); background: rgba(255,255,255,.06); border-radius: 12px; padding: 10px 12px; font-size: 14.5px; color: var(--text); }
+  .q .opts button:hover:not(:disabled) { border-color: var(--blue2); }
+  .q .opts button.right { background: rgba(61, 220, 151, .2); border-color: var(--good); }
+  .q .opts button.wrong { background: rgba(255, 107, 107, .16); border-color: var(--bad); }
+  .q .why { margin-top: 8px; font-size: 13.5px; color: var(--muted); }
+
+  /* welcome, end, locked */
+  .center { position: relative; z-index: 1; flex: 1; overflow-y: auto; display: flex; justify-content: center; padding: 20px 16px 40px; }
+  .hero { width: min(640px, 100%); margin: auto 0; }
+  .hero .badge { display: inline-flex; gap: 8px; align-items: center; background: rgba(224, 50, 63, .16); border: 1px solid rgba(255, 88, 102, .45); color: #ffd6da; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 800; letter-spacing: .04em; }
+  .hero h1 { font-size: clamp(30px, 6vw, 46px); margin: 14px 0 10px; line-height: 1.05; letter-spacing: -.02em; }
+  .hero h1 .r { color: var(--red2); } .hero h1 .b { color: var(--blue2); }
+  .missions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
+  .missions div { background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 14px; padding: 10px; font-size: 12.5px; font-weight: 700; }
+  .missions div i { display: block; font-style: normal; font-size: 22px; }
+  @media (max-width: 520px) { .missions { grid-template-columns: repeat(2, 1fr); } }
+  .grades { display: flex; flex-wrap: wrap; gap: 6px; }
+  .grades button { min-width: 46px; border: 1px solid var(--line); background: rgba(255,255,255,.06); border-radius: 12px; padding: 9px 10px; font-weight: 800; }
+  .grades button.on { background: var(--blue); border-color: var(--blue2); }
+  .glass { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 18px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .cert-prev { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; }
+  .rank { font-size: 30px; font-weight: 900; background: linear-gradient(90deg, var(--red2), #fff, var(--blue2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--muted); margin: 8px 0 12px; }
+  .consent input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--red2); flex: none; }
+  .err { color: var(--bad); font-weight: 700; min-height: 1.2em; font-size: 13.5px; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div class="app" id="app"></div>
+<script src="/qr.js"></script>
+<script>
+"use strict";
+/* =====================================================================
+   Where we are: the public one-time page (/space), or a tool for students
+   ===================================================================== */
+const AM = window.AMT || null;
+const PUB = window.SPACE && window.SPACE.public ? window.SPACE : null;
+const APP_URL = (PUB && PUB.appUrl) || location.origin;
+const LOGO = (PUB && PUB.logo) || "https://res.cloudinary.com/dnxsqsccu/image/upload/v1785330959/afromerica/logo.png";
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (n, d = 0) => Number(n).toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const TAU = Math.PI * 2;
+const STORE = "amt-space-v1";
+const SRC = (new URLSearchParams(location.search).get("src") || "").slice(0, 40);
+function toast(msg, win) { const t = document.createElement("div"); t.className = "toast" + (win ? " win" : ""); t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2800); }
+async function post(path, body) { const r = await fetch(path, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-AMT": "1" }, body: JSON.stringify(body || {}) }); let j = {}; try { j = await r.json(); } catch {} if (!r.ok) { const e = new Error(j.error || "Something went wrong. Please try again."); e.status = r.status; e.data = j; throw e; } return j; }
+
+/* U.S. flag (13 stripes, 50 stars), drawn here so it is crisp at any size */
+function flagSVG(h = 22) {
+  const w = h * 1.9, s = h / 13, cw = w * .4, ch = s * 7; let stars = "";
+  for (let r = 0; r < 9; r++) for (let c = 0; c < (r % 2 ? 5 : 6); c++) { const x = cw * ((c * 2 + (r % 2 ? 2 : 1)) / 12), y = ch * ((r + 1) / 10); stars += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${(s * .28).toFixed(2)}" fill="#fff"/>`; }
+  let stripes = ""; for (let i = 0; i < 13; i++) stripes += `<rect y="${(i * s).toFixed(2)}" width="${w}" height="${(s + .05).toFixed(2)}" fill="${i % 2 ? "#fff" : "#B22234"}"/>`;
+  return `<svg class="flag" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-label="United States flag" role="img">${stripes}<rect width="${cw}" height="${ch}" fill="#3C3B6E"/>${stars}</svg>`;
+}
+function drawFlag(g, x, y, h) {
+  const w = h * 1.9, s = h / 13, cw = w * .4, ch = s * 7;
+  for (let i = 0; i < 13; i++) { g.fillStyle = i % 2 ? "#fff" : "#B22234"; g.fillRect(x, y + i * s, w, s + .5); }
+  g.fillStyle = "#3C3B6E"; g.fillRect(x, y, cw, ch); g.fillStyle = "#fff";
+  for (let r = 0; r < 9; r++) for (let c = 0; c < (r % 2 ? 5 : 6); c++) { g.beginPath(); g.arc(x + cw * ((c * 2 + (r % 2 ? 2 : 1)) / 12), y + ch * ((r + 1) / 10), s * .28, 0, TAU); g.fill(); }
+}
+
+/* =====================================================================
+   The starry sky behind everything
+   ===================================================================== */
+const sky = $("sky"), sg = sky.getContext("2d"); let STARS = [];
+function sizeSky() {
+  const d = Math.min(2, devicePixelRatio || 1); sky.width = innerWidth * d; sky.height = innerHeight * d; sky.style.width = innerWidth + "px"; sky.style.height = innerHeight + "px"; sg.setTransform(d, 0, 0, d, 0, 0);
+  STARS = Array.from({ length: Math.round(innerWidth * innerHeight / 2600) }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: Math.random() * 1.3 + .2, t: Math.random() * TAU, c: Math.random() < .12 ? (Math.random() < .5 ? "#ffd2d6" : "#cfe0ff") : "#fff" }));
+}
+function drawSky(t) {
+  const W = innerWidth, H = innerHeight;
+  const g = sg.createRadialGradient(W * .75, H * .1, 0, W * .75, H * .1, Math.max(W, H) * .9);
+  g.addColorStop(0, "#14204a"); g.addColorStop(.45, "#070d26"); g.addColorStop(1, "#02040c"); sg.fillStyle = g; sg.fillRect(0, 0, W, H);
+  const n = sg.createRadialGradient(W * .15, H * .85, 0, W * .15, H * .85, W * .5); n.addColorStop(0, "rgba(178, 34, 52, .16)"); n.addColorStop(1, "rgba(178, 34, 52, 0)"); sg.fillStyle = n; sg.fillRect(0, 0, W, H);
+  for (const s of STARS) { sg.globalAlpha = .45 + .55 * Math.abs(Math.sin(s.t + t * .0007)); sg.fillStyle = s.c; sg.beginPath(); sg.arc(s.x, s.y, s.r, 0, TAU); sg.fill(); }
+  sg.globalAlpha = 1;
+}
+sizeSky(); addEventListener("resize", sizeSky);
+
+/* =====================================================================
+   Player, scoring, saving
+   ===================================================================== */
+const MISSIONS = [
+  { id: 1, e: "🪐", t: "Solar System Flight" }, { id: 2, e: "🚀", t: "Launch to Orbit" }, { id: 3, e: "🌌", t: "Build a Solar System" },
+  { id: 4, e: "🌗", t: "Moon & Eclipses" }, { id: 5, e: "⚡", t: "Race the Light" }, { id: 6, e: "🎖️", t: "Final Challenge" },
+];
+let ST = { status: "new" };
+let S = { name: "", grade: 7, mission: 0, points: 0, done: {}, answered: {}, quiz: null, finished: false, lead: false, cert: null, age: null, weight: null };
+const band = () => S.grade <= 6 ? 0 : S.grade <= 8 ? 1 : 2;
+const TOTAL = 16;   // 5 mission goals + 5 checkpoint questions + 6 final questions
+function save() { try { localStorage.setItem(STORE + (AM && AM.student ? "-" + AM.student.id : ""), JSON.stringify(S)); } catch {} }
+function load() { try { const v = JSON.parse(localStorage.getItem(STORE + (AM && AM.student ? "-" + AM.student.id : "")) || "null"); if (v && v.name) S = Object.assign(S, v); } catch {} }
+function award(key, msg) { if (S.done[key]) return; S.done[key] = true; S.points++; save(); toast(`⭐ ${msg} <b>+1</b>`, true); drawTop(); }
+
+/* =====================================================================
+   Questions (harder for older students)
+   ===================================================================== */
+const CHECK = {
+  1: [{ q: "Which planet is closest to the Sun?", o: ["Mercury", "Venus", "Earth", "Mars"], a: 0, w: "Mercury is closest. It zips around the Sun in just 88 days." },
+      { q: "A Mars year is about 687 Earth days. If you are 12 years old on Earth, about how old are you on Mars?", o: ["About 6", "About 12", "About 24", "About 2"], a: 0, w: "12 × 365 ÷ 687 ≈ 6.4. A Mars year is almost twice as long, so you'd be about half your age." },
+      { q: "Jupiter's year is 11.86 Earth years. Using Kepler's third law (T² = a³, T in years, a in AU), how far is Jupiter from the Sun?", o: ["About 5.2 AU", "About 11.9 AU", "About 3.4 AU", "About 140 AU"], a: 0, w: "a = T^(2/3) = 11.86^(2/3) ≈ 5.2 AU." }],
+  2: [{ q: "What keeps a satellite in orbit around Earth?", o: ["It moves sideways so fast that it keeps falling around Earth", "There is no gravity in space", "Its rockets push it all the time", "It floats on the air"], a: 0, w: "Gravity pulls it down, but it moves sideways so fast that Earth curves away under it. It's always falling, and always missing!" },
+      { q: "About how fast must a spacecraft move sideways to orbit just above Earth?", o: ["17,500 mph", "1,000 mph", "500 mph", "100,000 mph"], a: 0, w: "About 17,500 mph (7.8 km/s). That's New York to Los Angeles in about 10 minutes!" },
+      { q: "Orbital speed is v = √(GM/r). If the orbit radius r becomes 4 times bigger, the speed becomes…", o: ["Half as fast", "A quarter as fast", "Twice as fast", "The same"], a: 0, w: "v ∝ 1/√r, and √4 = 2, so the speed is halved." }],
+  3: [{ q: "What pulls the planets into orbits around the Sun?", o: ["Gravity", "Magnetism", "Solar wind", "Sunlight"], a: 0, w: "The Sun's gravity pulls every planet toward it. Their sideways motion turns that pull into an orbit." },
+      { q: "Planets closer to the Sun move…", o: ["Faster", "Slower", "At the same speed", "They don't move"], a: 0, w: "Closer means stronger gravity, so they must move faster to stay in orbit. Mercury is fastest." },
+      { q: "If the distance between two objects doubles, the gravity force between them becomes…", o: ["¼ as strong", "½ as strong", "2 times stronger", "4 times stronger"], a: 0, w: "Gravity follows an inverse-square law: F ∝ 1/r². Doubling r gives 1/2² = 1/4." }],
+  4: [{ q: "Why does the Moon have phases?", o: ["We see different amounts of its sunlit half", "Earth's shadow covers part of it", "Clouds block part of it", "The Moon changes shape"], a: 0, w: "Half of the Moon is always lit by the Sun. As it orbits, we see more or less of that lit half." },
+      { q: "During a solar eclipse, which one is in the middle?", o: ["The Moon", "Earth", "The Sun"], a: 0, w: "Sun, Moon, Earth: the Moon blocks the Sun's light. In a lunar eclipse, Earth is in the middle." },
+      { q: "Why isn't there an eclipse every month?", o: ["The Moon's orbit is tilted about 5° to Earth's orbit", "The Moon is too small", "Earth spins too fast", "The Sun is too bright"], a: 0, w: "Most months the Moon passes a little above or below the Sun–Earth line, so there's no eclipse." }],
+  5: [{ q: "Sunlight takes about how long to reach Earth?", o: ["8 minutes", "8 seconds", "8 hours", "8 days"], a: 0, w: "About 8 minutes 20 seconds. When you see the Sun, you see it as it was 8 minutes ago!" },
+      { q: "Light travels about 186,000 miles each second. How long does it take light to travel 372,000 miles?", o: ["2 seconds", "1 second", "186 seconds", "½ second"], a: 0, w: "time = distance ÷ speed = 372,000 ÷ 186,000 = 2 seconds." },
+      { q: "Proxima Centauri is 4.24 light-years away. With 1 light-year ≈ 9.46 × 10¹² km, that is about…", o: ["4.0 × 10¹³ km", "4.0 × 10¹² km", "2.2 × 10¹² km", "9.5 × 10¹⁶ km"], a: 0, w: "4.24 × 9.46 × 10¹² ≈ 40.1 × 10¹² = 4.0 × 10¹³ km." }],
+};
+const QUIZ = [
+  [{ q: "Which is the largest planet?", o: ["Jupiter", "Saturn", "Earth", "Neptune"], a: 0, w: "Jupiter is so big that more than 1,300 Earths could fit inside it." },
+   { q: "Which planet is called the Red Planet?", o: ["Mars", "Venus", "Mercury", "Jupiter"], a: 0, w: "Rusty iron in its soil makes Mars look red." },
+   { q: "What is the Sun?", o: ["A star", "A planet", "A moon", "A comet"], a: 0, w: "The Sun is a star, the closest one to us." },
+   { q: "In what year did American astronauts first walk on the Moon?", o: ["1969", "1959", "1979", "1989"], a: 0, w: "July 20, 1969: Apollo 11's Neil Armstrong and Buzz Aldrin walked on the Moon. 🇺🇸" },
+   { q: "How long does Earth take to go around the Sun once?", o: ["1 year", "1 day", "1 month", "10 years"], a: 0, w: "One trip around the Sun is one year: about 365¼ days." },
+   { q: "Which planet is famous for its bright rings of ice and rock?", o: ["Saturn", "Mars", "Mercury", "Venus"], a: 0, w: "Saturn's rings are mostly chunks of ice, some as small as dust and some as big as houses." }],
+  [{ q: "Which planet has the shortest year?", o: ["Mercury", "Venus", "Earth", "Neptune"], a: 0, w: "Mercury orbits the Sun in only 88 days." },
+   { q: "Gravity on the Moon is about 1/6 of Earth's. A student who weighs 90 lb on Earth weighs about… on the Moon.", o: ["15 lb", "45 lb", "90 lb", "540 lb"], a: 0, w: "90 ÷ 6 = 15 lb. Your mass is the same; the pull is weaker." },
+   { q: "What causes day and night?", o: ["Earth spinning on its axis", "Earth going around the Sun", "The Moon blocking the Sun", "The Sun moving around Earth"], a: 0, w: "Earth spins once about every 24 hours. The side facing the Sun has day." },
+   { q: "A light-year measures…", o: ["Distance", "Time", "Speed", "Brightness"], a: 0, w: "It's how far light travels in one year: about 5.9 trillion miles." },
+   { q: "What keeps the Moon orbiting Earth?", o: ["Gravity", "Magnetism", "Air pressure", "Sunlight"], a: 0, w: "Earth's gravity keeps pulling the Moon, bending its path into an orbit." },
+   { q: "Which planet has the hottest surface?", o: ["Venus", "Mercury", "Mars", "Jupiter"], a: 0, w: "Venus (about 867 °F). Its thick carbon dioxide air traps heat, so it is even hotter than Mercury." }],
+  [{ q: "Escape velocity from Earth's surface is about…", o: ["11.2 km/s", "7.9 km/s", "3.0 km/s", "30 km/s"], a: 0, w: "v = √(2GM/R) ≈ 11.2 km/s (about 25,000 mph)." },
+   { q: "Kepler's second law says a planet moves fastest when it is…", o: ["Closest to the Sun", "Farthest from the Sun", "Halfway out", "The speed never changes"], a: 0, w: "It sweeps out equal areas in equal times, so it speeds up near the Sun." },
+   { q: "Gravity on Jupiter is about 24.8 m/s². What does a 50 kg person weigh there?", o: ["About 1,240 N", "About 490 N", "About 50 N", "About 2,480 N"], a: 0, w: "W = mg = 50 × 24.8 = 1,240 N (on Earth: 490 N)." },
+   { q: "If the Sun's mass doubled, Earth's orbital speed (at the same distance) would need to…", o: ["Increase by √2", "Double", "Halve", "Stay the same"], a: 0, w: "v = √(GM/r): doubling M multiplies v by √2 ≈ 1.41." },
+   { q: "Light we see tonight from a star 10 light-years away left that star…", o: ["10 years ago", "10 minutes ago", "Tonight", "10 seconds ago"], a: 0, w: "It traveled 10 years to reach us, so we see the star as it was 10 years ago." },
+   { q: "If a planet's orbit radius is 4 times larger, its year is… (Kepler: T² ∝ r³)", o: ["8 times longer", "4 times longer", "2 times longer", "16 times longer"], a: 0, w: "T ∝ r^1.5 and 4^1.5 = 8." }],
+];
+// Shuffle answer choices (keep track of the right one)
+function shuffled(q) { const idx = q.o.map((_, i) => i).sort(() => Math.random() - .5); return { ...q, o: idx.map(i => q.o[i]), a: idx.indexOf(q.a) }; }
+// Render a question; onDone(correct) is called once
+function questionHTML(id, q) { return `<div class="q card" id="${id}"><div class="kicker">${id.startsWith("quiz") ? "Question" : "Checkpoint"}</div><h3 style="margin-top:4px">${esc(q.q)}</h3><div class="opts">${q.o.map((o, i) => `<button data-i="${i}">${esc(o)}</button>`).join("")}</div><div class="why" hidden></div></div>`; }
+function wireQuestion(id, q, key, onDone) {
+  const box = $(id); if (!box) return;
+  const prev = S.answered[key];
+  const show = (pick) => {
+    box.querySelectorAll("button").forEach((b, i) => { b.disabled = true; if (i === q.a) b.classList.add("right"); else if (i === pick) b.classList.add("wrong"); });
+    const w = box.querySelector(".why"); w.hidden = false; w.innerHTML = (pick === q.a ? "✅ <b>Correct!</b> " : "❌ <b>Not quite.</b> ") + esc(q.w);
+  };
+  if (prev !== undefined) { const i = q.o.indexOf(prev); show(i < 0 ? -1 : i); return; }
+  box.querySelectorAll("button").forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, ok = i === q.a; S.answered[key] = q.o[i];
+    if (ok) { S.points++; toast("✅ Correct! <b>+1</b>", true); } else toast("Good try! Read why below.");
+    save(); show(i); drawTop();
+    if (AM && AM.attempt) try { AM.attempt({ question: q.q, response: q.o[i], answer: q.o[q.a], correct: ok, topic: key.startsWith("quiz") ? "Final Challenge" : MISSIONS[S.mission - 1].t, mode: "Space Lab" }); } catch {}
+    if (onDone) onDone(ok);
+  });
+}
+
+/* =====================================================================
+   Canvas helpers shared by the missions
+   ===================================================================== */
+let cv, g, W = 0, H = 0, DPR = 1, raf = 0, M = null, lastT = 0;
+function setupCanvas() {
+  cv = $("c"); g = cv.getContext("2d");
+  const fit = () => { const r = cv.getBoundingClientRect(); DPR = Math.min(2, devicePixelRatio || 1); W = r.width; H = r.height; cv.width = Math.max(1, W * DPR); cv.height = Math.max(1, H * DPR); g.setTransform(DPR, 0, 0, DPR, 0, 0); if (M && M.resize) M.resize(); };
+  fit(); new ResizeObserver(fit).observe(cv);
+  // pointers: one finger drags, two fingers pinch
+  const pts = new Map(); let pinch = null;
+  cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); } else if (M && M.down) M.down(e.offsetX, e.offsetY, e); };
+  cv.onpointermove = e => { if (!pts.has(e.pointerId)) { if (M && M.hover) M.hover(e.offsetX, e.offsetY); return; } const p = pts.get(e.pointerId), dx = e.offsetX - p.x, dy = e.offsetY - p.y; pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
+    if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if (M && M.zoom) M.zoom(d / pinch); pinch = d; } else if (M && M.move) M.move(e.offsetX, e.offsetY, dx, dy, e); };
+  const up = e => { const was = pts.size; pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (was === 1 && M && M.up) M.up(e.offsetX, e.offsetY, e); };
+  cv.onpointerup = up; cv.onpointercancel = up;
+  cv.onwheel = e => { e.preventDefault(); if (M && M.zoom) M.zoom(e.deltaY < 0 ? 1.1 : 1 / 1.1); };
+}
+function loop(t) {
+  const dt = Math.min(.05, (t - (lastT || t)) / 1000); lastT = t;
+  drawSky(t);
+  if (M && g) { g.clearRect(0, 0, W, H); M.frame(dt, t); }
+  raf = requestAnimationFrame(loop);
+}
+// A shaded sphere lit from direction (lx, ly)
+function sphere(x, y, r, c1, c2, lx = -1, ly = 0) {
+  const l = Math.hypot(lx, ly) || 1, ox = lx / l * r * .45, oy = ly / l * r * .45;
+  const gr = g.createRadialGradient(x + ox, y + oy, r * .1, x, y, r * 1.05); gr.addColorStop(0, c1); gr.addColorStop(.65, c2); gr.addColorStop(1, "#05060c");
+  g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();
+}
+function glow(x, y, r, color, a = .6) { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, color.replace("A", a)); gr.addColorStop(1, color.replace("A", 0)); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill(); }
+function arrow(x1, y1, x2, y2, color, w = 2) { g.strokeStyle = color; g.fillStyle = color; g.lineWidth = w; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); const a = Math.atan2(y2 - y1, x2 - x1), s = 6 + w * 2; g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - s * Math.cos(a - .4), y2 - s * Math.sin(a - .4)); g.lineTo(x2 - s * Math.cos(a + .4), y2 - s * Math.sin(a + .4)); g.closePath(); g.fill(); }
+function hud(html) { const h = $("hud"); if (h) h.innerHTML = html; }
+function banner(html) { const b = $("banner"); if (!b) return; b.hidden = !html; b.innerHTML = html || ""; }
+
+/* =====================================================================
+   Mission 1: Solar System flight
+   ===================================================================== */
+const PLANETS = [
+  { n: "Mercury", a: .387, T: 87.97, R: 2440, g: .38, c: ["#d8d2c8", "#7c746a"], day: "176 Earth days (sunrise to sunrise)", moons: "0", temp: "333 °F average (−290 to 800 °F)", f: "A year on Mercury is shorter than its day!" },
+  { n: "Venus", a: .723, T: 224.7, R: 6052, g: .91, c: ["#ffe7b3", "#c49a4c"], day: "117 Earth days, and it spins backward", moons: "0", temp: "867 °F, the hottest planet", f: "On Venus the Sun rises in the west." },
+  { n: "Earth", a: 1, T: 365.25, R: 6371, g: 1, c: ["#7fc0ff", "#1d5fb8"], day: "24 hours", moons: "1", temp: "59 °F average", f: "The only planet we know with life, and liquid water on its surface." },
+  { n: "Mars", a: 1.524, T: 687, R: 3390, g: .38, c: ["#ff9a6b", "#b2442a"], day: "24 h 37 min", moons: "2 (Phobos and Deimos)", temp: "−85 °F average", f: "Home of Olympus Mons, a volcano about 2½ times taller than Mount Everest." },
+  { n: "Jupiter", a: 5.203, T: 4331, R: 69911, g: 2.53, c: ["#f3d7b0", "#a8774a"], day: "9 h 56 min, the fastest spin", moons: "more than 90", temp: "−166 °F (cloud tops)", f: "Its Great Red Spot is a storm bigger than Earth." },
+  { n: "Saturn", a: 9.537, T: 10747, R: 58232, g: 1.07, c: ["#f7e5b5", "#b99a5b"], day: "10 h 33 min", moons: "more than 140, the most of any planet", temp: "−218 °F", f: "Saturn is so light for its size that it would float in a giant bathtub.", ring: true },
+  { n: "Uranus", a: 19.19, T: 30589, R: 25362, g: .89, c: ["#c9f3f6", "#5fb3c2"], day: "17 h 14 min", moons: "more than 25", temp: "−320 °F", f: "It spins on its side, like a rolling ball." },
+  { n: "Neptune", a: 30.07, T: 59800, R: 24622, g: 1.14, c: ["#8fb3ff", "#2b49b3"], day: "16 h 6 min", moons: "16", temp: "−330 °F", f: "The windiest planet: winds faster than 1,200 mph." },
+];
+function missionSolar() {
+  let yaw = .5, pitch = .55, zoom = 1, days = 0, speed = 30, realDist = false, realSize = false, sel = null, seen = new Set(S.m1seen || []), drag = null, proj = [];
+  PLANETS.forEach(p => p.th = Math.random() * TAU);
+  const dist = p => realDist ? p.a / 30.07 : .1 + .9 * Math.log(1 + p.a * 3) / Math.log(1 + 30.07 * 3);
+  const rad = p => realSize ? Math.max(.6, p.R / 69911 * 7) : 4 + Math.log(p.R / 2000) * 3.2;
+  function P3(x, y, z) {   // rotate and project
+    const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const x1 = x * cy - z * sy, z1 = x * sy + z * cy, y1 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+    const f = 900 / (900 + z2 * .6); return { x: W / 2 + x1 * f, y: H / 2 + y1 * f, z: z2, f };
+  }
+  const scale = () => Math.min(W, H) * .46 * zoom;
+  function panel() {
+    const b = band(), p = sel;
+    const ageIn = S.age ?? S.grade + 5, wIn = S.weight ?? "";
+    $("panel").innerHTML = `<div class="kicker">Mission 1 of 6</div><h1>🪐 Solar System Flight</h1>
+      <p class="muted small">Drag to turn the Solar System, pinch or scroll to zoom. Tap a planet to visit it.</p>
+      <div class="goal ${S.done.m1 ? "done" : ""}"><span class="gi">${S.done.m1 ? "✅" : "🎯"}</span><span><b>Goal:</b> visit 3 planets (${Math.min(3, seen.size)}/3)</span></div>
+      <div class="row"><div class="seg"><button data-v="1" class="${speed === 1 ? "on" : ""}">1 day/s</button><button data-v="30" class="${speed === 30 ? "on" : ""}">1 month/s</button><button data-v="365" class="${speed === 365 ? "on" : ""}">1 year/s</button></div></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm ${realDist ? "blue" : ""}" id="rd">📏 Real distances</button><button class="btn sm ${realSize ? "blue" : ""}" id="rs">🔍 Real sizes</button></div>
+      <div class="row" style="margin-top:10px"><label class="sl grow" style="margin:0">Your age<input class="inp" id="age" type="number" min="1" max="120" inputmode="numeric" value="${esc(ageIn)}"></label><label class="sl grow" style="margin:0">Your weight (lb)<input class="inp" id="wt" type="number" min="1" max="600" inputmode="numeric" placeholder="e.g. 90" value="${esc(wIn)}"></label></div>
+      <div id="pinfo">${p ? planetCard(p) : `<div class="card small muted">👆 Tap a planet to see its facts, how old you'd be there and how much you'd weigh.<br>Parents: try your own age! 😄</div>`}</div>
+      ${S.done.m1 ? questionHTML("q1", Q1) : ""}
+      ${S.done.m1 && S.answered.c1 !== undefined ? nextBtn() : ""}`;
+    $("panel").querySelectorAll(".seg button").forEach(b2 => b2.onclick = () => { speed = +b2.dataset.v; panel(); });
+    $("rd").onclick = () => { realDist = !realDist; panel(); if (realDist) toast("📏 Real distances: the outer planets are VERY far away!"); };
+    $("rs").onclick = () => { realSize = !realSize; panel(); if (realSize) toast("🔍 If the Sun were a basketball, Earth would be a peppercorn 85 feet away!"); };
+    $("age").oninput = e => { S.age = +e.target.value || null; save(); if (sel) $("pinfo").innerHTML = planetCard(sel); };
+    $("wt").oninput = e => { S.weight = +e.target.value || null; save(); if (sel) $("pinfo").innerHTML = planetCard(sel); };
+    if (S.done.m1) wireQuestion("q1", Q1, "c1", () => panel());
+    wireNext();
+    void b;
+  }
+  function planetCard(p) {
+    const age = S.age ?? S.grade + 5, wt = S.weight;
+    const pAge = age * 365.25 / p.T;
+    return `<div class="card"><h2>${p.n}</h2><p class="small">${esc(p.f)}</p>
+      <div class="row" style="gap:14px"><div><span class="tiny muted">Your age here</span><div class="big">${pAge < 1 ? fmt(pAge, 2) : fmt(pAge, pAge < 10 ? 1 : 0)}</div></div>
+      <div><span class="tiny muted">Your weight here</span><div class="big">${wt ? fmt(wt * p.g) + " lb" : "—"}</div></div></div>
+      <div class="facts"><div><span>Distance from Sun</span>${fmt(p.a * 93, p.a < 2 ? 0 : 0)} million miles${band() ? ` (${p.a} AU)` : ""}</div><div><span>One year</span>${p.T < 1000 ? fmt(p.T) + " Earth days" : fmt(p.T / 365.25, 1) + " Earth years"}</div>
+        <div><span>One day</span>${esc(p.day)}</div><div><span>Moons</span>${esc(p.moons)}</div><div><span>Temperature</span>${esc(p.temp)}</div><div><span>Gravity</span>${p.g === 1 ? "1 g (Earth)" : p.g + "× Earth's"}${band() === 2 ? ` · ${fmt(p.g * 9.81, 1)} m/s²` : ""}</div>
+        <div><span>Size</span>${fmt(p.R * 2 * .6214)} miles across</div><div><span>Compared to Earth</span>${fmt(p.R / 6371, p.R < 6371 ? 2 : 1)}× wide</div></div></div>`;
+  }
+  const Q1 = shuffled(CHECK[1][band()]);
+  return {
+    resize() {},
+    frame(dt) {
+      days += speed * dt; const sc = scale();
+      PLANETS.forEach(p => p.th += TAU * speed * dt / p.T);
+      // orbits
+      g.lineWidth = 1;
+      for (const p of PLANETS) { g.strokeStyle = p === sel ? "rgba(245,196,81,.7)" : "rgba(160,190,255,.18)"; g.beginPath(); for (let i = 0; i <= 96; i++) { const a = i / 96 * TAU, q = P3(Math.cos(a) * dist(p) * sc, 0, Math.sin(a) * dist(p) * sc); i ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y); } g.stroke(); }
+      // bodies, far to near
+      const sun = P3(0, 0, 0), items = [{ sun: true, q: sun }];
+      proj = PLANETS.map(p => ({ p, q: P3(Math.cos(p.th) * dist(p) * sc, 0, Math.sin(p.th) * dist(p) * sc) }));
+      items.push(...proj); items.sort((a, b) => b.q.z - a.q.z);
+      for (const it of items) {
+        if (it.sun) { const r = (realSize ? Math.max(3, 109 / 11.2 * 7 * .1 * zoom * 6) : 15) * it.q.f; glow(it.q.x, it.q.y, r * 3.2, "rgba(255,190,80,A)", .55); sphere(it.q.x, it.q.y, r, "#fff7c2", "#ffb12a", 0, 0); continue; }
+        const { p, q } = it, r = rad(p) * q.f * Math.sqrt(zoom), lx = sun.x - q.x, ly = sun.y - q.y;
+        if (p.ring) { g.strokeStyle = "rgba(230,210,160,.75)"; g.lineWidth = Math.max(1, r * .35); g.beginPath(); g.ellipse(q.x, q.y, r * 2.1, r * 2.1 * Math.max(.18, Math.abs(Math.sin(pitch))), 0, Math.PI, TAU); g.stroke(); }
+        sphere(q.x, q.y, r, p.c[0], p.c[1], lx, ly);
+        if (p.n === "Jupiter" && r > 5) { g.save(); g.beginPath(); g.arc(q.x, q.y, r, 0, TAU); g.clip(); g.globalAlpha = .35; g.fillStyle = "#8a5a33"; for (const k of [-.45, -.15, .25]) g.fillRect(q.x - r, q.y + k * r, r * 2, r * .12); g.restore(); }
+        if (p.n === "Earth" && r > 4) { g.save(); g.beginPath(); g.arc(q.x, q.y, r, 0, TAU); g.clip(); g.fillStyle = "rgba(70,170,90,.55)"; g.beginPath(); g.ellipse(q.x - r * .25, q.y - r * .1, r * .35, r * .25, .6, 0, TAU); g.fill(); g.restore(); }
+        if (p.ring) { g.strokeStyle = "rgba(230,210,160,.85)"; g.lineWidth = Math.max(1, r * .35); g.beginPath(); g.ellipse(q.x, q.y, r * 2.1, r * 2.1 * Math.max(.18, Math.abs(Math.sin(pitch))), 0, 0, Math.PI); g.stroke(); }
+        if (p === sel) { g.strokeStyle = "#f5c451"; g.lineWidth = 2; g.beginPath(); g.arc(q.x, q.y, r + 6, 0, TAU); g.stroke(); }
+        g.fillStyle = seen.has(p.n) ? "#f5c451" : "rgba(220,230,255,.85)"; g.font = "600 12px Inter, system-ui"; g.textAlign = "center"; g.fillText(p.n, q.x, q.y + r + 15);
+      }
+      hud(`🗓️ <b>${fmt(days / 365.25, 1)}</b> Earth years have passed${realDist ? " · real distances" : ""}${realSize ? " · real sizes" : ""}`);
+    },
+    down(x, y) { drag = { x, y, moved: 0 }; },
+    move(x, y, dx, dy) { if (!drag) return; drag.moved += Math.abs(dx) + Math.abs(dy); yaw -= dx * .006; pitch = clamp(pitch + dy * .006, .08, 1.45); },
+    up(x, y) {
+      if (drag && drag.moved < 8) {
+        let best = null, bd = 30; for (const { p, q } of proj) { const d = Math.hypot(q.x - x, q.y - y); if (d < bd + rad(p)) { bd = d; best = p; } }
+        if (best) { sel = best; seen.add(best.n); S.m1seen = [...seen]; save(); panel(); if (seen.size >= 3 && !S.done.m1) { award("m1", "You visited 3 planets!"); panel(); } }
+      }
+      drag = null;
+    },
+    zoom(f) { zoom = clamp(zoom * f, .5, 6); },
+    start: panel,
+  };
+}
+
+/* =====================================================================
+   Mission 2: Launch to orbit (Newton's cannon, real physics)
+   ===================================================================== */
+function missionRocket() {
+  const GM = 3.986e14, Re = 6.371e6, H0 = 160e3;   // launch from 100 miles up, above the air
+  let v0 = 6, ang = 0, rocket = null, trails = [], view = 1, best = null;
+  const warp = 600;   // 1 second on screen = 10 minutes
+  function launch() {
+    const r = Re + H0, a = ang * Math.PI / 180;
+    rocket = { x: 0, y: r, vx: v0 * 1000 * Math.cos(a), vy: v0 * 1000 * Math.sin(a), t: 0, th: 0, lastA: Math.PI / 2, state: "fly", path: [] };
+    banner("");
+  }
+  function step(dt) {
+    if (!rocket || rocket.state !== "fly") return;
+    let T = dt * warp; const h = 2;
+    while (T > 0) {
+      const d = Math.min(h * 5, T); T -= d;
+      const r = Math.hypot(rocket.x, rocket.y), a = -GM / (r * r * r);
+      rocket.vx += a * rocket.x * d; rocket.vy += a * rocket.y * d; rocket.x += rocket.vx * d; rocket.y += rocket.vy * d; rocket.t += d;
+      const an = Math.atan2(rocket.y, rocket.x); let da = an - rocket.lastA; if (da > Math.PI) da -= TAU; if (da < -Math.PI) da += TAU; rocket.th += da; rocket.lastA = an;
+      const rr = Math.hypot(rocket.x, rocket.y);
+      if (rr < Re) { rocket.state = "crash"; break; }
+      if (rr > Re * 40) { rocket.state = "escape"; break; }
+      if (Math.abs(rocket.th) >= TAU) { rocket.state = "orbit"; break; }
+    }
+    if (rocket.path.length === 0 || Math.hypot(rocket.x - rocket.path.at(-1)[0], rocket.y - rocket.path.at(-1)[1]) > 2e4) rocket.path.push([rocket.x, rocket.y]);
+    if (rocket.state !== "fly") finish();
+  }
+  function finish() {
+    const s = rocket.state;
+    trails.push({ path: rocket.path.slice(), c: s === "orbit" ? "#3ddc97" : s === "escape" ? "#6c9bff" : "#ff6b6b" }); if (trails.length > 5) trails.shift();
+    const miles = Math.abs(rocket.th) * Re / 1609;
+    if (s === "crash") banner(`💥 Fell back to Earth after ${fmt(miles)} miles. Faster!`);
+    if (s === "escape") banner(`🌌 You escaped Earth's gravity! (Escape speed ≈ 11.2 km/s = 25,000 mph)`);
+    if (s === "orbit") { banner(`🛰️ ORBIT! You circled Earth in ${fmt(rocket.t / 60)} minutes.`); if (!S.done.m2) { award("m2", "You reached orbit!"); panel(); } }
+    if (s === "orbit") rocket.state = "orbit-keep";
+  }
+  function panel() {
+    const b = band();
+    $("panel").innerHTML = `<div class="kicker">Mission 2 of 6</div><h1>🚀 Launch to Orbit</h1>
+      <p class="small muted">Isaac Newton imagined a giant cannon on a tall mountain. Fire slowly and the ball falls back. Fire fast enough and it falls <i>around</i> Earth forever: that's an orbit!</p>
+      <div class="goal ${S.done.m2 ? "done" : ""}"><span class="gi">${S.done.m2 ? "✅" : "🎯"}</span><span><b>Goal:</b> find the speed that puts your rocket into orbit around Earth.</span></div>
+      <label class="sl">Launch speed: <b id="vv">${fmt(v0, 1)} km/s</b> = <b id="vm">${fmt(v0 * 2237)} mph</b><input type="range" id="v" min="2" max="12" step=".1" value="${v0}"></label>
+      <label class="sl">Launch angle: <b id="aa">${ang}°</b> above the horizon<input type="range" id="a" min="0" max="45" step="1" value="${ang}"></label>
+      <button class="btn go block" id="fire">🚀 Launch!</button>
+      <div class="readout"><div><b id="rs">—</b><span>speed (mph)</span></div><div><b id="ra">—</b><span>height (miles)</span></div><div><b id="rt">—</b><span>flight time</span></div></div>
+      ${b >= 1 ? `<div class="card small"><b>Hint:</b> orbit speed ≈ 7.8 km/s (17,500 mph). Too fast (over 11.2 km/s) and you escape Earth!${b === 2 ? "<br><b>Physics:</b> circular orbit v = √(GM/r), escape v = √(2GM/r)." : ""}</div>` : `<div class="card small"><b>Hint:</b> try a speed between 7 and 9 km/s!</div>`}
+      ${S.done.m2 ? questionHTML("q2", Q2) : ""}${S.done.m2 && S.answered.c2 !== undefined ? nextBtn() : ""}`;
+    $("v").oninput = e => { v0 = +e.target.value; $("vv").textContent = fmt(v0, 1) + " km/s"; $("vm").textContent = fmt(v0 * 2237) + " mph"; };
+    $("a").oninput = e => { ang = +e.target.value; $("aa").textContent = ang + "°"; };
+    $("fire").onclick = launch;
+    if (S.done.m2) wireQuestion("q2", Q2, "c2", () => panel());
+    wireNext();
+  }
+  const Q2 = shuffled(CHECK[2][band()]);
+  return {
+    frame(dt) {
+      step(dt);
+      // zoom out smoothly when the rocket goes far
+      const far = rocket ? Math.hypot(rocket.x, rocket.y) / Re : 1, want = clamp(far * 1.15, 1.6, 30); view += (want - view) * Math.min(1, dt * 2);
+      const sc = Math.min(W, H) * .45 / (Re * view), cx = W / 2, cy = H / 2 + Math.min(W, H) * .05;
+      const T = (x, y) => [cx + x * sc, cy - y * sc];
+      // Earth
+      const er = Re * sc; glow(cx, cy, er * 1.25, "rgba(90,160,255,A)", .35);
+      sphere(cx, cy, er, "#8cc8ff", "#1a4fa5", -.6, -.8);
+      g.save(); g.beginPath(); g.arc(cx, cy, er, 0, TAU); g.clip(); g.fillStyle = "rgba(60,160,90,.6)";
+      for (const [x, y, rx, ry, rot] of [[-.35, -.2, .3, .18, .4], [.25, .1, .22, .3, -.3], [.05, -.55, .25, .12, 0], [-.1, .45, .18, .1, .8]]) { g.beginPath(); g.ellipse(cx + x * er, cy + y * er, rx * er, ry * er, rot, 0, TAU); g.fill(); }
+      g.restore();
+      // mountain and the U.S. flag at the launch site
+      const [mx, my] = T(0, Re); g.fillStyle = "#6b5b4b"; g.beginPath(); g.moveTo(mx - er * .12, my + er * .02); g.lineTo(mx, my - Math.max(6, H0 * sc)); g.lineTo(mx + er * .12, my + er * .02); g.fill();
+      drawFlag(g, mx + 4, my - Math.max(6, H0 * sc) - 13, 9); g.fillStyle = "#ccc"; g.fillRect(mx + 3, my - Math.max(6, H0 * sc) - 13, 1.2, 16);
+      // old paths
+      for (const tr of trails) { g.strokeStyle = tr.c; g.globalAlpha = .45; g.lineWidth = 2; g.beginPath(); tr.path.forEach(([x, y], i) => { const [px, py] = T(x, y); i ? g.lineTo(px, py) : g.moveTo(px, py); }); g.stroke(); g.globalAlpha = 1; }
+      if (rocket) {
+        g.strokeStyle = "#f5c451"; g.lineWidth = 2.5; g.beginPath(); [...rocket.path, [rocket.x, rocket.y]].forEach(([x, y], i) => { const [px, py] = T(x, y); i ? g.lineTo(px, py) : g.moveTo(px, py); }); g.stroke();
+        const [px, py] = T(rocket.x, rocket.y), a = Math.atan2(-rocket.vy, rocket.vx);
+        g.save(); g.translate(px, py); g.rotate(a); g.fillStyle = "#fff"; g.beginPath(); g.moveTo(10, 0); g.lineTo(-6, -4); g.lineTo(-6, 4); g.fill(); g.fillStyle = "#e0323f"; g.fillRect(-9, -2, 3, 4);
+        if (rocket.state === "fly") { g.fillStyle = "rgba(255,160,60,.9)"; g.beginPath(); g.moveTo(-9, -2.5); g.lineTo(-15 - Math.random() * 6, 0); g.lineTo(-9, 2.5); g.fill(); }
+        g.restore();
+        if (rocket.state === "orbit-keep") { // keep circling for fun
+          let T2 = dt * warp; while (T2 > 0) { const d = Math.min(10, T2); T2 -= d; const r = Math.hypot(rocket.x, rocket.y), a2 = -GM / (r * r * r); rocket.vx += a2 * rocket.x * d; rocket.vy += a2 * rocket.y * d; rocket.x += rocket.vx * d; rocket.y += rocket.vy * d; rocket.t += d; } }
+        const sp = Math.hypot(rocket.vx, rocket.vy), alt = Math.hypot(rocket.x, rocket.y) - Re;
+        if ($("rs")) { $("rs").textContent = fmt(sp * 2.237); $("ra").textContent = fmt(Math.max(0, alt) / 1609); const m = Math.floor(rocket.t / 60); $("rt").textContent = m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} m` : `${m} min`; }
+      }
+      hud(`⏩ Time runs <b>600×</b> faster · Earth is ${fmt(7918)} miles wide`);
+    },
+    start: panel,
+  };
+}
+
+/* =====================================================================
+   Mission 3: Build a solar system (gravity sandbox)
+   ===================================================================== */
+function missionGravity() {
+  const G = 1, Mstar = 400000; let bodies = [], aim = null, msg = "", nextColor = 0;
+  const COLORS = [["#9fd0ff", "#2a5bd7"], ["#ffb3a7", "#c2412f"], ["#b7f5c9", "#2f9d63"], ["#ffe1a3", "#c58a1c"], ["#e3c7ff", "#7b45c9"], ["#ffffff", "#8392b8"]];
+  const center = () => ({ x: W / 2, y: H / 2 });
+  function add(x, y, vx, vy) {
+    if (bodies.length >= 10) bodies.shift();
+    const c = COLORS[nextColor++ % COLORS.length];
+    bodies.push({ x, y, vx, vy, m: 2, c, trail: [], th: 0, lastA: Math.atan2(y - center().y, x - center().x), r: 6 + Math.random() * 3 });
+  }
+  function circular(r) { const c = center(), a = Math.random() * TAU, v = Math.sqrt(G * Mstar / r); add(c.x + Math.cos(a) * r, c.y + Math.sin(a) * r, -Math.sin(a) * v, Math.cos(a) * v); }
+  function panel() {
+    const b = band();
+    $("panel").innerHTML = `<div class="kicker">Mission 3 of 6</div><h1>🌌 Build a Solar System</h1>
+      <p class="small muted"><b>Press, pull back and let go</b> anywhere near the star to throw a planet. The arrow shows its speed and direction. Gravity does the rest!</p>
+      <div class="goal ${S.done.m3 ? "done" : ""}"><span class="gi">${S.done.m3 ? "✅" : "🎯"}</span><span><b>Goal:</b> make a planet go around the star 3 times without crashing or flying away.</span></div>
+      <div class="row"><button class="btn sm" id="p1">⭕ Add a circle orbit</button><button class="btn sm" id="p2">☄️ Add a comet</button><button class="btn sm" id="p3">🧹 Clear</button></div>
+      <div class="card small" id="g3msg">${msg || "Throw sideways, not straight at the star!"}</div>
+      ${b >= 1 ? `<div class="card small">Watch the speed: planets <b>speed up</b> when they swing close to the star and <b>slow down</b> far away${b === 2 ? " (Kepler's 2nd law: equal areas in equal times). Gravity here follows F = GMm/r²." : "."}</div>` : `<div class="card small">Close to the star, gravity pulls harder, so planets must move faster.</div>`}
+      ${S.done.m3 ? questionHTML("q3", Q3) : ""}${S.done.m3 && S.answered.c3 !== undefined ? nextBtn() : ""}`;
+    $("p1").onclick = () => circular(Math.min(W, H) * (.18 + Math.random() * .2));
+    $("p2").onclick = () => { const c = center(), r = Math.min(W, H) * .42, a = Math.random() * TAU, v = Math.sqrt(G * Mstar / r) * .55; add(c.x + Math.cos(a) * r, c.y + Math.sin(a) * r, -Math.sin(a) * v, Math.cos(a) * v); };
+    $("p3").onclick = () => { bodies = []; };
+    if (S.done.m3) wireQuestion("q3", Q3, "c3", () => panel());
+    wireNext();
+  }
+  const say = t => { msg = t; const el = $("g3msg"); if (el) el.innerHTML = t; };
+  const Q3 = shuffled(CHECK[3][band()]);
+  return {
+    frame(dt) {
+      const c = center(), steps = 8, h = Math.min(dt, .033) / steps * 4;
+      for (let s = 0; s < steps; s++) for (const b of bodies) {
+        let ax = 0, ay = 0; const dx = c.x - b.x, dy = c.y - b.y, r2 = dx * dx + dy * dy + 25, r = Math.sqrt(r2);
+        ax += G * Mstar * dx / (r2 * r); ay += G * Mstar * dy / (r2 * r);
+        for (const o of bodies) if (o !== b) { const ox = o.x - b.x, oy = o.y - b.y, q2 = ox * ox + oy * oy + 100, q = Math.sqrt(q2); ax += G * o.m * 300 * ox / (q2 * q); ay += G * o.m * 300 * oy / (q2 * q); }
+        b.vx += ax * h; b.vy += ay * h; b.x += b.vx * h; b.y += b.vy * h;
+        const an = Math.atan2(b.y - c.y, b.x - c.x); let da = an - b.lastA; if (da > Math.PI) da -= TAU; if (da < -Math.PI) da += TAU; b.th += da; b.lastA = an;
+      }
+      bodies = bodies.filter(b => {
+        const d = Math.hypot(b.x - c.x, b.y - c.y);
+        if (d < 16) { say("🔥 A planet fell into the star! Throw it more sideways."); return false; }
+        if (d > Math.max(W, H) * 1.6) { say("🚀 A planet escaped into deep space! Throw it a little slower."); return false; }
+        return true;
+      });
+      for (const b of bodies) {
+        b.trail.push([b.x, b.y]); if (b.trail.length > 160) b.trail.shift();
+        if (Math.abs(b.th) >= TAU * 3 && !b.won) { b.won = true; if (!S.done.m3) { award("m3", "3 full orbits! You built a solar system!"); panel(); } else say("🌍 Another stable orbit. Nice!"); }
+      }
+      // draw
+      glow(c.x, c.y, 90, "rgba(255,190,80,A)", .5); sphere(c.x, c.y, 16, "#fff7c2", "#ffb12a", 0, 0);
+      for (const b of bodies) {
+        g.strokeStyle = b.c[0]; g.lineWidth = 1.6; g.globalAlpha = .5; g.beginPath(); b.trail.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); g.globalAlpha = 1;
+        sphere(b.x, b.y, b.r, b.c[0], b.c[1], c.x - b.x, c.y - b.y);
+        const turns = Math.min(3, Math.floor(Math.abs(b.th) / TAU)); if (turns) { g.fillStyle = "#f5c451"; g.font = "700 11px Inter, system-ui"; g.textAlign = "center"; g.fillText("⭐".repeat(turns), b.x, b.y - b.r - 6); }
+      }
+      if (aim) { arrow(aim.x, aim.y, aim.x + (aim.x - aim.ex), aim.y + (aim.y - aim.ey), "#f5c451", 3); sphere(aim.x, aim.y, 7, "#fff", "#8392b8"); }
+      hud(`🪐 Planets: <b>${bodies.length}</b> · ⭐ = one full orbit`);
+    },
+    down(x, y) { aim = { x, y, ex: x, ey: y }; },
+    move(x, y) { if (aim) { aim.ex = x; aim.ey = y; } },
+    up() { if (!aim) return; const k = .5; add(aim.x, aim.y, (aim.x - aim.ex) * k, (aim.y - aim.ey) * k); aim = null; },
+    start() { panel(); if (!bodies.length) setTimeout(() => circular(Math.min(W, H) * .25), 200); },
+  };
+}
+
+/* =====================================================================
+   Mission 4: Moon phases and eclipses
+   ===================================================================== */
+const PHASES = [[0, "New Moon"], [45, "Waxing Crescent"], [90, "First Quarter"], [135, "Waxing Gibbous"], [180, "Full Moon"], [225, "Waning Gibbous"], [270, "Third Quarter"], [315, "Waning Crescent"]];
+function missionMoon() {
+  let th = 120, play = false, drag = false, found = new Set(S.m4found || []);
+  const TARGETS = ["New Moon", "First Quarter", "Full Moon"];
+  const phaseName = d => { const x = ((d % 360) + 360) % 360; let best = PHASES[0]; for (const p of PHASES) if (Math.min(Math.abs(x - p[0]), 360 - Math.abs(x - p[0])) < Math.min(Math.abs(x - best[0]), 360 - Math.abs(x - best[0]))) best = p; return best[1]; };
+  function layout() { const wide = W > H * 1.25; const top = wide ? { cx: W * .36, cy: H / 2, R: Math.min(W * .26, H * .36) } : { cx: W / 2, cy: H * .36, R: Math.min(W * .34, H * .23) }; const ins = wide ? { x: W * .8, y: H / 2, r: Math.min(W * .12, H * .2) } : { x: W / 2, y: H * .8, r: Math.min(W * .16, H * .13) }; return { top, ins }; }
+  function panel() {
+    $("panel").innerHTML = `<div class="kicker">Mission 4 of 6</div><h1>🌗 Moon & Eclipses</h1>
+      <p class="small muted"><b>Drag the Moon</b> around Earth (or press Play). Sunlight comes from the left. The circle on the side shows what <b>you see from America</b> at night.</p>
+      <div class="goal ${S.done.m4 ? "done" : ""}"><span class="gi">${S.done.m4 ? "✅" : "🎯"}</span><span><b>Goal:</b> find these phases: ${TARGETS.map(t => `${found.has(t) ? "✅" : "⬜"} ${t}`).join(" · ")}</span></div>
+      <div class="row"><button class="btn sm ${play ? "blue" : ""}" id="pl">${play ? "⏸ Pause" : "▶ Play a month"}</button></div>
+      <div class="card"><div class="kicker">Now</div><div class="big" id="pn">${phaseName(th)}</div><div class="small muted" id="pe"></div></div>
+      <div class="card small">🇺🇸 <b>July 20, 1969:</b> Apollo 11 astronauts Neil Armstrong and Buzz Aldrin landed on the Moon and planted the American flag. The tiny flag on the Moon picture shows about where they landed, near the Sea of Tranquility.</div>
+      ${S.done.m4 ? questionHTML("q4", Q4) : ""}${S.done.m4 && S.answered.c4 !== undefined ? nextBtn() : ""}`;
+    $("pl").onclick = () => { play = !play; panel(); };
+    if (S.done.m4) wireQuestion("q4", Q4, "c4", () => panel());
+    wireNext();
+  }
+  function check() {
+    const n = phaseName(th); if ($("pn")) $("pn").textContent = n;
+    const x = ((th % 360) + 360) % 360, near = (a, tol) => Math.min(Math.abs(x - a), 360 - Math.abs(x - a)) < tol;
+    const e = near(0, 4) ? "☀️ Solar eclipse! The Moon blocks the Sun (only when the Moon is also exactly in line, which is rare)." : near(180, 4) ? "🔴 Lunar eclipse! Earth's shadow turns the Moon red (a \"blood moon\")." : "";
+    if ($("pe")) $("pe").textContent = e;
+    for (const t of TARGETS) { const a = PHASES.find(p => p[1] === t)[0]; if (near(a, 8) && !found.has(t)) { found.add(t); S.m4found = [...found]; save(); toast(`🌙 Found: ${t}`); panel(); if (found.size === TARGETS.length && !S.done.m4) { award("m4", "You found the Moon's main phases!"); panel(); } } }
+  }
+  const Q4 = shuffled(CHECK[4][band()]);
+  return {
+    frame(dt, t) {
+      if (play) { th = (th + dt * 24) % 360; check(); }
+      const { top, ins } = layout(), rad = th * Math.PI / 180;
+      // sunlight from the left
+      for (let i = 0; i < 9; i++) { const y = top.cy - top.R * 1.15 + i * top.R * .29; g.strokeStyle = "rgba(255,210,120,.18)"; g.lineWidth = 1; g.setLineDash([6, 8]); g.beginPath(); g.moveTo(8, y); g.lineTo(top.cx - top.R * 1.25, y); g.stroke(); g.setLineDash([]); }
+      g.fillStyle = "rgba(255,210,120,.8)"; g.font = "700 12px Inter, system-ui"; g.textAlign = "left"; g.fillText("☀️ Sunlight", 10, top.cy - top.R * 1.25);
+      // orbit and Earth
+      g.strokeStyle = "rgba(160,190,255,.25)"; g.lineWidth = 1; g.beginPath(); g.arc(top.cx, top.cy, top.R, 0, TAU); g.stroke();
+      const er = Math.max(14, top.R * .16); sphere(top.cx, top.cy, er, "#8cc8ff", "#1a4fa5", -1, 0);
+      g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.arc(top.cx, top.cy, er, -Math.PI / 2, Math.PI / 2); g.fill();
+      // Earth's shadow (lunar eclipse)
+      g.fillStyle = "rgba(0,0,0,.25)"; g.fillRect(top.cx, top.cy - er, top.R * 1.4, er * 2);
+      // the Moon: lit on the side facing the Sun (left); position angle measured from the Sun direction
+      const mx = top.cx - Math.cos(rad) * top.R, my = top.cy + Math.sin(rad) * top.R, mr = Math.max(8, top.R * .08);
+      sphere(mx, my, mr, "#f2f2f2", "#8a8a8a", -1, 0); g.fillStyle = "rgba(0,0,0,.6)"; g.beginPath(); g.arc(mx, my, mr, -Math.PI / 2, Math.PI / 2); g.fill();
+      g.strokeStyle = drag ? "#f5c451" : "rgba(245,196,81,.6)"; g.lineWidth = 2; g.beginPath(); g.arc(mx, my, mr + 6, 0, TAU); g.stroke();
+      // the view from Earth
+      const x = ((th % 360) + 360) % 360, near0 = Math.min(x, 360 - x) < 4, near180 = Math.abs(x - 180) < 4;
+      g.fillStyle = "rgba(3,7,22,.7)"; g.strokeStyle = "rgba(160,190,255,.25)"; g.beginPath(); g.arc(ins.x, ins.y, ins.r * 1.35, 0, TAU); g.fill(); g.stroke();
+      g.fillStyle = "rgba(220,230,255,.8)"; g.font = "700 11.5px Inter, system-ui"; g.textAlign = "center"; g.fillText("What you see from 🇺🇸", ins.x, ins.y - ins.r * 1.35 - 8);
+      if (near0) { // solar eclipse: Sun with corona behind the dark Moon
+        glow(ins.x, ins.y, ins.r * 1.6, "rgba(255,240,200,A)", .8); g.fillStyle = "#000"; g.beginPath(); g.arc(ins.x, ins.y, ins.r * .98, 0, TAU); g.fill();
+      } else {
+        const f = (1 - Math.cos(rad)) / 2;             // lit fraction
+        g.fillStyle = "#1c1f2a"; g.beginPath(); g.arc(ins.x, ins.y, ins.r, 0, TAU); g.fill();
+        const lit = near180 ? "#c4472e" : "#f1efe6";
+        g.fillStyle = lit; g.beginPath();
+        const waxing = x < 180, k = Math.cos(rad);      // terminator ellipse width
+        // lit side is on the right while waxing, on the left while waning
+        g.arc(ins.x, ins.y, ins.r, -Math.PI / 2, Math.PI / 2, !waxing);
+        g.ellipse(ins.x, ins.y, Math.abs(k) * ins.r, ins.r, 0, Math.PI / 2, -Math.PI / 2, (f > .5) === waxing ? false : true);
+        g.fill();
+        // craters
+        g.fillStyle = "rgba(0,0,0,.12)"; for (const [cx, cy, cr] of [[-.3, -.2, .18], [.2, .3, .12], [.35, -.35, .1], [-.1, .45, .09], [.05, -.05, .14]]) { g.beginPath(); g.arc(ins.x + cx * ins.r, ins.y + cy * ins.r, cr * ins.r, 0, TAU); g.fill(); }
+        // tiny U.S. flag at the Apollo 11 site (Sea of Tranquility)
+        drawFlag(g, ins.x + ins.r * .3, ins.y - ins.r * .18, Math.max(5, ins.r * .09)); g.fillStyle = "#ddd"; g.fillRect(ins.x + ins.r * .3 - 1, ins.y - ins.r * .18, 1, ins.r * .14);
+      }
+      hud(`Drag the Moon · Day <b>${fmt(x / 360 * 29.5, 0)}</b> of 29½`);
+      void t;
+    },
+    down(x, y) { const { top } = layout(), rad = th * Math.PI / 180, mx = top.cx - Math.cos(rad) * top.R, my = top.cy + Math.sin(rad) * top.R; if (Math.hypot(x - mx, y - my) < 40 || Math.abs(Math.hypot(x - top.cx, y - top.cy) - top.R) < 30) { drag = true; play = false; this.move(x, y); } },
+    move(x, y) { if (!drag) return; const { top } = layout(); th = ((Math.atan2(y - top.cy, -(x - top.cx)) * 180 / Math.PI) + 360) % 360; check(); },
+    up() { drag = false; },
+    start() { panel(); check(); },
+  };
+}
+
+/* =====================================================================
+   Mission 5: Race the light
+   ===================================================================== */
+const DEST = [
+  { n: "The Moon", e: "🌕", km: 384400 }, { n: "The Sun", e: "☀️", km: 149.6e6 }, { n: "Mars (average)", e: "🔴", km: 225e6 }, { n: "Jupiter", e: "🟠", km: 778e6 },
+  { n: "Pluto", e: "🪨", km: 5.9e9 }, { n: "Proxima Centauri (nearest star)", e: "⭐", km: 4.01e13 }, { n: "Center of our galaxy", e: "🌌", km: 2.46e17 },
+];
+const RACERS = [{ n: "Light", e: "⚡", mph: 670616629 }, { n: "Fastest space probe (Parker Solar Probe)", e: "🛰️", mph: 430000 }, { n: "Rocket to Pluto (New Horizons)", e: "🚀", mph: 36000 }, { n: "Jet airplane", e: "✈️", mph: 575 }, { n: "Car on the highway", e: "🚗", mph: 65 }];
+function dur(hours) {
+  const s = hours * 3600;
+  if (s < 60) return `${fmt(s, s < 10 ? 2 : 1)} seconds`; if (s < 3600) return `${fmt(s / 60, 1)} minutes`; if (s < 86400 * 2) return `${fmt(s / 3600, 1)} hours`;
+  const d = s / 86400; if (d < 365 * 2) return `${fmt(d)} days`; const y = d / 365.25;
+  if (y < 1e6) return `${fmt(y)} years`; if (y < 1e9) return `${fmt(y / 1e6, 1)} million years`; return `${fmt(y / 1e9, 1)} billion years`;
+}
+function sci(n) { const e = Math.floor(Math.log10(n)), m = n / 10 ** e; return `${fmt(m, 2)} × 10<sup>${e}</sup>`; }
+function missionLight() {
+  let di = 1, race = null, tried = new Set(S.m5tried || []);
+  function panel() {
+    const d = DEST[di], miles = d.km * .6214, b = band();
+    $("panel").innerHTML = `<div class="kicker">Mission 5 of 6</div><h1>⚡ Race the Light</h1>
+      <p class="small muted">Light is the fastest thing in the universe: <b>186,000 miles every second</b>. That's 7½ times around Earth in one second!</p>
+      <div class="goal ${S.done.m5 ? "done" : ""}"><span class="gi">${S.done.m5 ? "✅" : "🎯"}</span><span><b>Goal:</b> race light to 3 different places (${Math.min(3, tried.size)}/3)</span></div>
+      <label class="sl">Destination<select class="inp" id="dst">${DEST.map((x, i) => `<option value="${i}" ${i === di ? "selected" : ""}>${x.e} ${esc(x.n)}</option>`).join("")}</select></label>
+      <div class="card small">Distance: <b>${miles < 1e9 ? fmt(miles) : sci(miles)}</b> miles${b === 2 ? ` = ${sci(d.km)} km` : b === 1 ? ` (${fmt(d.km < 1e9 ? d.km : 0) || sci(d.km)} km)` : ""}</div>
+      <button class="btn go block" id="go">⚡ Start the race!</button>
+      <div class="card"><h3>How long does the trip take?</h3>${RACERS.map(r => `<div class="row small" style="justify-content:space-between;padding:4px 0;border-top:1px solid var(--line)"><span>${r.e} ${esc(r.n)}</span><b>${dur(miles / r.mph)}</b></div>`).join("")}</div>
+      ${b === 2 ? `<div class="card small"><b>Math:</b> time = distance ÷ speed. For light: t = ${sci(d.km)} km ÷ 3.00 × 10<sup>5</sup> km/s = ${sci(d.km / 299792)} s.</div>` : ""}
+      ${S.done.m5 ? questionHTML("q5", Q5) : ""}${S.done.m5 && S.answered.c5 !== undefined ? nextBtn() : ""}`;
+    $("dst").onchange = e => { di = +e.target.value; race = null; panel(); };
+    $("go").onclick = () => { const lightS = DEST[di].km / 299792; race = { t: 0, real: lightS, show: clamp(lightS, 1.2, 8) }; tried.add(di); S.m5tried = [...tried]; save(); };
+    if (S.done.m5) wireQuestion("q5", Q5, "c5", () => panel());
+    wireNext();
+  }
+  const Q5 = shuffled(CHECK[5][band()]);
+  return {
+    frame(dt) {
+      const d = DEST[di], miles = d.km * .6214, x0 = Math.max(60, W * .1), x1 = W - Math.max(60, W * .1), lanes = RACERS.length, top = H * .18, gap = (H * .7) / lanes;
+      g.font = "700 13px Inter, system-ui"; g.textAlign = "left"; g.fillStyle = "rgba(220,230,255,.85)"; g.fillText("🌎 Earth", x0 - 30, top - 18); g.textAlign = "right"; g.fillText(`${d.e} ${d.n}`, x1 + 30, top - 18);
+      let progress = 0;
+      if (race) { race.t += dt; progress = clamp(race.t / race.show, 0, 1); }
+      RACERS.forEach((r, i) => {
+        const y = top + i * gap + gap / 2; g.strokeStyle = "rgba(160,190,255,.18)"; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke();
+        const frac = r.mph === RACERS[0].mph ? progress : progress * RACERS[0].mph / r.mph * 0 + progress * (r.mph / RACERS[0].mph);
+        const px = x0 + (x1 - x0) * frac;
+        if (i === 0) { g.strokeStyle = "rgba(255,240,150,.9)"; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, y); g.lineTo(px, y); g.stroke(); glow(px, y, 18, "rgba(255,240,150,A)", .8); }
+        g.font = "20px system-ui"; g.textAlign = "center"; g.fillText(r.e, px, y + 7);
+        g.font = "600 11px Inter, system-ui"; g.fillStyle = "rgba(200,212,240,.8)"; g.textAlign = "left"; g.fillText(r.n.replace(/ \(.*\)/, ""), x0, y - 12);
+        if (race && progress >= 1 && i > 0) { g.textAlign = "right"; g.fillStyle = "#f5c451"; g.fillText(`${fmt(frac * 100, frac * 100 < .01 ? 6 : 3)}% of the way`, x1, y - 12); }
+        g.fillStyle = "rgba(220,230,255,.85)";
+      });
+      if (race && progress >= 1 && !race.done) {
+        race.done = true; banner(`⚡ Light arrived in <b>${dur(miles / RACERS[0].mph)}</b>. The car hasn't even left the driveway!`);
+        if (tried.size >= 3 && !S.done.m5) { award("m5", "You raced light 3 times!"); panel(); }
+      }
+      if (!race) banner("");
+      hud(race && !race.done ? `⏱️ ${race.real > race.show ? `Sped up ${fmt(race.real / race.show)}×` : "Real time!"}` : "Pick a destination and start the race");
+    },
+    start: panel,
+  };
+}
+
+/* =====================================================================
+   Mission 6: Final challenge
+   ===================================================================== */
+function missionQuiz() {
+  if (!S.quiz) { S.quiz = QUIZ[band()].map(shuffled); save(); }
+  function panel() {
+    const n = S.quiz.filter((_, i) => S.answered["quiz" + i] !== undefined).length;
+    $("panel").innerHTML = `<div class="kicker">Mission 6 of 6</div><h1>🎖️ Final Challenge</h1>
+      <p class="small muted">Answer ${S.quiz.length} questions to earn your rank and your Space Cadet certificate.</p>
+      <div class="goal ${n === S.quiz.length ? "done" : ""}"><span class="gi">📝</span><span>${n} of ${S.quiz.length} answered</span></div>
+      ${S.quiz.map((q, i) => i <= n ? questionHTML("quiz" + i, q) : "").join("")}
+      ${n === S.quiz.length ? `<button class="btn gold block" id="fin" style="margin-top:12px">🏅 See my rank and certificate</button>` : ""}`;
+    S.quiz.forEach((q, i) => { if (i <= n) wireQuestion("quiz" + i, q, "quiz" + i, () => { panel(); const el = $("quiz" + (i + 1)) || $("fin"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }); });
+    if ($("fin")) $("fin").onclick = finishAll;
+  }
+  // a calm picture: the Earth with the American flag on the Moon
+  let a = 0;
+  return {
+    frame(dt) {
+      a += dt * .15; const cx = W / 2, cy = H / 2, r = Math.min(W, H) * .22;
+      glow(cx, cy, r * 1.6, "rgba(90,160,255,A)", .3); sphere(cx, cy, r, "#8cc8ff", "#1a4fa5", -1, -.4);
+      g.save(); g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.clip(); g.fillStyle = "rgba(60,160,90,.55)";
+      for (const [x, y, rx, ry, rot] of [[-.35, -.2, .3, .18, .4], [.25, .1, .22, .3, -.3], [.05, -.55, .25, .12, 0]]) { g.beginPath(); g.ellipse(cx + (x + Math.sin(a) * .1) * r, cy + y * r, rx * r, ry * r, rot, 0, TAU); g.fill(); }
+      g.restore();
+      const mx = cx + Math.cos(a) * r * 2, my = cy + Math.sin(a) * r * .6, mr = r * .27;
+      sphere(mx, my, mr, "#f2f2f2", "#7d7d7d", cx - mx, cy - my); drawFlag(g, mx - mr * .1, my - mr * 1.05, mr * .4); g.fillStyle = "#ddd"; g.fillRect(mx - mr * .1 - 1, my - mr * 1.05, 1.5, mr * .7);
+      hud(`🎖️ Points so far: <b>${S.points}</b> of ${TOTAL}`);
+    },
+    start: panel,
+  };
+}
+
+/* =====================================================================
+   Screens
+   ===================================================================== */
+const MAKERS = { 1: missionSolar, 2: missionRocket, 3: missionGravity, 4: missionMoon, 5: missionLight, 6: missionQuiz };
+function drawTop() {
+  const t = $("top"); if (!t) return;
+  t.innerHTML = `<img class="logo" src="${esc(LOGO)}" alt="" onerror="this.style.display='none'"><div class="brand"><b>Afro-Merica Space Lab</b><span>Mission Control · USA</span></div>${flagSVG(20)}
+    <span class="sp"></span>${S.mission ? `<div class="dots">${MISSIONS.map(m => `<i class="${m.id < S.mission || (m.id === 6 && S.finished) ? "done" : m.id === S.mission ? "on" : ""}" title="${m.t}"></i>`).join("")}</div>` : ""}${S.mission ? `<span class="pts">⭐ ${S.points}/${TOTAL}</span>` : ""}`;
+}
+function shell(inner) { $("app").innerHTML = `<header class="top" id="top"></header><div class="stripes"></div>${inner}`; drawTop(); }
+function nextBtn() { return `<button class="btn gold block" id="next" style="margin-top:12px">Next mission: ${MISSIONS[S.mission].e} ${MISSIONS[S.mission].t} →</button>`; }
+function wireNext() { const b = $("next"); if (b) b.onclick = () => goMission(S.mission + 1); }
+function goMission(n) {
+  S.mission = n; save();
+  if (PUB) post("/api/public/space/progress", { mission: n }).catch(() => {});
+  shell(`<div class="stage"><div class="view"><canvas id="c"></canvas><div class="hud" id="hud"></div><div class="banner" id="banner" hidden></div></div><aside class="panel" id="panel"></aside></div>`);
+  setupCanvas(); M = MAKERS[n](); M.start();
+}
+
+function welcome(locked, note) {
+  M = null;
+  const g0 = S.grade || 7;
+  shell(`<div class="center"><div class="hero">
+    <span class="badge">${flagSVG(14)} &nbsp;FREE SPACE MISSION · GRADES 5–12</span>
+    <h1>Become a <span class="r">Space</span> <span class="b">Cadet</span> 🚀</h1>
+    <p style="font-size:17px;color:var(--muted)">Fly through the Solar System, launch a rocket into orbit, build your own planets, make an eclipse and race the speed of light. Finish all 6 missions to earn your <b style="color:var(--gold2)">Space Cadet certificate</b>.</p>
+    <div class="missions">${MISSIONS.map(m => `<div><i>${m.e}</i>${m.t}</div>`).join("")}</div>
+    ${locked ? lockedHTML(note) : `<div class="glass">
+      <label class="sl">Astronaut's first name<input class="inp" id="nm" maxlength="30" placeholder="e.g. Maya" value="${esc(S.name || (AM && AM.student ? AM.student.firstName : ""))}" autocomplete="given-name"></label>
+      <div class="sl" style="margin-bottom:6px">Grade</div><div class="grades" id="gr">${[5, 6, 7, 8, 9, 10, 11, 12].map(x => `<button data-g="${x}" class="${x === g0 ? "on" : ""}">${x}</button>`).join("")}</div>
+      <p class="tiny muted" style="margin:10px 0 0">Questions get harder for older grades. It takes about 15 minutes.${PUB && !PUB.staff ? " <b>This free mission can be played once.</b>" : ""}</p>
+      <div class="err" id="err"></div>
+      <button class="btn go block" id="start" style="font-size:17px;padding:14px">🚀 ${S.mission ? "Continue my mission" : "Start my mission"}</button>
+      ${PUB && PUB.staff ? `<p class="tiny muted" style="margin:8px 0 0">Signed in as ${esc(PUB.staff)}: you can play as often as you like to try it out.</p>` : ""}
+    </div>`}
+    <p class="tiny muted" style="margin-top:16px">Made by <b>Afro-Merica Tutor & Training</b> · Math, Physics, Science & Python tutoring for grades K–12 across the U.S.</p>
+  </div></div>`);
+  if (locked) return wireLocked();
+  let grade = g0;
+  $("gr").querySelectorAll("button").forEach(b => b.onclick = () => { grade = +b.dataset.g; $("gr").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); });
+  $("start").onclick = async () => {
+    const name = $("nm").value.trim();
+    if (!name) { $("err").textContent = "Please type the astronaut's first name."; $("nm").focus(); return; }
+    if (S.mission && S.name === name && S.grade === grade && !(PUB && !PUB.staff && ST.status === "new")) return goMission(S.mission);
+    if (PUB) {
+      $("start").disabled = true;
+      try { await post("/api/public/space/start", { grade, source: SRC }); }
+      catch (e) { if (e.data && e.data.played) return welcome(true); $("err").textContent = e.message; $("start").disabled = false; return; }
+    }
+    S = { ...S, name, grade, mission: 0, points: 0, done: {}, answered: {}, quiz: null, finished: false, m1seen: [], m4found: [], m5tried: [] };
+    save(); goMission(1);
+  };
+}
+function contactLinks() {
+  const wa = PUB && /^\d{8,15}$/.test(PUB.whatsapp || "") ? PUB.whatsapp : "";
+  return `<div class="row" style="margin-top:12px"><a class="btn go grow" href="${esc(APP_URL)}/interest?src=space-lab" target="_top">📝 Register for tutoring</a>${wa ? `<a class="btn blue grow" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent(`Hi! ${S.name ? S.name + " just played" : "We played"} the Afro-Merica Space Lab. We'd like to learn more about tutoring.`)}">💬 WhatsApp us</a>` : ""}</div>`;
+}
+function lockedHTML() {
+  return `<div class="glass"><h2>🚀 You've completed your free mission!</h2>
+    <p class="muted">The free Space Lab can be played once. Want more missions, labs and a real tutor? Our students get the full Space Lab, plus Math, Physics, Science and Python lessons, online or in person.</p>
+    ${S.cert && S.lead ? `<button class="btn gold block" id="cert">🏅 Download ${esc(S.name)}'s certificate again</button>` : ""}
+    ${contactLinks()}</div>`;
+}
+function wireLocked() { const c = $("cert"); if (c) c.onclick = () => downloadCert(); }
+
+/* =====================================================================
+   The end: rank, contact, certificate
+   ===================================================================== */
+const rankOf = p => p >= 14 ? "Mission Commander" : p >= 10 ? "Space Pilot" : "Space Cadet";
+async function finishAll() {
+  S.finished = true; S.rank = rankOf(S.points); save();
+  if (PUB) post("/api/public/space/finish", { score: S.points, total: TOTAL }).catch(() => {});
+  if (AM && AM.award) try { AM.award("space-lab", `Space Lab: ${S.rank}`, "🚀"); } catch {}
+  showEnd();
+}
+function showEnd() {
+  M = null; cancelConfetti();
+  const needLead = PUB && !PUB.staff && !S.lead;
+  shell(`<div class="center"><div class="hero" style="width:min(720px,100%)">
+    <div class="glass" style="text-align:center"><div class="kicker">Mission complete</div><div class="rank">${esc(S.rank || rankOf(S.points))}</div>
+      <p class="muted" style="margin:6px 0 0">${esc(S.name)} scored <b style="color:var(--gold2)">${S.points} of ${TOTAL}</b> points in grade ${S.grade} missions. 🇺🇸</p></div>
+    ${needLead ? `<div class="glass" style="margin-top:14px"><h2>🏅 Get ${esc(S.name)}'s certificate</h2>
+      <p class="muted small">Tell us where to reach you and we'll unlock the certificate right away. A tutor from Afro-Merica Tutor & Training may contact you about a free first lesson.</p>
+      <form id="lf"><label class="sl">Parent's name<input class="inp" name="parent_name" maxlength="80" required autocomplete="name"></label>
+        <label class="sl">WhatsApp or phone<input class="inp" name="phone" type="tel" maxlength="40" required autocomplete="tel" placeholder="(240) 555-0123"></label>
+        <label class="sl">Email <span class="tiny">(optional)</span><input class="inp" name="email" type="email" maxlength="120" autocomplete="email"></label>
+        <label class="sl">City or state <span class="tiny">(optional)</span><input class="inp" name="city" maxlength="80" autocomplete="address-level1"></label>
+        <label class="consent"><input type="checkbox" name="consent"> <span>Afro-Merica Tutor & Training may contact me by WhatsApp, phone or email about tutoring. We never share your details.</span></label>
+        <div class="hp" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off"></div>
+        <div class="err" id="err"></div>
+        <button class="btn gold block" style="font-size:16px;padding:13px">🔓 Unlock the certificate</button></form>
+      <p class="tiny muted" style="margin:10px 0 0;text-align:center">Prefer not to share? You can still <a href="${esc(APP_URL)}/interest?src=space-lab" target="_top" style="color:var(--blue2)">contact us</a> anytime.</p></div>`
+    : `<div class="glass" style="margin-top:14px;text-align:center"><canvas id="certPrev" class="cert-prev"></canvas>
+      <div class="row" style="margin-top:12px"><button class="btn gold grow" id="dl">⬇ Download certificate</button>${navigator.share ? `<button class="btn grow" id="sh">📤 Share</button>` : ""}</div></div>
+      ${PUB && !PUB.staff ? `<div class="glass" style="margin-top:14px"><h2>🌟 Thank you! We'll be in touch soon.</h2><p class="muted small">The free Space Lab can be played once. Students get the full lab and live lessons with a tutor in Math, Physics, Science and Python.</p>${contactLinks()}</div>`
+        : AM ? `<div class="row" style="margin-top:14px"><button class="btn grow" id="again">🔁 Play again</button></div>` : `<div class="row" style="margin-top:14px"><button class="btn grow" id="again">🔁 Play again (staff)</button></div>`}`}
+  </div></div>`);
+  confetti();
+  if (needLead) {
+    $("lf").onsubmit = async e => {
+      e.preventDefault(); const f = e.target, err = $("err"); err.textContent = "";
+      if (!f.parent_name.value.trim()) return err.textContent = "Please enter your name.";
+      if ((f.phone.value.match(/\d/g) || []).length < 7) return err.textContent = "Please enter a WhatsApp or phone number.";
+      if (!f.consent.checked) return err.textContent = "Please tick the box so we may contact you.";
+      const btn = f.querySelector("button"); btn.disabled = true; btn.textContent = "Unlocking…";
+      try {
+        await post("/api/public/interest", { parent_name: f.parent_name.value, phone: f.phone.value, email: f.email.value, city: f.city.value, consent: true, website: f.website.value, ft: PUB.ft,
+          subjects: ["Science", "Physics"], grades: [String(S.grade)], goals: ["Projects & competitions"], heard: "", source: "space-lab",
+          message: `Space Lab: ${S.name} (grade ${S.grade}) finished all 6 missions, ${S.points}/${TOTAL} points, rank ${S.rank}.` });
+        S.lead = true; S.cert = true; save(); showEnd();
+      } catch (x) { err.textContent = x.message; btn.disabled = false; btn.textContent = "🔓 Unlock the certificate"; }
+    };
+  } else {
+    S.cert = true; save();
+    drawCert($("certPrev"));
+    $("dl").onclick = downloadCert;
+    if ($("sh")) $("sh").onclick = async () => { try { const blob = await new Promise(r => certCanvas().toBlob(r, "image/png")); const file = new File([blob], "space-cadet-certificate.png", { type: "image/png" }); if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], title: "Space Cadet certificate", text: `${S.name} earned the rank of ${S.rank} at the Afro-Merica Space Lab! 🚀 ${APP_URL}/space` }); else await navigator.share({ title: "Afro-Merica Space Lab", text: `${S.name} earned the rank of ${S.rank}! 🚀`, url: `${APP_URL}/space?src=share` }); } catch {} };
+    if ($("again")) $("again").onclick = () => { S = { ...S, mission: 0, points: 0, done: {}, answered: {}, quiz: null, finished: false, cert: null }; save(); welcome(false); };
+  }
+}
+
+/* certificate: 1600 × 1130 PNG */
+let LOGO_IMG = null;
+(() => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => { LOGO_IMG = im; const p = $("certPrev"); if (p) drawCert(p); }; im.src = LOGO; })();
+function certCanvas() { const c = document.createElement("canvas"); drawCert(c); return c; }
+function drawCert(c) {
+  const Wc = 1600, Hc = 1130; c.width = Wc; c.height = Hc; const x = c.getContext("2d");
+  const bg = x.createLinearGradient(0, 0, Wc, Hc); bg.addColorStop(0, "#0b1d4a"); bg.addColorStop(1, "#050b22"); x.fillStyle = bg; x.fillRect(0, 0, Wc, Hc);
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 260; i++) { x.globalAlpha = .3 + rnd() * .7; x.fillStyle = "#fff"; x.beginPath(); x.arc(rnd() * Wc, rnd() * Hc, rnd() * 1.8 + .3, 0, TAU); x.fill(); } x.globalAlpha = 1;
+  // red and white stripe frame, blue inner line
+  for (let i = 0; i < 2; i++) { x.lineWidth = 14; x.strokeStyle = i ? "#ffffff" : "#B22234"; x.strokeRect(22 + i * 14, 22 + i * 14, Wc - 44 - i * 28, Hc - 44 - i * 28); }
+  x.lineWidth = 4; x.strokeStyle = "#3C3B6E"; x.strokeRect(62, 62, Wc - 124, Hc - 124);
+  x.lineWidth = 2; x.strokeStyle = "rgba(245,196,81,.8)"; x.strokeRect(78, 78, Wc - 156, Hc - 156);
+  // flags in the top corners
+  const gg = g; g = x; drawFlag(x, 110, 108, 64); drawFlag(x, Wc - 110 - 122, 108, 64); g = gg;
+  // planet and ringed planet decorations
+  const pl = (px, py, r, c1, c2) => { const gr = x.createRadialGradient(px - r * .4, py - r * .4, r * .1, px, py, r); gr.addColorStop(0, c1); gr.addColorStop(1, c2); x.fillStyle = gr; x.beginPath(); x.arc(px, py, r, 0, TAU); x.fill(); };
+  pl(170, Hc - 170, 60, "#8cc8ff", "#1a4fa5"); pl(300, Hc - 140, 26, "#ffe2a8", "#b98a3c"); x.strokeStyle = "rgba(240,220,170,.8)"; x.lineWidth = 4; x.beginPath(); x.ellipse(300, Hc - 140, 50, 12, -.3, 0, TAU); x.stroke();
+  if (LOGO_IMG) { try { x.save(); x.beginPath(); x.arc(Wc / 2, 190, 78, 0, TAU); x.fillStyle = "#fff"; x.fill(); x.clip(); x.drawImage(LOGO_IMG, Wc / 2 - 76, 114, 152, 152); x.restore(); } catch {} }
+  x.textAlign = "center"; x.fillStyle = "#f5c451"; x.font = "800 28px Inter, Arial, sans-serif"; x.fillText("AFRO-MERICA TUTOR & TRAINING · SPACE LAB", Wc / 2, 320);
+  x.fillStyle = "#ffffff"; x.font = "900 76px Georgia, 'Times New Roman', serif"; x.fillText("Certificate of Space Achievement", Wc / 2, 420);
+  x.fillStyle = "#c9d6f5"; x.font = "400 32px Georgia, serif"; x.fillText("This certifies that", Wc / 2, 495);
+  x.fillStyle = "#ffdd7a"; x.font = `700 ${S.name.length > 16 ? 86 : 110}px Georgia, serif`; x.fillText(S.name || "Astronaut", Wc / 2, 615);
+  x.strokeStyle = "rgba(245,196,81,.6)"; x.lineWidth = 2; x.beginPath(); x.moveTo(Wc / 2 - 380, 645); x.lineTo(Wc / 2 + 380, 645); x.stroke();
+  x.fillStyle = "#c9d6f5"; x.font = "400 30px Georgia, serif"; x.fillText("completed all six Space Lab missions and earned the rank of", Wc / 2, 705);
+  const rg = x.createLinearGradient(Wc / 2 - 300, 0, Wc / 2 + 300, 0); rg.addColorStop(0, "#ff5866"); rg.addColorStop(.5, "#ffffff"); rg.addColorStop(1, "#6c9bff");
+  x.fillStyle = rg; x.font = "900 74px Inter, Arial, sans-serif"; x.fillText(`★ ${(S.rank || rankOf(S.points)).toUpperCase()} ★`, Wc / 2, 800);
+  x.fillStyle = "#9fb0d6"; x.font = "600 26px Inter, Arial, sans-serif";
+  x.fillText(`Score ${S.points} / ${TOTAL}  ·  Grade ${S.grade}  ·  ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, Wc / 2, 860);
+  x.fillStyle = "#ffffff"; x.font = "700 24px Inter, Arial, sans-serif"; x.fillText("🪐 Solar System  ·  🚀 Orbit  ·  🌌 Gravity  ·  🌗 Moon & Eclipses  ·  ⚡ Speed of Light", Wc / 2, 925);
+  // QR code to the tutoring form
+  if (window.QR) { try { const q = QR.make(`${APP_URL}/interest?src=certificate`, "M"), sz = 150, cell = sz / (q.size + 2), qx = Wc - 130 - sz, qy = Hc - 130 - sz - 40; x.fillStyle = "#fff"; x.fillRect(qx - 8, qy - 8, sz + 16, sz + 16); x.fillStyle = "#0b1d4a"; for (let i = 0; i < q.size; i++) for (let j = 0; j < q.size; j++) if (q.get(j, i)) x.fillRect(qx + (j + 1) * cell, qy + (i + 1) * cell, Math.ceil(cell), Math.ceil(cell)); x.fillStyle = "#c9d6f5"; x.font = "600 18px Inter, Arial"; x.fillText("Book a lesson", qx + sz / 2, qy + sz + 34); } catch {} }
+  x.fillStyle = "#9fb0d6"; x.font = "600 22px Inter, Arial, sans-serif"; x.fillText(`${APP_URL.replace(/^https?:\/\//, "")}  ·  Math · Physics · Science · Python for Kids`, Wc / 2, Hc - 112);
+  // preview size
+  if (c.id === "certPrev") { c.style.width = "100%"; c.style.height = "auto"; }
+}
+function downloadCert() { const c = certCanvas(); const a = document.createElement("a"); a.download = `${(S.name || "space-cadet").replace(/[^\w-]+/g, "-")}-space-certificate.png`; a.href = c.toDataURL("image/png"); a.click(); }
+
+/* confetti in red, white, blue and gold */
+let confettiRaf = 0;
+function confetti() {
+  const c = document.createElement("canvas"); c.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:40"; c.width = innerWidth; c.height = innerHeight; document.body.appendChild(c);
+  const x = c.getContext("2d"), cols = ["#B22234", "#ffffff", "#3C3B6E", "#f5c451", "#6c9bff"];
+  const ps = Array.from({ length: 160 }, () => ({ x: Math.random() * innerWidth, y: -20 - Math.random() * innerHeight * .5, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3, r: Math.random() * TAU, c: cols[Math.random() * cols.length | 0], s: 5 + Math.random() * 6 }));
+  let n = 0; const step = () => { x.clearRect(0, 0, c.width, c.height); for (const p of ps) { p.x += p.vx; p.y += p.vy; p.r += .1; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); x.restore(); } if (++n < 260) confettiRaf = requestAnimationFrame(step); else c.remove(); };
+  step();
+}
+function cancelConfetti() { cancelAnimationFrame(confettiRaf); }
+
+/* =====================================================================
+   Start
+   ===================================================================== */
+(async () => {
+  load();
+  if (AM && AM.student) { S.name = S.name || AM.student.firstName; if (!S.mission && AM.student.grade >= 5) S.grade = Math.min(12, AM.student.grade); }
+  raf = requestAnimationFrame(loop);
+  if (PUB && !PUB.staff) {
+    let st = { status: "new" }; try { st = await (await fetch("/api/public/space/status", { credentials: "same-origin" })).json(); } catch {}
+    ST = st;
+    if (st.status === "played") return S.finished ? showEnd() : welcome(true);
+    if (st.status === "active" && S.mission) return S.finished ? showEnd() : goMission(S.mission);
+  }
+  if (S.finished && !(PUB && PUB.staff)) return showEnd();
+  if (AM && AM.mode !== "student" && !AM.student) { S.name = S.name || "Preview"; }
+  welcome(false);
+})();
+</script>
+</body>
+</html>

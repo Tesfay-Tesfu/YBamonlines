@@ -324,7 +324,8 @@ r.get('/leads', async (req, res) => {
   const counts = await db.many(`SELECT status, count(*)::int AS n FROM leads GROUP BY status`);
   const sources = await db.many(`SELECT COALESCE(source, 'direct') AS source, count(*)::int AS n FROM leads WHERE status <> 'spam' GROUP BY 1 ORDER BY n DESC`);
   const blocks = await db.many('SELECT id, kind, value, note, created_at FROM lead_blocks ORDER BY created_at DESC');
-  res.json({ leads, counts, sources, blocks, turnstile: spam.turnstileOn() });
+  const space = await require('./space').stats().catch(() => null);
+  res.json({ leads, counts, sources, blocks, turnstile: spam.turnstileOn(), space });
 });
 r.patch('/leads/:id', async (req, res) => {
   const id = Number(req.params.id);

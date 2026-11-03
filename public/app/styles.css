@@ -520,3 +520,5 @@ td.pick { cursor: default; } td.pick input, #pickAll { width: 18px; height: 18px
 .guard-grid h3 { margin: 0 0 8px; font-size: 1rem; }
 .guard-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: .9rem; }
 @media (max-width: 800px) { .guard-grid { grid-template-columns: 1fr; } }
+.space-strip { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; padding: 10px 12px; border-radius: 12px; color: #e9efff; background: linear-gradient(90deg, #0b1d4a, #1a2f6b 60%, #3a1630); border: 1px solid #22356e; }
+.space-strip a:not(.btn) { color: #ffdd7a; }

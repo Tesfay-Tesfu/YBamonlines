@@ -1,0 +1,12 @@
+{
+  "name": "Space Lab",
+  "subject": "science",
+  "grade_min": 5,
+  "grade_max": 12,
+  "icon": "🚀",
+  "version": "1.0.0",
+  "description": "Six space missions: fly through the Solar System (age and weight on each planet), launch a rocket into orbit with real physics, build a solar system with gravity, make Moon phases and eclipses, race the speed of light, and a final challenge for a Space Cadet certificate. Questions get harder for older grades.",
+  "settings": [
+    { "key": "note", "label": "Note to the student", "type": "text" }
+  ]
+}

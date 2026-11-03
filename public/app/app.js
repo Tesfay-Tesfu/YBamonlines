@@ -1437,7 +1437,12 @@ route("/admin/leads", async q => {
     if ($("#emptySpam", page)) $("#emptySpam", page).onclick = async () => { if (await confirmBox("Empty the Spam folder?", `All ${cnt.spam} answers in Spam are deleted. Spam is also emptied automatically after 30 days.`, "Empty spam", true)) DEL("/api/admin/leads?status=spam").then(r => { toast(`Removed ${r.removed}`); load(); }).catch(fail); };
     drawGuard(d);
     $$("[data-st]", page).forEach(b => b.onclick = () => { status = b.dataset.st; load().catch(fail); });
-    $("#sources", page).innerHTML = d.sources.length ? "Came from: " + d.sources.map(s => `<span class="tag">${esc(s.source)} ${s.n}</span>`).join(" ") : "";
+    $("#sources", page).innerHTML = (d.sources.length ? "Came from: " + d.sources.map(s => `<span class="tag">${esc(s.source)} ${s.n}</span>`).join(" ") : "")
+      + (d.space ? `<div class="space-strip">🚀 <b>Free Space Lab</b> · ${d.space.plays} played (${d.space.week} this week) · ${d.space.finished} finished · <a href="#" data-st-src="space-lab">${d.space.contacts} left their number</a>
+        <span style="flex:1"></span><a class="btn small" href="/space" target="_blank" rel="noopener">Open ↗</a><button class="btn small" id="spCopy">Copy link</button>
+        <a class="btn small wa-btn" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`🚀 FREE space mission for kids (grades 5–12)! Fly through the Solar System, launch a rocket into orbit and earn a Space Cadet certificate 🇺🇸\n${location.origin}/space?src=whatsapp`)}">Share on WhatsApp</a></div>` : "");
+    if ($("#spCopy", page)) $("#spCopy", page).onclick = () => copy(`${location.origin}/space`);
+    $$("[data-st-src]", page).forEach(a => a.onclick = e => { e.preventDefault(); search = ""; $("#q", page).value = ""; status = ""; load().then(() => { $$(".lead", page).forEach(el => { if (!el.textContent.includes("space-lab")) el.remove(); }); }).catch(fail); });
     $("#list", page).innerHTML = d.leads.length ? `<div class="leads">${d.leads.map(l => {
       const first = l.parent_name.split(/\s+/)[0];
       const hello = `Hello ${first}, this is Afro-Merica Tutor & Training 👋 Thank you for your interest in ${l.subjects.join(" & ")}${l.grades.length ? ` for grade ${l.grades.join(", ")}` : ""}. When is a good time to talk about a plan for your child?`;

@@ -234,6 +234,23 @@ A shared writing space for a student and their tutor, styled as a phone screen: 
 
 Only the student types the text (tutors change it through suggestions), so two people never type over each other. While a piece is turned in or done, the text is locked; the student can **Take back** a piece the tutor hasn't reviewed yet. Parents can read everything but not change it. Like the whiteboard, live updates need a single server instance.
 
+### Free Space Lab (`/space`) for new families
+
+**`/space`** (e.g. `https://mytuator.com/space`) is a free, impressive space adventure for grades 5–12 that anyone can open without an account, with a U.S. flag theme:
+
+1. 🪐 **Solar System Flight**: a Solar System you can turn and zoom; tap planets for facts, your age and your weight (lb) there; "real distances" and "real sizes" switches.
+2. 🚀 **Launch to Orbit**: Newton's cannon with real physics (speed in km/s and mph): fall back, orbit, or escape Earth.
+3. 🌌 **Build a Solar System**: throw planets around a star and watch gravity make orbits.
+4. 🌗 **Moon & Eclipses**: drag the Moon to see phases from America, solar and lunar eclipses, and the Apollo 11 landing site.
+5. ⚡ **Race the Light**: light vs. a space probe, a rocket, a jet and a car to the Moon, the Sun, Mars… the nearest star.
+6. 🎖️ **Final Challenge**: 6 questions; each mission also has a goal and a checkpoint question (16 points). Questions are easier for grades 5–6, middle for 7–8 and harder (physics formulas) for 9–12.
+
+At the end the parent enters their name and WhatsApp number to unlock the child's **certificate** (rank: Space Cadet, Space Pilot or Mission Commander) with your logo and a QR code to the tutoring form. The answer appears in **Leads** with "via space-lab" and the child's score; the Leads page shows how many played, finished and left a number, with buttons to copy or share the link.
+
+- **One free play:** once per browser (a cookie that lasts a year) and at most 3 plays per internet connection in 30 days. After that the page shows "Register for tutoring" and "WhatsApp us" (set `CONTACT_WHATSAPP`). Signed-in admins and tutors can always play, to try it out.
+- **Students** who are given the **Space Lab** tool (Tools, subject Science) can play as often as they like; their answers appear in their reports.
+- Share links like `/space?src=whatsapp` or `/space?src=facebook` to see where players came from.
+
 ## 5. Privacy and safety
 
 - Children sign in with a username and PIN; no child email is collected. Sessions for students end after 12 hours.
