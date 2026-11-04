@@ -743,6 +743,7 @@ function welcome(locked, note) {
       <div class="err" id="err"></div>
       <button class="btn go block" id="start" style="font-size:17px;padding:14px">🚀 ${S.mission ? "Continue my mission" : "Start my mission"}</button>
       ${PUB && PUB.staff ? `<p class="tiny muted" style="margin:8px 0 0">Signed in as ${esc(PUB.staff)}: you can play as often as you like to try it out.</p>` : ""}
+      ${PUB && !PUB.staff ? `<p class="small muted" style="margin:12px 0 0;text-align:center">Already want lessons? <a href="https://www.amonlines.com/onboarding" target="_top" style="color:var(--blue2);font-weight:700">Register Now</a></p>` : ""}
     </div>`}
     <p class="tiny muted" style="margin-top:16px">Made by <b>Afro-Merica Tutor & Training</b> · Math, Physics, Science & Python tutoring for grades K–12 across the U.S.</p>
   </div></div>`);
@@ -800,7 +801,7 @@ function showEnd() {
         <div class="hp" aria-hidden="true"><input name="website" tabindex="-1" autocomplete="off"></div>
         <div class="err" id="err"></div>
         <button class="btn gold block" style="font-size:16px;padding:13px">🔓 Unlock the certificate</button></form>
-      <p class="tiny muted" style="margin:10px 0 0;text-align:center">Prefer not to share? You can still <a href="${esc(APP_URL)}/interest?src=space-lab" target="_top" style="color:var(--blue2)">contact us</a> anytime.</p></div>`
+      <p class="tiny muted" style="margin:10px 0 0;text-align:center">Prefer not to share? You can still <a href="https://www.amonlines.com/onboarding" target="_top" style="color:var(--blue2);font-weight:700">Register Now</a> anytime.</p></div>`
     : `<div class="glass" style="margin-top:14px;text-align:center"><canvas id="certPrev" class="cert-prev"></canvas>
       <div class="row" style="margin-top:12px"><button class="btn gold grow" id="dl">⬇ Download certificate</button>${navigator.share ? `<button class="btn grow" id="sh">📤 Share</button>` : ""}</div></div>
       ${PUB && !PUB.staff ? `<div class="glass" style="margin-top:14px"><h2>🌟 Thank you! We'll be in touch soon.</h2><p class="muted small">The free Space Lab can be played once. Students get the full lab and live lessons with a tutor in Math, Physics, Science and Python.</p>${contactLinks()}</div>`
