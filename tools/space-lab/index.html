@@ -764,7 +764,7 @@ function welcome(locked, note) {
 }
 function contactLinks() {
   const wa = PUB && /^\d{8,15}$/.test(PUB.whatsapp || "") ? PUB.whatsapp : "";
-  return `<div class="row" style="margin-top:12px"><a class="btn go grow" href="${esc(APP_URL)}/interest?src=space-lab" target="_top">📝 Register for tutoring</a>${wa ? `<a class="btn blue grow" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent(`Hi! ${S.name ? S.name + " just played" : "We played"} the Afro-Merica Space Lab. We'd like to learn more about tutoring.`)}">💬 WhatsApp us</a>` : ""}</div>`;
+  return `<div class="row" style="margin-top:12px"><a class="btn go grow" href="https://www.amonlines.com/onboarding" target="_top">🚀 Register Now: Launch Your Future</a>${wa ? `<a class="btn blue grow" target="_blank" rel="noopener" href="https://wa.me/${wa}?text=${encodeURIComponent(`Hi! ${S.name ? S.name + " just played" : "We played"} the Afro-Merica Space Lab. We'd like to learn more about tutoring.`)}">💬 WhatsApp us</a>` : ""}</div>`;
 }
 function lockedHTML() {
   return `<div class="glass"><h2>🚀 You've completed your free mission!</h2>
@@ -861,7 +861,7 @@ function drawCert(c) {
   x.fillText(`Score ${S.points} / ${TOTAL}  ·  Grade ${S.grade}  ·  ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`, Wc / 2, 860);
   x.fillStyle = "#ffffff"; x.font = "700 24px Inter, Arial, sans-serif"; x.fillText("🪐 Solar System  ·  🚀 Orbit  ·  🌌 Gravity  ·  🌗 Moon & Eclipses  ·  ⚡ Speed of Light", Wc / 2, 925);
   // QR code to the tutoring form
-  if (window.QR) { try { const q = QR.make(`${APP_URL}/interest?src=certificate`, "M"), sz = 150, cell = sz / (q.size + 2), qx = Wc - 130 - sz, qy = Hc - 130 - sz - 40; x.fillStyle = "#fff"; x.fillRect(qx - 8, qy - 8, sz + 16, sz + 16); x.fillStyle = "#0b1d4a"; for (let i = 0; i < q.size; i++) for (let j = 0; j < q.size; j++) if (q.get(j, i)) x.fillRect(qx + (j + 1) * cell, qy + (i + 1) * cell, Math.ceil(cell), Math.ceil(cell)); x.fillStyle = "#c9d6f5"; x.font = "600 18px Inter, Arial"; x.fillText("Book a lesson", qx + sz / 2, qy + sz + 34); } catch {} }
+  if (window.QR) { try { const q = QR.make("https://www.amonlines.com/", "M"), sz = 150, cell = sz / (q.size + 2), qx = Wc - 130 - sz, qy = Hc - 130 - sz - 40; x.fillStyle = "#fff"; x.fillRect(qx - 8, qy - 8, sz + 16, sz + 16); x.fillStyle = "#0b1d4a"; for (let i = 0; i < q.size; i++) for (let j = 0; j < q.size; j++) if (q.get(j, i)) x.fillRect(qx + (j + 1) * cell, qy + (i + 1) * cell, Math.ceil(cell), Math.ceil(cell)); x.fillStyle = "#c9d6f5"; x.font = "600 18px Inter, Arial"; x.fillText("Book a lesson", qx + sz / 2, qy + sz + 34); } catch {} }
   x.fillStyle = "#9fb0d6"; x.font = "600 22px Inter, Arial, sans-serif"; x.fillText(`${APP_URL.replace(/^https?:\/\//, "")}  ·  Math · Physics · Science · Python for Kids`, Wc / 2, Hc - 112);
   // preview size
   if (c.id === "certPrev") { c.style.width = "100%"; c.style.height = "auto"; }
