@@ -14,6 +14,9 @@
 * { box-sizing:border-box }
 body { background:var(--bg); color:var(--fg); margin:0; font:16px/1.5 var(--display); font-weight:500 }
 .topbar { background:#002d5f; color:#fff; padding:12px 18px; border-bottom:4px solid #e66414 }
+.attempts { margin-top:14px; border-top:1px solid var(--line); padding-top:4px }
+.attempts ol { list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:14px }
+.attempts li { display:flex; gap:7px; align-items:center; overflow-wrap:anywhere }
 .note { background:var(--soft); border-radius:7px; padding:10px 12px; font-size:15px; overflow-wrap:anywhere }
 .wrap { max-width:1180px; margin:0 auto; padding-block:20px 40px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:flex; flex-direction:column; gap:16px }
 header { display:flex; flex-wrap:wrap; gap:8px 20px; align-items:baseline; justify-content:space-between }
@@ -193,13 +196,18 @@ const nums = {}; { const c = {}; Q.forEach(q => { c[q.topic] = (c[q.topic]||0)+1
 
 // window.AMT is added by the platform. Opened on its own, the tool still works and saves in this browser.
 const AM = window.AMT || null;
-const store = AM ? AM.storage : window.localStorage;
+// Student: saved on the server. Preview: the platform saves nothing, so keep it for this browser tab.
+const store = !AM ? window.localStorage : AM.mode === "preview" ? window.sessionStorage : AM.storage;
 const PLAN = (AM && AM.settings) || {};
 const REVIEW = !!AM && AM.mode === "review";   // an adult viewing a student: read only
 const planned = Array.isArray(PLAN.topics) ? PLAN.topics.filter(k => TOPICS[k]) : [];
 if (planned.length) { for (let i = Q.length-1; i >= 0; i--) if (!planned.includes(Q[i].topic)) Q.splice(i,1); }
 let progress = {};            // id -> {st, sec, pick, tries, best, at}
 try { progress = JSON.parse(store.getItem(LS)) || {}; } catch (e) {}
+let attemptLog = {};             // id -> every attempt, oldest first: {st, sec, pick, at}
+try { attemptLog = JSON.parse(store.getItem(LS + "-history")) || {}; } catch (e) {}
+// Older saves have no history yet, so start each one from its saved result.
+for (const [k,p] of Object.entries(progress)) if (!attemptLog[k]) attemptLog[k] = [{st:p.st, sec:p.sec, pick:p.pick, at:p.at}];
 let topic = "all", cur = Q[0].id, stepsOpen = false, confirmReset = false;
 const clock = {};             // id -> seconds spent on the unanswered attempt
 let lastTick = Date.now();
@@ -212,11 +220,13 @@ const getQ = id => Q.find(q => q.id === id);
 function record(q, pick, st) {
   const sec = Math.max(1, Math.round(clock[q.id] || 0)), old = progress[q.id];
   progress[q.id] = {st, sec, pick, tries:(old?old.tries:0)+1, best:(st==="correct" ? Math.min(sec, old&&old.best||sec) : (old&&old.best)||null), at:Date.now()};
-  save(); report(q, pick, st, sec); renderAll();
+  (attemptLog[q.id] = attemptLog[q.id] || []).push({st, sec, pick, at:Date.now()});
+  attemptLog[q.id] = attemptLog[q.id].slice(-20);
+  report(q, pick, st, sec); save(); renderAll();
 }
 function report(q, pick, st, sec) {
   if (!AM) return;
-  AM.attempt({ question:q.text, response: pick===null ? "(viewed steps)" : q.opts[pick], answer:q.opts[0], correct:st==="correct", ms:sec*1000, topic:TOPICS[q.topic], mode:"Practice", meta:{id:q.id, band:band(sec)} });
+  AM.attempt({ question:q.text, response: pick===null ? "(viewed steps)" : q.opts[pick], answer:q.opts[0], correct:st==="correct", ms:sec*1000, topic:TOPICS[q.topic], mode:"Practice", meta:{id:q.id, band:band(sec), attempt:attemptLog[q.id].length} });
   const all = Q.map(x => progress[x.id]);
   const inTopic = Q.filter(x => x.topic===q.topic);
   if (inTopic.every(x => (progress[x.id]||{}).st==="correct")) AM.award("master-"+q.topic, "Mastered: "+TOPICS[q.topic], "🏅");
@@ -264,6 +274,13 @@ function renderWork() {
   btn("Next", () => go(nextId(1)));
   const n = nextOpen(); const nb = btn("Next unanswered", () => go(n), p ? "primary" : ""); nb.disabled = !n;
   box.append(act);
+  const h = attemptLog[q.id] || [];
+  if (h.length) {
+    const w = el("div","attempts"); w.append(el("h3","","Attempts on this question: " + h.length));
+    const ol = el("ol");
+    h.forEach(a => { const li = el("li"); li.append(el("span","swatch b-"+band(a.sec)), (a.st==="correct"?"✓ ":a.st==="wrong"?"✗ ":"? ") + (a.pick===null||a.pick===undefined ? "Viewed steps" : q.opts[a.pick]) + ", " + fmt(a.sec)); ol.append(li); });
+    w.append(ol); box.append(w);
+  }
 }
 function renderTracker() {
   const done = Q.map(q => progress[q.id]).filter(Boolean);
@@ -295,7 +312,7 @@ function renderTracker() {
   if (confirmReset) {
     r.append("Erase all progress?");
     const y = el("button","btn","Erase"), n = el("button","btn","Keep"); y.type = n.type = "button";
-    y.onclick = () => { progress = {}; Object.keys(clock).forEach(k => delete clock[k]); confirmReset = false; stepsOpen = false; save(); renderAll(); };
+    y.onclick = () => { progress = {}; if (typeof attemptLog === "object") attemptLog = {}; Object.keys(clock).forEach(k => delete clock[k]); confirmReset = false; stepsOpen = false; save(); renderAll(); };
     n.onclick = () => { confirmReset = false; renderTracker(); }; r.append(y,n);
   } else { const b = el("button","btn","Reset progress"); b.type = "button"; b.onclick = () => { confirmReset = true; renderTracker(); }; r.append(b); }
 }
@@ -308,7 +325,7 @@ function tick() {
 }
 function renderAll() { renderTabs(); renderWork(); renderTracker(); tick(); }
 
-function save() { try { store.setItem(LS, JSON.stringify(progress)); } catch (e) {} }
+function save() { try { store.setItem(LS, JSON.stringify(progress)); store.setItem(LS + "-history", JSON.stringify(attemptLog)); } catch (e) {} if (AM && AM.flush) AM.flush(); }
 document.addEventListener("visibilitychange", () => { lastTick = Date.now(); });
 document.addEventListener("keydown", e => {
   if (e.ctrlKey||e.metaKey||e.altKey) return;
@@ -317,7 +334,7 @@ document.addEventListener("keydown", e => {
 });
 if (AM && AM.student) { document.getElementById("title").textContent = AM.student.firstName + "'s Aptitude-Math"; document.title = document.getElementById("title").textContent; }
 setSaveText();
-function setSaveText() { const e = document.getElementById("save"); e.textContent = REVIEW ? "Viewing progress. Nothing here is saved." : (AM && AM.mode==="student" ? "" : AM && AM.mode==="preview" ? "Preview: try any question. Nothing is saved." : "Progress saves in this browser"); e.hidden = !e.textContent; }
+function setSaveText() { const e = document.getElementById("save"); e.textContent = REVIEW ? "Viewing progress. Nothing here is saved." : (AM && AM.mode==="student" ? "" : AM && AM.mode==="preview" ? "Preview: your answers stay in this browser tab until you close it. Sign in as a student to save them." : "Progress saves in this browser"); e.hidden = !e.textContent; }
 if (PLAN.note) { const n = document.getElementById("note"); n.textContent = "Note from your tutor: " + PLAN.note; n.hidden = false; }
 cur = (Q.find(q => !progress[q.id]) || Q[0]).id;
 renderAll(); setInterval(tick, 250);
