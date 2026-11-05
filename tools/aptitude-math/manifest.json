@@ -1,0 +1,39 @@
+{
+  "name": "Aptitude-Math",
+  "subject": "math",
+  "grade_min": 9,
+  "grade_max": 12,
+  "icon": "🧠",
+  "version": "1.0.0",
+  "description": "Timed multiple-choice aptitude math: algebra, series and sequences, relations and functions, domain and range, word problems, direct and inverse proportion, and simple interest. Every question has a color-coded time, a progress box and worked steps.",
+  "settings": [
+    {
+      "key": "topics",
+      "label": "Topics to practice (none chosen = all)",
+      "type": "multi",
+      "options": [
+        "alg",
+        "seq",
+        "fun",
+        "dom",
+        "wrd",
+        "pro",
+        "int"
+      ],
+      "labels": [
+        "Algebra",
+        "Series & Sequences",
+        "Relations & Functions",
+        "Domain & Range",
+        "Word Problems",
+        "Direct & Inverse Proportion",
+        "Simple Interest"
+      ]
+    },
+    {
+      "key": "note",
+      "label": "Note to the student",
+      "type": "text"
+    }
+  ]
+}

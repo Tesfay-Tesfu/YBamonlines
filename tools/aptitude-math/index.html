@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aptitude-Math</title>
+<style>
+/* Layout: a work area for the question beside a question-by-question tracker, on drafting-paper blue. */
+:root { --bg:#f5f7fb; --surface:#ffffff; --fg:#17212c; --muted:#556575; --line:#c9d4de; --accent:#005596; --accent-fg:#ffffff; --soft:#dfe8f1;
+  --ok:#12703a; --bad:#b3261e; --t-green:#1b7f3a; --t-yellow:#8a6a00; --t-red:#c62828; --t-black:#000000; --t-edge:transparent;
+  --display:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#10161d; --surface:#18212b; --fg:#e7edf3; --muted:#9dacba; --line:#32404e; --accent:#7fb2ea; --accent-fg:#0d1720; --soft:#223040; --ok:#62cf8d; --bad:#ff8f86; --t-edge:#8796a5; color-scheme:dark } }
+:root[data-theme="dark"] { --bg:#10161d; --surface:#18212b; --fg:#e7edf3; --muted:#9dacba; --line:#32404e; --accent:#7fb2ea; --accent-fg:#0d1720; --soft:#223040; --ok:#62cf8d; --bad:#ff8f86; --t-edge:#8796a5; color-scheme:dark }
+* { box-sizing:border-box }
+body { background:var(--bg); color:var(--fg); margin:0; font:16px/1.5 var(--display); font-weight:500 }
+.topbar { background:#002d5f; color:#fff; padding:12px 18px; border-bottom:4px solid #e66414 }
+.note { background:var(--soft); border-radius:7px; padding:10px 12px; font-size:15px; overflow-wrap:anywhere }
+.wrap { max-width:1180px; margin:0 auto; padding-block:20px 40px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:flex; flex-direction:column; gap:16px }
+header { display:flex; flex-wrap:wrap; gap:8px 20px; align-items:baseline; justify-content:space-between }
+h1 { margin:0; font-size:30px; line-height:1.1; font-weight:800; letter-spacing:-.01em }
+.save { font-size:13px; color:var(--muted) }
+.tabs { display:flex; flex-wrap:wrap; gap:6px }
+.tab { font:600 14px var(--display); color:var(--fg); background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:7px 10px; cursor:pointer }
+.tab b { font:500 12px var(--mono); color:var(--muted); margin-left:4px }
+.tab[aria-pressed="true"] { background:var(--accent); color:var(--accent-fg); border-color:var(--accent) }
+.tab[aria-pressed="true"] b { color:inherit }
+.cols { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:16px; align-items:start }
+@media (max-width:860px) { .cols { grid-template-columns:minmax(0,1fr) } }
+.panel { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:18px; min-width:0 }
+.qhead { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px }
+.qmeta { font-size:14px; color:var(--muted) }
+.timer { font:600 18px var(--mono); color:#fff; padding:4px 11px; border-radius:6px; font-variant-numeric:tabular-nums; border:1px solid var(--t-edge) }
+.question { font-size:21px; line-height:1.4; font-weight:700; margin:0 0 16px; overflow-wrap:anywhere }
+.opts { display:grid; gap:8px }
+.opt { display:flex; gap:12px; align-items:center; text-align:left; width:100%; font:500 17px var(--display); color:var(--fg); background:var(--bg); border:1.5px solid var(--line); border-radius:7px; padding:11px 12px; cursor:pointer; overflow-wrap:anywhere }
+.opt:hover:not(:disabled) { border-color:var(--accent) }
+.opt:disabled { cursor:default; color:var(--fg) }
+.opt .k { font:600 14px var(--mono); flex:none; width:26px; height:26px; display:grid; place-items:center; border-radius:5px; background:var(--soft) }
+.opt span.t { min-width:0; flex:1 }
+.opt .tag { font-size:13px; font-weight:700; flex:none }
+.opt.right { border-color:var(--ok) } .opt.right .tag { color:var(--ok) }
+.opt.wrong { border-color:var(--bad) } .opt.wrong .tag { color:var(--bad) }
+.result { font-weight:700; margin:14px 0 0 }
+.result.ok { color:var(--ok) } .result.no { color:var(--bad) }
+.steps { margin:12px 0 0; padding:12px 14px 12px 36px; background:var(--soft); border-radius:7px; display:grid; gap:5px }
+.steps li { overflow-wrap:anywhere }
+.actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px }
+button.btn { font:700 15px var(--display); padding:9px 13px; border-radius:6px; cursor:pointer; border:1.5px solid var(--accent); background:transparent; color:var(--accent) }
+button.btn.primary { background:var(--accent); color:var(--accent-fg) }
+button.btn:disabled { opacity:.45; cursor:default }
+button:focus-visible { outline:3px solid var(--accent); outline-offset:2px }
+h2 { font-size:18px; margin:0 0 10px; font-weight:800 }
+h3 { font-size:14px; margin:14px 0 6px; font-weight:700; display:flex; justify-content:space-between; gap:8px }
+h3 small { font:500 12px var(--mono); color:var(--muted) }
+.stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; font-size:13px; color:var(--muted) }
+.stats b { display:block; font:600 21px var(--mono); color:var(--fg) }
+.legend { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px 10px; margin-top:12px; font-size:13px }
+.legend div { display:flex; align-items:center; gap:7px; min-width:0 }
+.swatch { flex:none; width:15px; height:15px; border-radius:3px; border:1px solid var(--t-edge) }
+.legend b { margin-left:auto; font:600 13px var(--mono) }
+.chips { display:grid; grid-template-columns:repeat(auto-fill,minmax(58px,1fr)); gap:5px }
+.chip { font:600 12px/1.25 var(--mono); height:48px; padding:2px; border-radius:6px; cursor:pointer; color:var(--muted); background:transparent; border:1px dashed var(--line); font-variant-numeric:tabular-nums }
+.chip.done { color:#fff; border:1px solid var(--t-edge) }
+.chip.cur { outline:3px solid var(--accent); outline-offset:1px }
+.chip span { display:block }
+.foot { font-size:13px; color:var(--muted); margin:0; max-width:80ch }
+.foot a { color:var(--accent) }
+.confirm { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:14px; font-size:14px }
+.b-green { background:var(--t-green) } .b-yellow { background:var(--t-yellow) } .b-red { background:var(--t-red) } .b-black { background:var(--t-black) }
+</style>
+</head>
+<body>
+<div class="topbar"><b id="title">Aptitude-Math</b></div>
+<div class="wrap">
+  <div class="save" id="save" role="status"></div>
+  <div class="note" id="note" hidden></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="cols">
+    <section class="panel" id="work" aria-live="off"></section>
+    <aside class="panel">
+      <h2>Your progress</h2>
+      <div class="stats" id="stats"></div>
+      <div class="legend" id="legend"></div>
+      <div id="tracker"></div>
+      <div class="confirm" id="resetBox"></div>
+    </aside>
+  </div>
+  <p class="foot">These are original practice questions, not official IBEW test items. The topics follow your list and the published format of the Algebra &amp; Functions part: 33 questions in 46 minutes, about 84 seconds each, with no calculator. <a href="https://open-exam-prep.com/study-guides/ibew-njatc-aptitude/ch1-overview-format/format-timing-strategies" target="_blank" rel="noopener">Format guide</a> · <a href="https://electriciantutor.com/free-ibew-aptitude-test-2026" target="_blank" rel="noopener">Electrician Tutor free test</a></p>
+</div>
+<script>
+// Each entry: id, question, options (the FIRST option is the correct one; the page shuffles them),
+// solution steps, and v = independently computed answer for numeric questions.
+const TOPICS = {alg:"Algebra", seq:"Series & Sequences", fun:"Relations & Functions", dom:"Domain & Range", wrd:"Word Problems", pro:"Direct & Inverse Proportion", int:"Simple Interest"};
+const BANK = [
+// ---------- Algebra
+["alg1","Solve for x: 3x + 7 = 22",["x = 5","x = 3","x = 7","x = 15"],["Subtract 7 from both sides: 3x = 15","Divide both sides by 3: x = 5","Check: 3(5) + 7 = 22 ✓"],(22-7)/3],
+["alg2","Simplify: 4(x − 3) − 2(x + 5)",["2x − 22","2x − 2","6x − 22","2x − 16"],["Distribute: 4x − 12 − 2x − 10","Combine x terms: 4x − 2x = 2x","Combine constants: −12 − 10 = −22","Result: 2x − 22"]],
+["alg3","Expand: (x + 4)(x − 7)",["x² − 3x − 28","x² + 3x − 28","x² − 11x − 28","x² − 3x + 28"],["FOIL: x·x + x(−7) + 4·x + 4(−7)","= x² − 7x + 4x − 28","Combine middle terms: x² − 3x − 28"]],
+["alg4","Factor: x² − 9x + 20",["(x − 4)(x − 5)","(x + 4)(x + 5)","(x − 2)(x − 10)","(x − 4)(x + 5)"],["Find two numbers that multiply to 20 and add to −9","Those numbers are −4 and −5","So x² − 9x + 20 = (x − 4)(x − 5)"]],
+["alg5","Solve for x: x/3 + x/4 = 7",["x = 12","x = 7","x = 14","x = 21"],["Multiply every term by 12: 4x + 3x = 84","Combine: 7x = 84","Divide by 7: x = 12"],7/(1/3+1/4)],
+["alg6","Solve the system: x + y = 12 and x − y = 4",["x = 8, y = 4","x = 6, y = 6","x = 4, y = 8","x = 9, y = 3"],["Add the equations: 2x = 16, so x = 8","Substitute: 8 + y = 12, so y = 4"]],
+["alg7","Solve the inequality: 5 − 2x > 11",["x < −3","x > −3","x < 3","x > 3"],["Subtract 5: −2x > 6","Divide by −2 and flip the sign: x < −3"]],
+["alg8","Solve: x² − 5x − 14 = 0",["x = 7 or x = −2","x = −7 or x = 2","x = 7 or x = 2","x = −7 or x = −2"],["Factor: (x − 7)(x + 2) = 0","Set each factor to 0: x = 7 or x = −2"]],
+["alg9","Simplify for x ≠ 4: (x² − 16) / (x − 4)",["x + 4","x − 4","x + 16","x − 12"],["Difference of squares: x² − 16 = (x − 4)(x + 4)","Cancel (x − 4): the result is x + 4"]],
+["alg10","If 2a + 3b = 18 and b = 4, what is a?",["3","5","6","9"],["Substitute b = 4: 2a + 12 = 18","Subtract 12: 2a = 6","Divide by 2: a = 3"],(18-3*4)/2],
+["alg11","Simplify: 2x(3x − 5) + 4x",["6x² − 6x","6x² − 14x","6x² − x","6x² + 4x"],["Distribute: 6x² − 10x + 4x","Combine x terms: 6x² − 6x"]],
+["alg12","Solve for x: (2x + 1) / 3 = 5",["x = 7","x = 8","x = 6","x = 14"],["Multiply both sides by 3: 2x + 1 = 15","Subtract 1: 2x = 14","Divide by 2: x = 7"],(5*3-1)/2],
+["alg13","Evaluate 3x² − 2y when x = −2 and y = 5.",["2","−22","22","−2"],["Square first: (−2)² = 4","3(4) − 2(5) = 12 − 10 = 2"],3*4-2*5],
+// ---------- Series and sequences
+["seq1","What comes next? 5, 9, 13, 17, ...",["21","20","22","25"],["The difference between terms is +4","17 + 4 = 21"],17+4],
+["seq2","What comes next? 3, 6, 12, 24, ...",["48","36","30","72"],["Each term is multiplied by 2","24 × 2 = 48"],24*2],
+["seq3","Which rule gives the nth term of 7, 10, 13, 16, ...?",["3n + 4","3n + 7","7n + 3","n + 6"],["Common difference is 3, so the rule starts with 3n","When n = 1: 3(1) + c = 7, so c = 4","Rule: 3n + 4. Check n = 2: 3(2) + 4 = 10 ✓"]],
+["seq4","An arithmetic sequence has first term 4 and common difference 5. What is the 20th term?",["99","104","100","94"],["Use aₙ = a₁ + (n − 1)d","a₂₀ = 4 + 19(5) = 4 + 95 = 99"],4+19*5],
+["seq5","What comes next? 1, 4, 9, 16, 25, ...",["36","30","35","49"],["These are perfect squares: 1², 2², 3², 4², 5²","The next term is 6² = 36"],36],
+["seq6","What comes next? 2, 3, 5, 8, 13, ...",["21","18","20","26"],["Each term is the sum of the two before it","8 + 13 = 21"],8+13],
+["seq7","Find the sum of the first 10 terms of 2, 5, 8, 11, ...",["155","145","160","290"],["Find the 10th term: a₁₀ = 2 + 9(3) = 29","Use Sₙ = n(a₁ + aₙ)/2","S₁₀ = 10(2 + 29)/2 = 155"],Array.from({length:10},(_,i)=>2+3*i).reduce((a,b)=>a+b)],
+["seq8","What comes next? 81, 27, 9, ...",["3","1","6","−9"],["Each term is divided by 3 (multiplied by 1/3)","9 ÷ 3 = 3"],9/3],
+["seq9","A geometric sequence has first term 2 and common ratio 3. What is the 5th term?",["162","486","54","30"],["Use aₙ = a₁ · r^(n − 1)","a₅ = 2 · 3⁴ = 2 · 81 = 162"],2*3**4],
+["seq10","In 100, 92, 84, ..., which term equals 52?",["7th","6th","8th","9th"],["Use 100 − 8(n − 1) = 52","8(n − 1) = 48, so n − 1 = 6","n = 7"],(100-52)/8+1],
+["seq11","What comes next? 2, 5, 11, 23, 47, ...",["95","94","71","92"],["Rule: double the term, then add 1","47 × 2 + 1 = 95"],47*2+1],
+["seq12","Find the sum: 1 + 2 + 3 + ... + 50",["1275","1250","2550","1225"],["Use Sₙ = n(n + 1)/2","S₅₀ = 50(51)/2 = 1275"],Array.from({length:50},(_,i)=>i+1).reduce((a,b)=>a+b)],
+// ---------- Relations and functions
+["fun1","Which relation is a function?",["{(1, 2), (2, 3), (3, 4), (4, 5)}","{(1, 2), (1, 3), (2, 4)}","{(2, 5), (3, 6), (2, 7)}","{(0, 1), (0, 2), (1, 3)}"],["In a function, each x-value has exactly one y-value","Each other choice repeats an x-value with a different y-value","Only {(1, 2), (2, 3), (3, 4), (4, 5)} has no repeated x"]],
+["fun2","If f(x) = 2x² − 3, what is f(3)?",["15","33","9","12"],["Square first: 3² = 9","2(9) − 3 = 18 − 3 = 15"],2*9-3],
+["fun3","If f(x) = x + 4 and g(x) = 3x, what is f(g(2))?",["10","18","12","9"],["Work from the inside: g(2) = 3(2) = 6","f(6) = 6 + 4 = 10"],3*2+4],
+["fun4","A table has x = 1, 2, 3, 4 and y = 5, 8, 11, 14. Which rule fits?",["y = 3x + 2","y = x + 4","y = 2x + 3","y = 4x + 1"],["y rises by 3 each time x rises by 1, so the slope is 3","At x = 1: 3(1) + c = 5, so c = 2","Rule: y = 3x + 2. Check x = 4: 3(4) + 2 = 14 ✓"]],
+["fun5","If f(x) = 5 − x, what is f(a + 2)?",["3 − a","7 − a","3 + a","a − 3"],["Replace x with (a + 2): f(a + 2) = 5 − (a + 2)","Distribute the minus: 5 − a − 2","Simplify: 3 − a"]],
+["fun6","A graph shows y as a function of x when every vertical line crosses it:",["At most once","Exactly twice","Never","At least twice"],["This is the vertical line test","Two crossings would give one x-value two y-values","So each vertical line may cross at most once"]],
+["fun7","Is {(−2, 4), (−1, 1), (0, 0), (1, 1), (2, 4)} a function?",["Yes, each x has only one y","No, because y-values repeat","No, because some x-values are negative","Yes, because each y has only one x"],["Check the x-values: −2, −1, 0, 1, 2 are all different","Repeated y-values are allowed","So the relation is a function"]],
+["fun8","If f(x) = 3x − 1 and f(x) = 14, what is x?",["5","41","13","4"],["Set up: 3x − 1 = 14","Add 1: 3x = 15","Divide by 3: x = 5"],(14+1)/3],
+["fun9","What is the inverse of f(x) = 2x + 6?",["f⁻¹(x) = (x − 6)/2","f⁻¹(x) = (x + 6)/2","f⁻¹(x) = x/2 − 6","f⁻¹(x) = 2x − 6"],["Write y = 2x + 6, then swap x and y: x = 2y + 6","Subtract 6: x − 6 = 2y","Divide by 2: y = (x − 6)/2"]],
+["fun10","If f(x) = x² + 1 and g(x) = x − 3, what is g(f(2))?",["2","5","0","−2"],["Inside first: f(2) = 2² + 1 = 5","g(5) = 5 − 3 = 2"],(2**2+1)-3],
+// ---------- Domain and range
+["dom1","What is the domain of {(1, 4), (2, 6), (5, 6)}?",["{1, 2, 5}","{4, 6}","{1, 2, 4, 5, 6}","{4, 6, 6}"],["The domain is the set of x-values","The x-values are 1, 2 and 5"]],
+["dom2","What is the range of {(−1, 3), (0, 3), (2, 7)}?",["{3, 7}","{−1, 0, 2}","{3, 3, 7}","{−1, 0, 2, 3, 7}"],["The range is the set of y-values","The y-values are 3, 3 and 7","List a repeated value once: {3, 7}"]],
+["dom3","What is the domain of f(x) = 1/(x − 5)?",["All real numbers except 5","All real numbers except −5","x > 5","All real numbers"],["A denominator cannot be 0","x − 5 = 0 when x = 5","So x can be any real number except 5"]],
+["dom4","What is the domain of f(x) = √(x − 3)?",["x ≥ 3","x > 3","x ≤ 3","All real numbers"],["The expression under a square root cannot be negative","x − 3 ≥ 0, so x ≥ 3"]],
+["dom5","What is the range of f(x) = x² + 2?",["y ≥ 2","All real numbers","y ≤ 2","y > 2"],["x² is never negative, and its smallest value is 0","So the smallest value of x² + 2 is 2","Range: y ≥ 2"]],
+["dom6","What is the domain of f(x) = 2x + 7?",["All real numbers","x ≥ 0","x ≠ 7","x ≥ −7/2"],["A linear function has no denominator or square root","Any real x works"]],
+["dom7","f(x) = 2x + 1 has domain {0, 1, 2, 3}. What is its range?",["{1, 3, 5, 7}","{0, 1, 2, 3}","{2, 3, 4, 5}","{1, 2, 3, 4}"],["Put each domain value in the rule","f(0) = 1, f(1) = 3, f(2) = 5, f(3) = 7","Range: {1, 3, 5, 7}"]],
+["dom8","What is the domain of f(x) = 1/(x² − 9)?",["All real numbers except 3 and −3","All real numbers except 3","All real numbers except 9","All real numbers except 9 and −9"],["Set the denominator to 0: x² − 9 = 0","x² = 9, so x = 3 or x = −3","Exclude both values"]],
+["dom9","What is the range of f(x) = √x + 4?",["y ≥ 4","y ≥ 0","y ≤ 4","All real numbers"],["√x is never negative, and its smallest value is 0","So the smallest value of √x + 4 is 4","Range: y ≥ 4"]],
+["dom10","What is the domain of f(x) = √(10 − 2x)?",["x ≤ 5","x ≥ 5","x ≤ 10","x ≥ −5"],["Require 10 − 2x ≥ 0","Subtract 10: −2x ≥ −10","Divide by −2 and flip the sign: x ≤ 5"]],
+["dom11","What is the range of f(x) = −x² + 6?",["y ≤ 6","y ≥ 6","All real numbers","y ≤ 0"],["−x² is never positive, and its largest value is 0","So the largest value of −x² + 6 is 6","Range: y ≤ 6"]],
+// ---------- Word problems
+["wrd1","An electrician charges a $60 service fee plus $45 per hour. The bill is $285. How many hours were worked?",["5","4","6","7"],["Set up: 60 + 45h = 285","Subtract 60: 45h = 225","Divide by 45: h = 5"],(285-60)/45],
+["wrd2","A 96-foot wire is cut into two pieces. One piece is 3 times as long as the other. How long is the shorter piece?",["24 ft","32 ft","48 ft","72 ft"],["Let the shorter piece be x, so the longer is 3x","x + 3x = 96, so 4x = 96","x = 24 ft"],96/4],
+["wrd3","The sum of three consecutive integers is 72. What is the largest?",["25","24","26","23"],["Let them be n, n + 1, n + 2","3n + 3 = 72, so n = 23","The largest is 23 + 2 = 25"],(72-3)/3+2],
+["wrd4","A father is 3 times as old as his son. Their ages add up to 48. How old is the son?",["12","16","36","9"],["Let the son be s and the father 3s","s + 3s = 48, so 4s = 48","s = 12"],48/4],
+["wrd5","A rectangle's length is twice its width. Its perimeter is 54 ft. What is its width?",["9 ft","18 ft","6 ft","13.5 ft"],["Let width = w and length = 2w","Perimeter: 2(w + 2w) = 6w = 54","w = 9 ft"],54/6],
+["wrd6","Two trucks leave the same point in opposite directions at 50 mph and 60 mph. After how many hours are they 275 miles apart?",["2.5","2","3","5.5"],["They separate at 50 + 60 = 110 mph","Time = distance ÷ rate = 275 ÷ 110","Time = 2.5 hours"],275/110],
+["wrd7","Adult tickets cost $8 and child tickets cost $5. A group buys 20 tickets for $136. How many adult tickets did it buy?",["12","8","10","14"],["Let a = adult tickets, so 20 − a are child tickets","8a + 5(20 − a) = 136","3a + 100 = 136, so 3a = 36","a = 12"],(136-5*20)/3],
+["wrd8","A 250-foot spool of cable is 40% used. How many feet remain?",["150 ft","100 ft","210 ft","160 ft"],["40% used means 60% remains","0.60 × 250 = 150 ft"],250*.6],
+["wrd9","One worker finishes a job in 6 hours and another in 3 hours. How long does it take them working together?",["2 hours","4.5 hours","3 hours","9 hours"],["Combined rate: 1/6 + 1/3 = 1/6 + 2/6 = 3/6 = 1/2 job per hour","Time = 1 ÷ (1/2) = 2 hours"],1/(1/6+1/3)],
+["wrd10","A tool costs $64 after a 20% discount. What was the original price?",["$80","$76.80","$84","$128"],["After 20% off, you pay 80% of the original price","0.80p = 64","p = 64 ÷ 0.80 = $80"],64/.8],
+["wrd11","Five more than twice a number is 23. What is the number?",["9","14","11","10"],["Write it: 2n + 5 = 23","Subtract 5: 2n = 18","Divide by 2: n = 9"],(23-5)/2],
+["wrd12","A jar holds 18 quarters and dimes worth $3.00 in total. How many quarters are there?",["8","10","6","12"],["Let q = quarters, so 18 − q are dimes","0.25q + 0.10(18 − q) = 3.00","0.15q + 1.80 = 3.00, so 0.15q = 1.20","q = 8"],(3-1.8)/.15],
+// ---------- Direct and inverse proportion
+["pro1","y varies directly with x, and y = 12 when x = 4. What is y when x = 7?",["21","15","28","48"],["Direct variation: y = kx","k = 12 ÷ 4 = 3","y = 3 × 7 = 21"],12/4*7],
+["pro2","5 rolls of wire cost $75. At the same rate, what do 8 rolls cost?",["$120","$105","$135","$100"],["Cost is directly proportional to rolls","Cost per roll = 75 ÷ 5 = $15","8 × 15 = $120"],75/5*8],
+["pro3","y varies inversely with x, and y = 6 when x = 10. What is y when x = 15?",["4","9","11","2.5"],["Inverse variation: xy = k","k = 10 × 6 = 60","y = 60 ÷ 15 = 4"],60/15],
+["pro4","6 workers finish a job in 12 days. How many days would 9 workers take at the same rate?",["8","18","10","6"],["More workers means fewer days, so this is inverse","Total work = 6 × 12 = 72 worker-days","72 ÷ 9 = 8 days"],6*12/9],
+["pro5","At constant resistance, current varies directly with voltage. The current is 4 A at 120 V. What is it at 180 V?",["6 A","5 A","8 A","3 A"],["I = kV","k = 4 ÷ 120 = 1/30","I = 180 ÷ 30 = 6 A"],4/120*180],
+["pro6","At constant voltage, current varies inversely with resistance. The current is 12 A at 10 Ω. What is it at 15 Ω?",["8 A","18 A","10 A","7 A"],["I × R is constant","k = 12 × 10 = 120","I = 120 ÷ 15 = 8 A"],120/15],
+["pro7","A trip takes 4 hours at 60 mph. How long does it take at 80 mph?",["3 hours","5 hours","2.5 hours","3.5 hours"],["For a fixed distance, time varies inversely with speed","Distance = 60 × 4 = 240 miles","Time = 240 ÷ 80 = 3 hours"],60*4/80],
+["pro8","y varies directly with the square of x, and y = 18 when x = 3. What is y when x = 5?",["50","30","25","45"],["y = kx²","18 = k(9), so k = 2","y = 2(5²) = 50"],18/9*25],
+["pro9","Which equation shows inverse variation?",["y = 12/x","y = 12x","y = x + 12","y = x − 12"],["Inverse variation has the form y = k/x","So xy stays constant, here at 12"]],
+["pro10","On a plan, 1 inch represents 25 miles. How many miles does 3.5 inches represent?",["87.5","75","100","62.5"],["Distance is directly proportional to inches","3.5 × 25 = 87.5 miles"],3.5*25],
+["pro11","A 40-tooth gear turning at 300 rpm drives a 60-tooth gear. How fast does the larger gear turn?",["200 rpm","450 rpm","280 rpm","240 rpm"],["Speed varies inversely with the number of teeth","Teeth × rpm is constant: 40 × 300 = 12,000","12,000 ÷ 60 = 200 rpm"],40*300/60],
+["pro12","y varies inversely with the square of x, and y = 9 when x = 2. What is y when x = 3?",["4","6","13.5","3"],["y = k/x²","k = 9 × 2² = 36","y = 36 ÷ 3² = 4"],9*4/9],
+["pro13","12 pumps fill a tank in 15 hours. How many pumps are needed to fill it in 10 hours?",["18","8","17","20"],["Fewer hours needs more pumps, so this is inverse","Total = 12 × 15 = 180 pump-hours","180 ÷ 10 = 18 pumps"],12*15/10],
+// ---------- Simple interest
+["int1","Find the simple interest on $1,000 at 5% per year for 3 years.",["$150","$50","$1,150","$15"],["Use I = Prt","I = 1000 × 0.05 × 3 = $150"],1000*.05*3],
+["int2","You deposit $2,000 at 4% simple interest for 2 years. What is the total amount?",["$2,160","$160","$2,080","$2,320"],["Interest: I = 2000 × 0.04 × 2 = $160","Amount: A = P + I = 2000 + 160 = $2,160"],2000*(1+.04*2)],
+["int3","$1,500 earns $180 of simple interest in 3 years. What is the annual rate?",["4%","12%","6%","3%"],["Use r = I ÷ (Pt)","r = 180 ÷ (1500 × 3) = 180 ÷ 4500 = 0.04","r = 4%"],180/(1500*3)*100],
+["int4","How long does $800 at 5% simple interest take to earn $120?",["3 years","2 years","4 years","6 years"],["Interest per year: 800 × 0.05 = $40","t = 120 ÷ 40 = 3 years"],120/(800*.05)],
+["int5","An account at 6% simple interest earns $90 in 3 years. What is the principal?",["$500","$450","$600","$1,500"],["Use P = I ÷ (rt)","P = 90 ÷ (0.06 × 3) = 90 ÷ 0.18","P = $500"],90/(.06*3)],
+["int6","Find the simple interest on $1,200 at 6% per year for 6 months.",["$36","$72","$432","$360"],["Write time in years: 6 months = 0.5 year","I = 1200 × 0.06 × 0.5 = $36"],1200*.06*.5],
+["int7","At 8% simple interest, how many years does it take money to double?",["12.5","25","8","16"],["Doubling means the interest equals the principal: I = P","P = P × 0.08 × t, so 1 = 0.08t","t = 1 ÷ 0.08 = 12.5 years"],1/.08],
+["int8","$3,000 at 5% simple interest grows to $3,300. How many years did this take?",["2","1","3","4"],["Interest earned: 3300 − 3000 = $300","Interest per year: 3000 × 0.05 = $150","t = 300 ÷ 150 = 2 years"],300/150],
+["int9","$5,000 is split between accounts paying 4% and 6% simple interest. The total interest in one year is $260. How much is at 4%?",["$2,000","$3,000","$2,500","$1,000"],["Let x be at 4%, so 5000 − x is at 6%","0.04x + 0.06(5000 − x) = 260","300 − 0.02x = 260, so 0.02x = 40","x = $2,000"],(300-260)/.02],
+["int10","What is the simple interest on a $600 loan at 10% per year for 9 months?",["$45","$60","$54","$540"],["Write time in years: 9 months = 9/12 = 0.75 year","I = 600 × 0.10 × 0.75 = $45"],600*.1*.75],
+];
+
+const LS = "aptitude-math-progress";
+const BANDS = [["green","1:00 or less",60],["yellow","1:01 to 2:00",120],["red","2:01 to 3:00",180],["black","Over 3:00",Infinity]];
+const band = s => BANDS.find(b => s <= b[2])[0];
+const fmt = s => { s = Math.floor(s); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); };
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
+const topicOf = q => q[0].replace(/\d+/,"");
+const Q = BANK.map(b => ({id:b[0],text:b[1],opts:b[2],steps:b[3],topic:topicOf(b)}));
+const nums = {}; { const c = {}; Q.forEach(q => { c[q.topic] = (c[q.topic]||0)+1; nums[q.id] = c[q.topic]; }); }
+
+// window.AMT is added by the platform. Opened on its own, the tool still works and saves in this browser.
+const AM = window.AMT || null;
+const store = AM ? AM.storage : window.localStorage;
+const PLAN = (AM && AM.settings) || {};
+const REVIEW = !!AM && AM.mode !== "standalone" && !AM.isStudent;   // an adult looking, nothing is saved
+const planned = Array.isArray(PLAN.topics) ? PLAN.topics.filter(k => TOPICS[k]) : [];
+if (planned.length) { for (let i = Q.length-1; i >= 0; i--) if (!planned.includes(Q[i].topic)) Q.splice(i,1); }
+let progress = {};            // id -> {st, sec, pick, tries, best, at}
+try { progress = JSON.parse(store.getItem(LS)) || {}; } catch (e) {}
+let topic = "all", cur = Q[0].id, stepsOpen = false, confirmReset = false;
+const clock = {};             // id -> seconds spent on the unanswered attempt
+let lastTick = Date.now();
+
+const seed = s => { let h = 7; for (const c of s) h = (h*31 + c.charCodeAt(0)) >>> 0; return h; };
+function order(q) { let h = seed(q.id), a = [0,1,2,3]; for (let i = 3; i > 0; i--) { h = (h*1103515245 + 12345) >>> 0; const j = h % (i+1); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+const list = () => topic === "all" ? Q : Q.filter(q => q.topic === topic);
+const getQ = id => Q.find(q => q.id === id);
+
+function record(q, pick, st) {
+  const sec = Math.max(1, Math.round(clock[q.id] || 0)), old = progress[q.id];
+  progress[q.id] = {st, sec, pick, tries:(old?old.tries:0)+1, best:(st==="correct" ? Math.min(sec, old&&old.best||sec) : (old&&old.best)||null), at:Date.now()};
+  save(); report(q, pick, st, sec); renderAll();
+}
+function report(q, pick, st, sec) {
+  if (!AM) return;
+  AM.attempt({ question:q.text, response: pick===null ? "(viewed steps)" : q.opts[pick], answer:q.opts[0], correct:st==="correct", ms:sec*1000, topic:TOPICS[q.topic], mode:"Practice", meta:{id:q.id, band:band(sec)} });
+  const all = Q.map(x => progress[x.id]);
+  const inTopic = Q.filter(x => x.topic===q.topic);
+  if (inTopic.every(x => (progress[x.id]||{}).st==="correct")) AM.award("master-"+q.topic, "Mastered: "+TOPICS[q.topic], "🏅");
+  if (all.filter(p => p && p.st==="correct" && p.sec<=60).length >= 25) AM.award("fast-25", "25 correct in 1 minute or less", "⚡");
+  if (all.every(p => p)) AM.award("all-done", "Answered every question", "🎯");
+}
+function retry(q) { delete progress[q.id]; clock[q.id] = 0; stepsOpen = false; save(); renderAll(); }
+function go(id) { cur = id; stepsOpen = false; lastTick = Date.now(); renderAll(); }
+function nextId(dir) { const l = list(), i = l.findIndex(q => q.id === cur); return l[(i + dir + l.length) % l.length].id; }
+function nextOpen() { const l = list(), i = Math.max(0, l.findIndex(q => q.id === cur)); for (let k = 1; k <= l.length; k++) { const q = l[(i+k) % l.length]; if (!progress[q.id]) return q.id; } return null; }
+
+function renderTabs() {
+  const box = document.getElementById("tabs"); box.replaceChildren();
+  [["all","All topics"], ...Object.entries(TOPICS).filter(([k]) => Q.some(q => q.topic===k))].forEach(([k,name]) => {
+    const qs = k === "all" ? Q : Q.filter(q => q.topic === k);
+    const b = el("button","tab",name); b.type = "button"; b.setAttribute("aria-pressed", topic===k);
+    b.append(el("b","", qs.filter(q => progress[q.id]).length + "/" + qs.length));
+    b.onclick = () => { topic = k; if (!list().some(q => q.id === cur)) cur = (list().find(q => !progress[q.id]) || list()[0]).id; go(cur); };
+    box.append(b);
+  });
+}
+function renderWork() {
+  const q = getQ(cur), p = progress[q.id], box = document.getElementById("work"); box.replaceChildren();
+  const head = el("div","qhead");
+  head.append(el("div","qmeta", TOPICS[q.topic] + " · Question " + nums[q.id] + " of " + Q.filter(x => x.topic===q.topic).length));
+  const t = el("div","timer"); t.id = "timer"; t.setAttribute("aria-label","Time on this question"); head.append(t); box.append(head);
+  box.append(el("p","question",q.text));
+  const opts = el("div","opts");
+  order(q).forEach((orig,i) => {
+    const b = el("button","opt"); b.type = "button"; b.disabled = !!p || REVIEW; b.dataset.i = orig;
+    b.append(el("span","k","ABCD"[i]), el("span","t",q.opts[orig]));
+    if (p) { if (orig===0) { b.classList.add("right"); b.append(el("span","tag","Correct")); } else if (orig===p.pick) { b.classList.add("wrong"); b.append(el("span","tag","Your answer")); } }
+    b.onclick = () => { stepsOpen = false; record(q, orig, orig===0 ? "correct" : "wrong"); };
+    opts.append(b);
+  });
+  box.append(opts);
+  if (p) box.append(el("p","result "+(p.st==="correct"?"ok":"no"), {correct:"Correct.",wrong:"Not quite. The correct answer is marked.",revealed:"Steps viewed before answering, so this one earns no credit."}[p.st]+" Time: "+fmt(p.sec)));
+  if (p && stepsOpen) { const ol = el("ol","steps"); q.steps.forEach(s => ol.append(el("li","",s))); box.append(ol); }
+  const act = el("div","actions");
+  const btn = (txt,fn,cls) => { const b = el("button","btn "+(cls||""),txt); b.type = "button"; b.onclick = fn; act.append(b); return b; };
+  if (REVIEW) { if (p) btn(stepsOpen ? "Hide steps" : "Show steps", () => { stepsOpen = !stepsOpen; renderWork(); tick(); }, "primary"); }
+  else if (p) { btn(stepsOpen ? "Hide steps" : "Show steps", () => { stepsOpen = !stepsOpen; renderWork(); tick(); }, stepsOpen ? "" : "primary"); btn("Try again", () => retry(q)); }
+  else btn("Show steps (no credit)", () => { stepsOpen = true; record(q, null, "revealed"); });
+  btn("Previous", () => go(nextId(-1)));
+  btn("Next", () => go(nextId(1)));
+  const n = nextOpen(); const nb = btn("Next unanswered", () => go(n), p ? "primary" : ""); nb.disabled = !n;
+  box.append(act);
+}
+function renderTracker() {
+  const done = Q.map(q => progress[q.id]).filter(Boolean);
+  const right = done.filter(p => p.st==="correct").length;
+  const avg = done.length ? done.reduce((a,p) => a+p.sec, 0) / done.length : 0;
+  const s = document.getElementById("stats"); s.replaceChildren();
+  [[done.length+"/"+Q.length,"Answered"],[done.length?Math.round(100*right/done.length)+"%":"–","Correct"],[done.length?fmt(avg):"–","Avg time"]].forEach(([v,l]) => { const d = el("div"); d.append(el("b","",v), l); s.append(d); });
+  const lg = document.getElementById("legend"); lg.replaceChildren();
+  BANDS.forEach(b => { const d = el("div"); d.append(el("span","swatch b-"+b[0]), b[1], el("b","",done.filter(p => band(p.sec)===b[0]).length)); lg.append(d); });
+  const tr = document.getElementById("tracker"); tr.replaceChildren();
+  Object.entries(TOPICS).forEach(([k,name]) => {
+    if ((topic !== "all" && topic !== k) || !Q.some(q => q.topic===k)) return;
+    const qs = Q.filter(q => q.topic===k);
+    const h = el("h3","",name); h.append(el("small","", qs.filter(q => (progress[q.id]||{}).st==="correct").length + " correct, " + qs.filter(q => progress[q.id]).length + "/" + qs.length + " done")); tr.append(h);
+    const c = el("div","chips");
+    qs.forEach(q => {
+      const p = progress[q.id], b = el("button","chip"); b.type = "button";
+      const mark = p ? {correct:"✓",wrong:"✗",revealed:"?"}[p.st] : "";
+      b.append(el("span","", nums[q.id] + (mark?" "+mark:"")), el("span","", p ? fmt(p.sec) : "–"));
+      if (p) b.classList.add("done","b-"+band(p.sec));
+      if (q.id===cur) { b.classList.add("cur"); b.setAttribute("aria-current","true"); }
+      b.setAttribute("aria-label", name+" question "+nums[q.id]+": "+(p ? ({correct:"correct",wrong:"wrong",revealed:"steps viewed"}[p.st]+", "+fmt(p.sec)) : "not answered"));
+      b.onclick = () => go(q.id); c.append(b);
+    });
+    tr.append(c);
+  });
+  const r = document.getElementById("resetBox"); r.replaceChildren();
+  if (AM && AM.mode !== "standalone") return;
+  if (confirmReset) {
+    r.append("Erase all progress?");
+    const y = el("button","btn","Erase"), n = el("button","btn","Keep"); y.type = n.type = "button";
+    y.onclick = () => { progress = {}; Object.keys(clock).forEach(k => delete clock[k]); confirmReset = false; stepsOpen = false; save(); renderAll(); };
+    n.onclick = () => { confirmReset = false; renderTracker(); }; r.append(y,n);
+  } else { const b = el("button","btn","Reset progress"); b.type = "button"; b.onclick = () => { confirmReset = true; renderTracker(); }; r.append(b); }
+}
+function tick() {
+  const now = Date.now(), q = getQ(cur), p = progress[q.id];
+  if (!p && !REVIEW && !document.hidden) clock[q.id] = (clock[q.id]||0) + (now-lastTick)/1000;
+  lastTick = now;
+  const sec = p ? p.sec : (clock[q.id]||0), t = document.getElementById("timer");
+  if (t) { t.textContent = fmt(sec); t.className = "timer b-"+band(sec); }
+}
+function renderAll() { renderTabs(); renderWork(); renderTracker(); tick(); }
+
+function save() { try { store.setItem(LS, JSON.stringify(progress)); } catch (e) {} }
+document.addEventListener("visibilitychange", () => { lastTick = Date.now(); });
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey||e.metaKey||e.altKey) return;
+  const i = "abcd".indexOf(e.key.toLowerCase());
+  if (i >= 0 && !progress[cur] && !REVIEW) document.querySelectorAll(".opt")[i].click();
+});
+if (AM && AM.student) { document.getElementById("title").textContent = AM.student.firstName + "'s Aptitude-Math"; document.title = document.getElementById("title").textContent; }
+setSaveText();
+function setSaveText() { const e = document.getElementById("save"); e.textContent = REVIEW ? "Viewing progress. Nothing here is saved." : (AM && AM.mode==="student" ? "" : "Progress saves in this browser"); e.hidden = !e.textContent; }
+if (PLAN.note) { const n = document.getElementById("note"); n.textContent = "Note from your tutor: " + PLAN.note; n.hidden = false; }
+cur = (Q.find(q => !progress[q.id]) || Q[0]).id;
+renderAll(); setInterval(tick, 250);
+</script>
+</body>
+</html>
