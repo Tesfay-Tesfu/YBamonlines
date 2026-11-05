@@ -195,7 +195,7 @@ const nums = {}; { const c = {}; Q.forEach(q => { c[q.topic] = (c[q.topic]||0)+1
 const AM = window.AMT || null;
 const store = AM ? AM.storage : window.localStorage;
 const PLAN = (AM && AM.settings) || {};
-const REVIEW = !!AM && AM.mode !== "standalone" && !AM.isStudent;   // an adult looking, nothing is saved
+const REVIEW = !!AM && AM.mode === "review";   // an adult viewing a student: read only
 const planned = Array.isArray(PLAN.topics) ? PLAN.topics.filter(k => TOPICS[k]) : [];
 if (planned.length) { for (let i = Q.length-1; i >= 0; i--) if (!planned.includes(Q[i].topic)) Q.splice(i,1); }
 let progress = {};            // id -> {st, sec, pick, tries, best, at}
@@ -317,7 +317,7 @@ document.addEventListener("keydown", e => {
 });
 if (AM && AM.student) { document.getElementById("title").textContent = AM.student.firstName + "'s Aptitude-Math"; document.title = document.getElementById("title").textContent; }
 setSaveText();
-function setSaveText() { const e = document.getElementById("save"); e.textContent = REVIEW ? "Viewing progress. Nothing here is saved." : (AM && AM.mode==="student" ? "" : "Progress saves in this browser"); e.hidden = !e.textContent; }
+function setSaveText() { const e = document.getElementById("save"); e.textContent = REVIEW ? "Viewing progress. Nothing here is saved." : (AM && AM.mode==="student" ? "" : AM && AM.mode==="preview" ? "Preview: try any question. Nothing is saved." : "Progress saves in this browser"); e.hidden = !e.textContent; }
 if (PLAN.note) { const n = document.getElementById("note"); n.textContent = "Note from your tutor: " + PLAN.note; n.hidden = false; }
 cur = (Q.find(q => !progress[q.id]) || Q[0]).id;
 renderAll(); setInterval(tick, 250);
