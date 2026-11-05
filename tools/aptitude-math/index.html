@@ -17,6 +17,16 @@ body { background:var(--bg); color:var(--fg); margin:0; font:16px/1.5 var(--disp
 .attempts { margin-top:14px; border-top:1px solid var(--line); padding-top:4px }
 .attempts ol { list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:14px }
 .attempts li { display:flex; gap:7px; align-items:center; overflow-wrap:anywhere }
+.tablebox { overflow-x:auto; margin-bottom:18px }
+table { border-collapse:collapse; width:100%; font-size:14px; font-variant-numeric:tabular-nums }
+th { text-align:left; font-weight:700; color:var(--muted); font-size:13px; border-bottom:2px solid var(--line); padding:6px 10px 6px 0; white-space:nowrap }
+td { border-bottom:1px solid var(--line); padding:7px 10px 7px 0; vertical-align:top }
+td.nw { white-space:nowrap }
+td.qt { min-width:200px; overflow-wrap:anywhere }
+.pill { display:inline-block; font:600 13px var(--mono); color:#fff; padding:1px 7px; border-radius:5px; border:1px solid var(--t-edge) }
+.link { font:700 14px var(--display); color:var(--accent); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-align:left }
+.logbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px }
+.muted { color:var(--muted); font-size:14px }
 .note { background:var(--soft); border-radius:7px; padding:10px 12px; font-size:15px; overflow-wrap:anywhere }
 .wrap { max-width:1180px; margin:0 auto; padding-block:20px 40px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:flex; flex-direction:column; gap:16px }
 header { display:flex; flex-wrap:wrap; gap:8px 20px; align-items:baseline; justify-content:space-between }
@@ -88,6 +98,7 @@ h3 small { font:500 12px var(--mono); color:var(--muted) }
       <div class="confirm" id="resetBox"></div>
     </aside>
   </div>
+  <section class="panel" id="log"></section>
   <p class="foot">These are original practice questions, not official IBEW test items. The topics follow your list and the published format of the Algebra &amp; Functions part: 33 questions in 46 minutes, about 84 seconds each, with no calculator. <a href="https://open-exam-prep.com/study-guides/ibew-njatc-aptitude/ch1-overview-format/format-timing-strategies" target="_blank" rel="noopener">Format guide</a> · <a href="https://electriciantutor.com/free-ibew-aptitude-test-2026" target="_blank" rel="noopener">Electrician Tutor free test</a></p>
 </div>
 <script>
@@ -221,7 +232,7 @@ function record(q, pick, st) {
   const sec = Math.max(1, Math.round(clock[q.id] || 0)), old = progress[q.id];
   progress[q.id] = {st, sec, pick, tries:(old?old.tries:0)+1, best:(st==="correct" ? Math.min(sec, old&&old.best||sec) : (old&&old.best)||null), at:Date.now()};
   (attemptLog[q.id] = attemptLog[q.id] || []).push({st, sec, pick, at:Date.now()});
-  attemptLog[q.id] = attemptLog[q.id].slice(-20);
+  attemptLog[q.id] = attemptLog[q.id].slice(-100);
   report(q, pick, st, sec); save(); renderAll();
 }
 function report(q, pick, st, sec) {
@@ -323,7 +334,69 @@ function tick() {
   const sec = p ? p.sec : (clock[q.id]||0), t = document.getElementById("timer");
   if (t) { t.textContent = fmt(sec); t.className = "timer b-"+band(sec); }
 }
-function renderAll() { renderTabs(); renderWork(); renderTracker(); tick(); }
+// Every attempt ever made: the server's records plus anything not sent yet.
+let serverRows = [], serverNote = "", logLimit = 50, logOneQ = false;
+function allAttempts() {
+  const byText = {}; BANK.forEach(b => byText[b[1]] = b[0]);
+  const rows = serverRows.map(r => { const id = byText[r.question];
+    return {id, text:r.question, topic: id ? id.replace(/\d+/,"") : null, topicName:r.topic, at:new Date(r.created_at).getTime(),
+      sec:Math.round((r.ms||0)/1000), st: r.response==="(viewed steps)" ? "revealed" : r.correct ? "correct" : "wrong", resp:r.response, used:false}; });
+  for (const [id,list] of Object.entries(attemptLog)) {
+    const b = BANK.find(x => x[0]===id); if (!b) continue;
+    const tk = id.replace(/\d+/,"");
+    for (const a of list) {
+      const same = rows.find(r => !r.used && r.id===id && r.sec===a.sec && Math.abs(r.at-a.at) < 300000);
+      if (same) { same.used = true; continue; }
+      rows.push({id, text:b[1], topic:tk, topicName:TOPICS[tk], at:a.at, sec:a.sec, st:a.st, resp:(a.pick===null||a.pick===undefined) ? "(viewed steps)" : b[2][a.pick], used:true});
+    }
+  }
+  rows.sort((x,y) => x.at-y.at);
+  const n = {}; rows.forEach(r => { n[r.text] = (n[r.text]||0)+1; r.tryNo = n[r.text]; });
+  return rows;
+}
+const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const dayText = t => new Date(t).toLocaleDateString(undefined,{weekday:"short",year:"numeric",month:"short",day:"numeric"});
+const timeText = t => new Date(t).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+function table(heads, fill) {
+  const box = el("div","tablebox"), t = el("table"), th = el("thead"), tr = el("tr"), tb = el("tbody");
+  heads.forEach(h => { const c = el("th","",h); c.scope = "col"; tr.append(c); }); th.append(tr); fill(tb); t.append(th,tb); box.append(t); return box;
+}
+function cell(tr, content, cls) { const c = el("td",cls||""); if (content instanceof Node) c.append(content); else c.textContent = content; tr.append(c); }
+function pillT(sec) { return el("span","pill b-"+band(sec), fmt(sec)); }
+function renderLog() {
+  const box = document.getElementById("log"); box.replaceChildren();
+  box.append(el("h2","","Attempt history"));
+  let rows = allAttempts().filter(r => topic==="all" || r.topic===topic);
+  const curText = getQ(cur).text;
+  const bar = el("div","logbar");
+  const b1 = el("button","tab","All questions"), b2 = el("button","tab","Current question only"); b1.type = b2.type = "button";
+  b1.setAttribute("aria-pressed",!logOneQ); b2.setAttribute("aria-pressed",logOneQ);
+  b1.onclick = () => { logOneQ = false; renderLog(); }; b2.onclick = () => { logOneQ = true; renderLog(); };
+  bar.append(b1,b2); if (serverNote) bar.append(el("span","muted",serverNote)); box.append(bar);
+  if (logOneQ) rows = rows.filter(r => r.text===curText);
+  if (!rows.length) { box.append(el("p","muted","No attempts yet. Each answer will appear here with its date, time and how long it took.")); return; }
+  box.append(el("h3","","By day"));
+  const days = {}; rows.forEach(r => { (days[dayKey(r.at)] = days[dayKey(r.at)] || []).push(r); });
+  box.append(table(["Date","Attempts","Correct","Accuracy","Avg time","1:00 or less","1:01–2:00","2:01–3:00","Over 3:00"], tb => {
+    Object.keys(days).sort().reverse().forEach(k => { const d = days[k], ok = d.filter(r => r.st==="correct").length, tr = el("tr");
+      cell(tr,dayText(d[0].at),"nw"); cell(tr,d.length); cell(tr,ok); cell(tr,Math.round(100*ok/d.length)+"%");
+      cell(tr,pillT(d.reduce((a,r)=>a+r.sec,0)/d.length));
+      BANDS.forEach(b => cell(tr,d.filter(r=>band(r.sec)===b[0]).length)); tb.append(tr); });
+  }));
+  box.append(el("h3","","Every attempt, newest first"));
+  const newest = rows.slice().reverse();
+  box.append(table(["Date","Time","Topic","Question","Answer given","Result","Time taken","Try"], tb => {
+    newest.slice(0,logLimit).forEach(r => { const tr = el("tr");
+      cell(tr,dayText(r.at),"nw"); cell(tr,timeText(r.at),"nw"); cell(tr,r.topicName||"","nw");
+      const c = el("td","qt");
+      if (r.id && Q.some(q=>q.id===r.id)) { const a = el("button","link",r.text); a.type = "button"; a.onclick = () => { go(r.id); window.scrollTo(0,0); }; c.append(a); } else c.textContent = r.text;
+      tr.append(c);
+      cell(tr,r.resp||"","qt"); cell(tr,{correct:"✓ Correct",wrong:"✗ Wrong",revealed:"? Viewed steps"}[r.st],"nw"); cell(tr,pillT(r.sec)); cell(tr,r.tryNo); tb.append(tr); });
+  }));
+  if (newest.length > logLimit) { const m = el("button","btn","Show 50 more of "+(newest.length-logLimit)); m.type = "button"; m.onclick = () => { logLimit += 50; renderLog(); }; box.append(m); }
+}
+function renderAll() { renderTabs(); renderWork(); renderTracker(); renderLog(); tick(); }
+
 
 function save() { try { store.setItem(LS, JSON.stringify(progress)); store.setItem(LS + "-history", JSON.stringify(attemptLog)); } catch (e) {} if (AM && AM.flush) AM.flush(); }
 document.addEventListener("visibilitychange", () => { lastTick = Date.now(); });
@@ -338,6 +411,7 @@ function setSaveText() { const e = document.getElementById("save"); e.textConten
 if (PLAN.note) { const n = document.getElementById("note"); n.textContent = "Note from your tutor: " + PLAN.note; n.hidden = false; }
 cur = (Q.find(q => !progress[q.id]) || Q[0]).id;
 renderAll(); setInterval(tick, 250);
+if (AM && AM.student && AM.history) AM.history({limit:5000}).then(r => { serverRows = r || []; renderLog(); }).catch(() => { serverNote = "Older attempts could not be loaded right now."; renderLog(); });
 </script>
 </body>
 </html>

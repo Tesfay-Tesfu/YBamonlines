@@ -4,7 +4,7 @@
   "grade_min": 9,
   "grade_max": 12,
   "icon": "🧠",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Timed multiple-choice aptitude math: algebra, series and sequences, relations and functions, domain and range, word problems, direct and inverse proportion, and simple interest. Every question has a color-coded time, a progress box and worked steps.",
   "settings": [
     {
